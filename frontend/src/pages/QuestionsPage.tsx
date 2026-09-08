@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { difficultyLabel } from "../lib/format";
 import { AIGeneratedQuestion, Question, QuestionType, Topic } from "../lib/types";
 
@@ -12,6 +13,11 @@ export default function QuestionsPage() {
   const [filterDifficulty, setFilterDifficulty] = useState<number | "">("");
   const [filterType, setFilterType] = useState<QuestionType | "">("");
   const [error, setError] = useState<string | null>(null);
+
+  const pageSize = 20;
+  const [page, setPage] = useState(1);
+
+  const [deleteTarget, setDeleteTarget] = useState<Question | null>(null);
 
   const [form, setForm] = useState({
     topic_id: 0,
@@ -86,12 +92,18 @@ export default function QuestionsPage() {
     setAiLoading(true);
     setAiError(null);
     try {
-      const response = await api.post<{ questions: AIGeneratedQuestion[] }>("/ai/generate-questions", {
-        topic_id: aiTopicId,
-        prompt: aiPrompt,
-        count: aiCount,
-      });
+      const response = await api.post<{ questions: AIGeneratedQuestion[]; dropped: number }>(
+        "/ai/generate-questions",
+        { topic_id: aiTopicId, prompt: aiPrompt, count: aiCount }
+      );
       setAiDrafts(response.questions);
+      if (response.questions.length === 0) {
+        setAiError("The AI didn't return any usable questions. Try rephrasing your prompt or generating again.");
+      } else if (response.dropped > 0) {
+        setAiError(
+          `${response.dropped} question(s) the AI generated couldn't be parsed and were skipped. ${response.questions.length} usable question(s) below.`
+        );
+      }
     } catch (err) {
       setAiError(String(err));
     } finally {
@@ -110,13 +122,20 @@ export default function QuestionsPage() {
     }
   }
 
+  const totalPages = Math.max(1, Math.ceil(questions.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = questions.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   return (
     <div>
       <h1><i className="fa-solid fa-circle-question"/> Questions</h1>
       {error && <div className="error">{error}</div>}
 
       <div className="card">
-        <h3>AI-generate questions</h3>
+        <h3><i className="fa-solid fa-robot"/> AI-generate questions</h3>
         <label>Topic</label>
         <select value={aiTopicId} onChange={(e) => setAiTopicId(Number(e.target.value))}>
           <option value="" disabled>
@@ -163,7 +182,7 @@ export default function QuestionsPage() {
       </div>
 
       <div className="card">
-        <h3>Add question manually</h3>
+        <h3><i className="fa-solid fa-circle-plus"/> Add question manually</h3>
         <label>Topic</label>
         <select value={form.topic_id} onChange={(e) => setForm({ ...form, topic_id: Number(e.target.value) })}>
           <option value={0} disabled>
@@ -251,7 +270,9 @@ export default function QuestionsPage() {
         </div>
       </div>
 
-      <table>
+      <div className="table-card">
+          <div className="table-wrapper">
+      <table className="data-table">
         <thead>
           <tr>
             <th>Text</th>
@@ -261,13 +282,13 @@ export default function QuestionsPage() {
           </tr>
         </thead>
         <tbody>
-          {questions.map((q) => (
+          {paginated.map((q) => (
             <tr key={q.id}>
               <td>{q.text}</td>
               <td>{q.type}</td>
               <td>{difficultyLabel(q.difficulty)}</td>
               <td>
-                <button className="danger" onClick={() => deleteQuestion(q.id)}>
+                <button className="danger" onClick={() => setDeleteTarget(q)}>
                   Delete
                 </button>
               </td>
@@ -275,6 +296,57 @@ export default function QuestionsPage() {
           ))}
         </tbody>
       </table>
+      </div>
+      <div
+            className="card-footer"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <span className="text-muted text-sm">
+              {(currentPage - 1) * pageSize + 1}-
+              {Math.min(currentPage * pageSize, questions.length)} of{" "}
+              {questions.length} questions
+            </span>
+            {totalPages > 1 && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <button
+                  className="btn btn-ghost btn-sm btn-icon"
+                  title="Prev page"
+                  disabled={currentPage === 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  <i className="fa-solid fa-chevron-left" />
+                </button>
+                <span className="text-muted text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-ghost btn-sm btn-icon"
+                  title="Next page"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  <i className="fa-solid fa-chevron-right" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          </div>
+
+      {deleteTarget && (
+        <ConfirmModal
+          message={`Are you sure you want to delete this question? "${deleteTarget.text}"`}
+          onConfirm={() => {
+            deleteQuestion(deleteTarget.id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

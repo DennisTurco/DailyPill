@@ -27,8 +27,9 @@ def _topic_progress(db: Session) -> list[TopicProgress]:
             .filter(Question.topic_id == topic.id, Question.is_deleted.is_(False))
             .count()
         )
-        total = len(answers)
-        correct = sum(1 for a in answers if a.is_correct)
+        graded = [a for a in answers if a.is_correct is not None]
+        total = len(graded)
+        correct = sum(1 for a in graded if a.is_correct)
         result.append(
             TopicProgress(
                 topic_id=topic.id,
@@ -37,7 +38,7 @@ def _topic_progress(db: Session) -> list[TopicProgress]:
                 total_answers=total,
                 correct_answers=correct,
                 accuracy=(correct / total) if total else 0.0,
-                average_score=(sum(a.score_awarded for a in answers) / total) if total else 0.0,
+                average_score=(sum(a.score_awarded for a in graded) / total) if total else 0.0,
             )
         )
     return result
@@ -52,8 +53,9 @@ def _difficulty_progress(db: Session) -> list[DifficultyProgress]:
             .filter(Question.difficulty == difficulty)
             .all()
         )
-        total = len(answers)
-        correct = sum(1 for a in answers if a.is_correct)
+        graded = [a for a in answers if a.is_correct is not None]
+        total = len(graded)
+        correct = sum(1 for a in graded if a.is_correct)
         result.append(
             DifficultyProgress(
                 difficulty=difficulty,

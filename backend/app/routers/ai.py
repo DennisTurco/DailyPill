@@ -12,7 +12,16 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 
 @router.get("/status")
 def ai_status():
-    return {"available": ollama_service.is_available(), "model": ollama_service.model, "base_url": ollama_service.base_url}
+    pull_state = ollama_service.get_pull_state()
+    return {
+        "available": ollama_service.is_available(),
+        "model": ollama_service.model,
+        "base_url": ollama_service.base_url,
+        "gpu_available": ollama_service.gpu_enabled,
+        "pulling_model": pull_state["pulling"],
+        "pull_status": pull_state["status"],
+        "pull_percent": pull_state["percent"],
+    }
 
 
 @router.post("/generate-questions", response_model=AIGenerateResponse)
@@ -29,13 +38,21 @@ def generate_questions(payload: AIGenerateRequest, db: Session = Depends(get_db)
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     questions: list[AIGeneratedQuestion] = []
+    dropped = 0
     for q in raw_questions:
+        if not q.get("correct_answer"):
+            q = {**q, "correct_answer": q.get("explanation") or ""}
         try:
-            questions.append(AIGeneratedQuestion(**q))
+            parsed_question = AIGeneratedQuestion(**q)
         except Exception:
+            dropped += 1
             continue
+        if not parsed_question.correct_answer.strip():
+            dropped += 1
+            continue
+        questions.append(parsed_question)
 
-    return AIGenerateResponse(questions=questions)
+    return AIGenerateResponse(questions=questions, dropped=dropped)
 
 
 @router.post("/generate-info-facts", response_model=AIGenerateInfoFactsResponse)
@@ -50,10 +67,12 @@ def generate_info_facts(payload: AIGenerateInfoFactsRequest, db: Session = Depen
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
     facts: list[AIGeneratedInfoFact] = []
+    dropped = 0
     for f in raw_facts:
         try:
             facts.append(AIGeneratedInfoFact(**f))
         except Exception:
+            dropped += 1
             continue
 
-    return AIGenerateInfoFactsResponse(facts=facts)
+    return AIGenerateInfoFactsResponse(facts=facts, dropped=dropped)

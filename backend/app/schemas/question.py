@@ -61,3 +61,4 @@ class AIGenerateRequest(BaseModel):
 
 class AIGenerateResponse(BaseModel):
     questions: list[AIGeneratedQuestion]
+    dropped: int = 0

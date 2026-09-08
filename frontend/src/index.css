@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+html, body, #root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, Segoe UI, Roboto, sans-serif;
@@ -11,7 +15,7 @@ body {
 
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 .sidebar {
@@ -22,6 +26,7 @@ body {
   flex-direction: column;
   gap: 4px;
   flex-shrink: 0;
+  overflow-y: auto;
 }
 
 .brand {
@@ -53,7 +58,9 @@ body {
 .content {
   flex: 1;
   min-width: 0;
-  padding: 24px 32px;
+  padding: 24px 32px 56px;
+  overflow-y: auto;
+  height: 100%;
 }
 
 h1, h2, h3 {
@@ -101,6 +108,10 @@ input, select, textarea {
   width: 100%;
 }
 
+textarea {
+  resize: vertical;
+}
+
 label {
   display: block;
   font-size: 13px;
@@ -120,6 +131,97 @@ th, td {
   border-bottom: 1px solid #262b3d;
 }
 
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-card {
+  background: #1a1d29;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 10px 16px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #9aa0b4;
+  border-bottom: 1px solid #262b3d;
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #262b3d;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: #20263a;
+}
+
+.card-footer {
+  padding: 10px 16px;
+  border-top: 1px solid #262b3d;
+}
+
+.text-muted {
+  color: #9aa0b4;
+}
+
+.text-sm {
+  font-size: 12px;
+}
+
+.btn {
+  background: #7c9cff;
+  color: #0f1117;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #c7c9d1;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: #262b3d;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
 .badge {
   display: inline-block;
   padding: 2px 8px;
@@ -136,6 +238,22 @@ th, td {
 
 .error {
   color: #ff6b6b;
+}
+
+.status-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  background: #262b3d;
+  color: #e6e6e6;
+  font-size: 13px;
+  border-top: 1px solid #303550;
 }
 
 .success {

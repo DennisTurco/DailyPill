@@ -43,3 +43,4 @@ class AIGenerateInfoFactsRequest(BaseModel):
 
 class AIGenerateInfoFactsResponse(BaseModel):
     facts: list[AIGeneratedInfoFact]
+    dropped: int = 0

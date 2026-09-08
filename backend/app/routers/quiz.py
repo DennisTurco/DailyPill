@@ -122,6 +122,11 @@ def finish_quiz(session_id: int, db: Session = Depends(get_db)):
     for answer in answers:
         question = answer.question
         if question and question.type == QuestionType.OPEN_ANSWER and answer.is_correct is None:
+            if not answer.given_answer.strip():
+                answer.is_correct = False
+                answer.score_awarded = 0.0
+                answer.ai_feedback = "No answer given."
+                continue
             try:
                 review = ollama_service.review_open_answer(
                     question.text, question.correct_answer, answer.given_answer
@@ -145,8 +150,9 @@ def finish_quiz(session_id: int, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(session)
 
-    total_score = sum(a.score_awarded for a in answers)
-    return QuizFinishResponse(session=session, total_score=total_score, max_score=float(len(answers)))
+    graded = [a for a in answers if a.is_correct is not None]
+    total_score = sum(a.score_awarded for a in graded)
+    return QuizFinishResponse(session=session, total_score=total_score, max_score=float(len(graded)))
 
 
 @router.post("/{session_id}/chat", response_model=QuizChatResponse)

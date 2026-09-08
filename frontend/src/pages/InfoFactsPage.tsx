@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { Modal } from "../components/Modal";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { AIGeneratedInfoFact, InfoFact, Topic } from "../lib/types";
 
 export default function InfoFactsPage() {
@@ -10,6 +11,7 @@ export default function InfoFactsPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [previewFact, setPreviewFact] = useState<InfoFact | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<InfoFact | null>(null);
 
   const [form, setForm] = useState({
     topic_id: 0,
@@ -96,12 +98,18 @@ export default function InfoFactsPage() {
     setAiLoading(true);
     setAiError(null);
     try {
-      const response = await api.post<{ facts: AIGeneratedInfoFact[] }>("/ai/generate-info-facts", {
-        topic_id: aiTopicId,
-        prompt: aiPrompt,
-        count: aiCount,
-      });
+      const response = await api.post<{ facts: AIGeneratedInfoFact[]; dropped: number }>(
+        "/ai/generate-info-facts",
+        { topic_id: aiTopicId, prompt: aiPrompt, count: aiCount }
+      );
       setAiDrafts(response.facts);
+      if (response.facts.length === 0) {
+        setAiError("The AI didn't return any usable facts. Try rephrasing your prompt or generating again.");
+      } else if (response.dropped > 0) {
+        setAiError(
+          `${response.dropped} fact(s) the AI generated couldn't be parsed and were skipped. ${response.facts.length} usable fact(s) below.`
+        );
+      }
     } catch (err) {
       setAiError(String(err));
     } finally {
@@ -126,7 +134,7 @@ export default function InfoFactsPage() {
       {error && <div className="error">{error}</div>}
 
       <div className="card">
-        <h3>AI-generate facts</h3>
+        <h3><i className="fa-solid fa-robot"/> AI-generate facts</h3>
         <label>Topic</label>
         <select value={aiTopicId} onChange={(e) => setAiTopicId(Number(e.target.value))}>
           <option value="" disabled>
@@ -167,7 +175,7 @@ export default function InfoFactsPage() {
       </div>
 
       <div className="card">
-        <h3>{editingId ? "Edit fact" : "Add fact manually"}</h3>
+        <h3><i className="fa-solid fa-circle-plus"/> {editingId ? "Edit fact" : "Add fact manually"}</h3>
         <label>Topic</label>
         <select value={form.topic_id} onChange={(e) => setForm({ ...form, topic_id: Number(e.target.value) })}>
           <option value={0} disabled>
@@ -195,7 +203,7 @@ export default function InfoFactsPage() {
           placeholder="https://..."
         />
         <div style={{ marginTop: 10 }} className="row">
-          <button onClick={saveFact}>{editingId ? "Save changes" : "Add fact"}</button>
+          <button onClick={saveFact}> {editingId ? "Save changes" : "Add fact"}</button>
           {editingId && (
             <button className="secondary" onClick={resetForm}>
               Cancel edit
@@ -216,36 +224,45 @@ export default function InfoFactsPage() {
         </select>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Topic</th>
-            <th>Link</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {facts.map((f) => (
-            <tr key={f.id}>
-              <td>{f.title}</td>
-              <td>{topicName(f.topic_id)}</td>
-              <td>{f.link && <span className="badge">link</span>}</td>
-              <td>
-                <button className="secondary" onClick={() => setPreviewFact(f)}>
-                  Preview
-                </button>{" "}
-                <button className="secondary" onClick={() => editFact(f)}>
-                  Edit
-                </button>{" "}
-                <button className="danger" onClick={() => deleteFact(f.id)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="table-card">
+        <div className="table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Topic</th>
+                <th>Link</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {facts.map((f) => (
+                <tr key={f.id}>
+                  <td>{f.title}</td>
+                  <td>{topicName(f.topic_id)}</td>
+                  <td>{f.link ? <span className="badge">link</span> : <span className="text-muted text-sm">—</span>}</td>
+                  <td>
+                    <div className="row">
+                      <button className="secondary" onClick={() => setPreviewFact(f)}>
+                        Preview
+                      </button>
+                      <button className="secondary" onClick={() => editFact(f)}>
+                        Edit
+                      </button>
+                      <button className="danger" onClick={() => setDeleteTarget(f)}>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="card-footer">
+          <span className="text-muted text-sm">{facts.length} facts</span>
+        </div>
+      </div>
 
       {previewFact && (
         <Modal title={previewFact.title} onClose={() => setPreviewFact(null)}>
@@ -256,6 +273,17 @@ export default function InfoFactsPage() {
             </a>
           )}
         </Modal>
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          message={`Are you sure you want to delete "${deleteTarget.title}"?`}
+          onConfirm={() => {
+            deleteFact(deleteTarget.id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
       )}
     </div>
   );

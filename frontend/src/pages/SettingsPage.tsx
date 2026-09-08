@@ -5,6 +5,7 @@ interface AIStatus {
   available: boolean;
   model: string;
   base_url: string;
+  gpu_available: boolean;
 }
 
 export default function SettingsPage() {
@@ -18,7 +19,11 @@ export default function SettingsPage() {
       .catch((err) => setError(String(err)));
   }
 
-  useEffect(loadStatus, []);
+  useEffect(() => {
+    loadStatus();
+    const interval = setInterval(loadStatus, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div>
@@ -37,10 +42,17 @@ export default function SettingsPage() {
             </div>
             <div>Model: {status.model}</div>
             <div>Endpoint: {status.base_url}</div>
+            <div>
+              Acceleration:{" "}
+              <span className={status.gpu_available ? "success" : ""}>
+                {status.gpu_available ? "GPU (NVIDIA CUDA)" : "CPU"}
+              </span>
+            </div>
             <p style={{ color: "#9aa0b4" }}>
               Model name and endpoint are configured via <code>OLLAMA_MODEL</code> and{" "}
               <code>OLLAMA_BASE_URL</code> in the root <code>.env</code> file (read by the backend on
-              startup).
+              startup). GPU acceleration is detected automatically at startup (requires an NVIDIA GPU with
+              CUDA drivers) and, when available, is used automatically by Ollama.
             </p>
           </div>
         )}

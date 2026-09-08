@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { Topic } from "../lib/types";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -18,6 +19,11 @@ export default function TopicsPage() {
   const [isInformational, setIsInformational] = useState(false);
   const [schedules, setSchedules] = useState<ScheduleDraft[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+
+  const pageSize = 20;
+  const [page, setPage] = useState(1);
+
+  const [deleteTarget, setDeleteTarget] = useState<Topic | null>(null);
 
   function load() {
     api.get<Topic[]>("/topics").then(setTopics).catch((err) => setError(String(err)));
@@ -87,13 +93,20 @@ export default function TopicsPage() {
     }
   }
 
+  const totalPages = Math.max(1, Math.ceil(topics.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = topics.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+
   return (
     <div>
       <h1><i className="fa-solid fa-layer-group"/> Topics</h1>
       {error && <div className="error">{error}</div>}
 
       <div className="card">
-        <h3>{editingId ? "Edit topic" : "New topic"}</h3>
+        <h3><i className="fa-solid fa-circle-plus"/> {editingId ? "Edit topic" : "New topic"}</h3>
         <label>Name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} />
         <label>Category</label>
@@ -145,35 +158,105 @@ export default function TopicsPage() {
         </div>
       </div>
 
-      {topics.map((topic) => (
-        <div className="card" key={topic.id}>
-          <div className="row" style={{ justifyContent: "space-between" }}>
-            <div>
-              <strong>{topic.name}</strong>{" "}
-              {topic.category && <span className="badge">{topic.category}</span>}{" "}
-              {topic.is_informational && <span className="badge">Informational</span>}
-            </div>
-            <div className="row">
-              <button className="secondary" onClick={() => startEdit(topic)}>
-                Edit
-              </button>
-              <button className="danger" onClick={() => deleteTopic(topic.id)}>
-                Delete
-              </button>
-            </div>
-          </div>
-          {topic.description && <p style={{ color: "#9aa0b4" }}>{topic.description}</p>}
-          {topic.schedules.length > 0 && (
-            <div>
-              {topic.schedules.map((s) => (
-                <span className="badge" key={s.id} style={{ marginRight: 6 }}>
-                  {DAYS[s.day_of_week]} {s.time_of_day}
-                </span>
+      <div className="table-card">
+        <div className="table-wrapper">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Schedule</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginated.map((topic) => (
+                <tr key={topic.id}>
+                  <td>
+                    <div><strong>{topic.name}</strong></div>
+                    {topic.description && (
+                      <div className="text-muted text-sm">{topic.description}</div>
+                    )}
+                  </td>
+                  <td>
+                    {topic.category && <span className="badge">{topic.category}</span>}{" "}
+                    {topic.is_informational && <span className="badge">Informational</span>}
+                  </td>
+                  <td>
+                    {topic.schedules.length > 0 ? (
+                      topic.schedules.map((s) => (
+                        <span className="badge" key={s.id} style={{ marginRight: 6 }}>
+                          {DAYS[s.day_of_week]} {s.time_of_day}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-muted text-sm">—</span>
+                    )}
+                  </td>
+                  <td>
+                    <div className="row">
+                      <button className="secondary" onClick={() => startEdit(topic)}>
+                        Edit
+                      </button>
+                      <button className="danger" onClick={() => setDeleteTarget(topic)}>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               ))}
+            </tbody>
+          </table>
+        </div>
+        <div
+          className="card-footer"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span className="text-muted text-sm">
+            {topics.length === 0
+              ? "0 topics"
+              : `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, topics.length)} of ${topics.length} topics`}
+          </span>
+          {totalPages > 1 && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button
+                className="btn btn-ghost btn-sm btn-icon"
+                title="Prev page"
+                disabled={currentPage === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <i className="fa-solid fa-chevron-left" />
+              </button>
+              <span className="text-muted text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className="btn btn-ghost btn-sm btn-icon"
+                title="Next page"
+                disabled={currentPage === totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                <i className="fa-solid fa-chevron-right" />
+              </button>
             </div>
           )}
         </div>
-      ))}
+      </div>
+
+      {deleteTarget && (
+        <ConfirmModal
+          message={`Are you sure you want to delete "${deleteTarget.name}"? This will also delete its questions, facts and schedules.`}
+          onConfirm={() => {
+            deleteTopic(deleteTarget.id);
+            setDeleteTarget(null);
+          }}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }

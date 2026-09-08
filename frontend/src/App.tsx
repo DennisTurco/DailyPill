@@ -7,6 +7,7 @@ import QuestionsPage from "./pages/QuestionsPage";
 import InfoFactsPage from "./pages/InfoFactsPage";
 import InfoFactPopupPage from "./pages/InfoFactPopupPage";
 import SettingsPage from "./pages/SettingsPage";
+import { StatusBar } from "./components/StatusBar";
 
 export default function App() {
   const navigate = useNavigate();
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </main>
+      <StatusBar />
     </div>
   );
 }

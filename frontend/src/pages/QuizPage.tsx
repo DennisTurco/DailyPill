@@ -93,6 +93,14 @@ export default function QuizPage() {
     }
   }
 
+  function getIconAndColorByAnswer(isCorrect: boolean | null): React.JSX.Element | undefined {
+    if (isCorrect == null)
+        return undefined;
+    return isCorrect
+        ? <i className="fa-solid fa-circle-check" style={{color: "green"}}/>
+        : <i className="fa-solid fa-circle-xmark" style={{color: "red"}}/>
+  }
+
   if (error) return <div className="error">{error}</div>;
 
   if (stage === "select") {
@@ -150,7 +158,7 @@ export default function QuizPage() {
 
     return (
       <div>
-        <h1>Results</h1>
+        <h1><i className="fa-solid fa-square-poll-vertical"/> Results</h1>
         <div className="card">
           <div style={{ fontSize: 22, fontWeight: 700 }}>
             {result.total_score} / {result.max_score}
@@ -158,35 +166,44 @@ export default function QuizPage() {
         </div>
         {result.session.ai_review_summary && (
           <div className="card">
-            <h3>AI recap</h3>
+            <h3><i className="fa-solid fa-robot"/> AI recap</h3>
             <p>{result.session.ai_review_summary}</p>
           </div>
         )}
         <div className="card">
-          <h3>Answer breakdown</h3>
-          {result.session.answers.map((a) => {
+          <h3><i className="fa-solid fa-comments"/> Answer breakdown</h3>
+          {result.session.answers.map((a, i) => {
             const question = questionById.get(a.question_id);
             return (
-              <div key={a.id} style={{ marginBottom: 12 }}>
-                {question && <div style={{ fontWeight: 600 }}>{question.text}</div>}
-                <div className={a.is_correct === null ? "" : a.is_correct ? "success" : "error"}>
-                  {a.is_correct === null ? "Pending review" : a.is_correct ? "Correct" : "Incorrect"} — you answered:
+              <div
+                key={a.id}
+                style={{
+                  paddingTop: i === 0 ? 0 : 16,
+                  marginTop: i === 0 ? 0 : 16,
+                  borderTop: i === 0 ? undefined : "1px solid #262b3d",
+                }}
+              >
+                {question && <div style={{ fontWeight: 600 }}> {getIconAndColorByAnswer(a.is_correct)} {question.text}</div>}
+                <div style={{ marginLeft: 16, marginTop: 4 }}>
+                  <div className={a.is_correct === null ? "" : a.is_correct ? "success" : "error"}>
+                    {a.is_correct === null ? "Pending review" : a.is_correct ? "Correct" : "Incorrect"} — you answered:
+                  </div>
+                  {question?.type === "open_answer" ? (
+                    <MarkdownContent text={a.given_answer || "*(no answer given)*"} />
+                  ) : (
+                    <div>{a.given_answer}</div>
+                  )}
+                  {a.is_correct === false && question && (
+                    <>
+                      <div className="success" style={{ marginTop: 6 }}>
+                        Correct answer:
+                      </div>
+                      <MarkdownContent text={question.correct_answer} />
+                      {question.explanation && <MarkdownContent text={question.explanation} />}
+                    </>
+                  )}
+                  {a.ai_feedback && <div style={{ color: "#9aa0b4" }}>{a.ai_feedback}</div>}
                 </div>
-                {question?.type === "open_answer" ? (
-                  <MarkdownContent text={a.given_answer || "*(no answer given)*"} />
-                ) : (
-                  <div>{a.given_answer}</div>
-                )}
-                {a.is_correct === false && question && (
-                  <>
-                    <div className="success" style={{ marginTop: 6 }}>
-                      Correct answer:
-                    </div>
-                    <MarkdownContent text={question.correct_answer} />
-                    {question.explanation && <MarkdownContent text={question.explanation} />}
-                  </>
-                )}
-                {a.ai_feedback && <div style={{ color: "#9aa0b4" }}>{a.ai_feedback}</div>}
               </div>
             );
           })}
@@ -229,7 +246,7 @@ function QuizChat({ sessionId }: { sessionId: number }) {
 
   return (
     <div className="card">
-      <h3>Ask about this quiz</h3>
+      <h3><i className="fa-solid fa-comment-dots"/> Ask about this quiz</h3>
       <div style={{ maxHeight: 280, overflowY: "auto", marginBottom: 10 }}>
         {messages.length === 0 && (
           <div style={{ color: "#9aa0b4" }}>
