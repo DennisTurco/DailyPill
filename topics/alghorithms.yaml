@@ -1,0 +1,198 @@
+name: Algorithms and data structures
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  Time complexity: O(1), O(log n), O(n), O(n log n), O(n^2)
+  Data structures: array, list, stack, queue, tree, graph, hash map
+  Sorting algorithms: bubble sort, merge sort, quick sort
+manual_questions:
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the time complexity of binary search on a sorted array?"
+    options:
+      - "O(n)"
+      - "O(log n)"
+      - "O(n^2)"
+      - "O(1)"
+    answer: 1
+    explanation: "Binary search halves the search space each step, giving O(log n); O(n) would be linear scan, O(1) is only for direct lookups, and O(n^2) is far worse than what binary search achieves."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which data structure uses LIFO (Last In, First Out) ordering?"
+    options:
+      - "Queue"
+      - "Stack"
+      - "Heap"
+      - "Linked list"
+    answer: 1
+    explanation: "A stack adds and removes elements from the same end, so the last item pushed is the first one popped (Last In, First Out), unlike a queue which is FIFO."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which data structure uses FIFO (First In, First Out) ordering?"
+    options:
+      - "Stack"
+      - "Queue"
+      - "Tree"
+      - "Graph"
+    answer: 1
+    explanation: "A queue removes elements in the same order they were added (First In, First Out), which is why it's used for things like task scheduling, unlike a stack which is LIFO."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the average time complexity of searching in a balanced binary search tree?"
+    options:
+      - "O(1)"
+      - "O(log n)"
+      - "O(n)"
+      - "O(n log n)"
+    answer: 1
+    explanation: "In a balanced BST, height is O(log n), and each comparison eliminates one subtree, so search takes O(log n) on average; an unbalanced tree could degrade this to O(n)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which sorting algorithm has an average-case time complexity of O(n log n) and is stable?"
+    options:
+      - "Bubble sort"
+      - "Insertion sort"
+      - "Merge sort"
+      - "Selection sort"
+    answer: 2
+    explanation: "Merge sort always splits and merges in O(n log n) and preserves the relative order of equal elements, making it stable; bubble/insertion/selection sort are O(n^2) on average."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the worst-case time complexity of quicksort?"
+    options:
+      - "O(n log n)"
+      - "O(n^2)"
+      - "O(log n)"
+      - "O(n)"
+    answer: 1
+    explanation: "With a poor pivot choice (e.g. already-sorted input with a naive pivot), partitions become maximally unbalanced, degrading quicksort to O(n^2); its average case is O(n log n)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which data structure is typically used to implement a priority queue efficiently?"
+    options:
+      - "Array"
+      - "Heap"
+      - "Stack"
+      - "Linked list"
+    answer: 1
+    explanation: "A binary heap gives O(log n) insertion and O(log n) removal of the min/max element while keeping O(1) access to that element, making it the standard priority queue implementation."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the space complexity of an adjacency matrix representation of a graph with V vertices?"
+    options:
+      - "O(V)"
+      - "O(V + E)"
+      - "O(V^2)"
+      - "O(E)"
+    answer: 2
+    explanation: "An adjacency matrix stores a V-by-V grid of entries to represent every possible pair of vertices, giving O(V^2) space regardless of how many edges actually exist."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which tree traversal visits the root before its subtrees?"
+    options:
+      - "In-order"
+      - "Pre-order"
+      - "Post-order"
+      - "Level-order"
+    answer: 1
+    explanation: "Pre-order visits the root, then the left subtree, then the right subtree, so the root is processed first; in-order and post-order visit the root in the middle or last, respectively."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the time complexity of inserting an element at the head of a singly linked list?"
+    options:
+      - "O(1)"
+      - "O(log n)"
+      - "O(n)"
+      - "O(n^2)"
+    answer: 0
+    explanation: "Inserting at the head only requires creating a new node and repointing the head pointer, a constant-time operation regardless of list length, unlike inserting at an arbitrary position."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Which algorithmic technique does merge sort use?"
+    options:
+      - "Greedy"
+      - "Divide and conquer"
+      - "Dynamic programming"
+      - "Backtracking"
+    answer: 1
+    explanation: "Merge sort splits the array into halves, recursively sorts each, then merges the results, which is the classic divide-and-conquer pattern rather than greedy, DP, or backtracking."
+  - type: multiple_choice
+    difficulty: 5
+    text: "What is the time complexity of the Floyd-Warshall all-pairs shortest path algorithm?"
+    options:
+      - "O(V^2)"
+      - "O(V^3)"
+      - "O(V log V)"
+      - "O(E log V)"
+    answer: 1
+    explanation: "Floyd-Warshall uses three nested loops over all V vertices (as intermediate, source, and destination), giving O(V^3), which is efficient for dense graphs needing all-pairs shortest paths."
+  - type: completion
+    difficulty: 2
+    text: "A data structure that stores key-value pairs with average O(1) lookup is called a ____ map."
+    answer: "hash"
+    explanation: "A hash map computes an index from the key via a hash function, giving average O(1) insertion and lookup instead of scanning entries linearly."
+  - type: completion
+    difficulty: 4
+    text: "The technique of solving a problem by storing the results of overlapping subproblems is called ____ programming."
+    answer: "dynamic"
+    explanation: "Dynamic programming caches (memoizes) results of overlapping subproblems so each is computed only once, avoiding the exponential blowup of naive recursion."
+  - type: completion
+    difficulty: 4
+    text: "A self-balancing binary search tree in which the heights of the two child subtrees of any node differ by at most one is called an ____ tree."
+    answer: "AVL"
+    explanation: "AVL trees are named after their inventors Adelson-Velsky and Landis; they rebalance via rotations whenever a subtree height difference exceeds one, keeping operations O(log n)."
+  - type: single_word
+    difficulty: 2
+    text: "What is the term for the number of edges connected to a vertex in a graph?"
+    answer: "degree"
+    explanation: "The degree of a vertex counts how many edges touch it directly; it's a basic property used to analyze graph structure and connectivity."
+  - type: single_word
+    difficulty: 3
+    text: "What is the name of the algorithmic technique that makes the locally optimal choice at each step?"
+    answer: "greedy"
+    explanation: "Greedy algorithms pick the best-looking option at each step without reconsidering past choices, which works optimally for problems like Kruskal's MST but not for all problems."
+  - type: single_word
+    difficulty: 3
+    text: "What is the common abbreviation for the graph traversal that explores as deep as possible before backtracking?"
+    answer: "DFS"
+    explanation: "Depth-First Search follows a branch as far as possible before backtracking, typically implemented recursively or with an explicit stack, as opposed to BFS which explores level by level."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the difference between a stable and an unstable sorting algorithm, and give an example of each."
+    answer: "A stable sort preserves the relative order of equal elements, for example merge sort, while an unstable sort does not guarantee this, for example quicksort."
+    explanation: "Stability matters when sorting by one key while wanting to preserve the prior order of equal keys; merge sort's merging step naturally keeps original order for ties, while quicksort's swaps can reorder equal elements."
+  - type: open_answer
+    difficulty: 5
+    text: "Explain why a hash table can degrade to O(n) lookup time in the worst case, and how this can be mitigated."
+    answer: "If many keys hash into the same bucket (collisions), lookups within that bucket become a linear scan; this can be mitigated with a good hash function, resizing based on load factor, and collision resolution strategies such as chaining or open addressing."
+    explanation: "The O(1) average case assumes keys are spread evenly across buckets; heavy collisions turn a bucket into a linked structure that must be scanned linearly, which a good hash function and dynamic resizing help prevent."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function (in any language) that returns the factorial of a non-negative integer n using recursion."
+    answer: |
+      ```python
+      def factorial(n):
+          if n <= 1:
+              return 1
+          return n * factorial(n - 1)
+      ```
+    explanation: "The base case (n <= 1 returns 1) stops the recursion; each recursive call multiplies n by the factorial of the smaller problem (n - 1), building up the full product as the calls return."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a function (in any language) that reverses a given string."
+    answer: |
+      ```python
+      def reverse_string(s):
+          return s[::-1]
+      ```
+    explanation: "Any correct approach works (a loop building the result backwards, swapping characters in place for a mutable array, etc.); Python's slice `[::-1]` is just a concise built-in way to step through the string with a stride of -1, from end to start."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a function (in any language) that checks whether a given array of integers contains any duplicate values."
+    answer: |
+      ```python
+      def has_duplicates(arr):
+          return len(arr) != len(set(arr))
+      ```
+    explanation: "Converting the array to a set removes duplicate values automatically; if the set ends up smaller than the original array, at least one value appeared more than once. A hash-set-based approach like this runs in O(n) average time, versus O(n^2) for comparing every pair."

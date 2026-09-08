@@ -1,0 +1,959 @@
+name: TypeScript
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  TypeScript as a typed superset of JavaScript, tooling (tsc, tsconfig, Vite),
+  basic types and inference, arrays and tuples, literal types and enums,
+  any/unknown, optional chaining and nullish coalescing, functions (optional
+  params, rest params, overloads), interfaces, classes (access modifiers,
+  abstract classes, implements), static members, generics, type aliases,
+  union and intersection types, type guards, discriminated unions, utility
+  types (Partial, Readonly, Record, Pick, Omit, Exclude, ReturnType), modules.
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "What best describes TypeScript's relationship with JavaScript?"
+    options:
+      - "It is a superset of JavaScript that adds static types and compiles down to JavaScript"
+      - "It is a completely separate language that runs independently of JavaScript"
+      - "It replaces JavaScript engines like V8 with a new runtime"
+      - "It is a JavaScript library imported at runtime"
+    answer: 0
+    explanation: "TypeScript adds a static type system on top of JavaScript syntax and is transpiled to plain JavaScript to run; it doesn't run on its own or replace the JS engine."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What happens to TypeScript's type annotations when the code is compiled?"
+    options:
+      - "They are converted into runtime checks that throw errors"
+      - "They are kept in the output JavaScript as comments"
+      - "They are erased — they exist only for compile-time checking"
+      - "They are converted into JSON schema files"
+    answer: 2
+    explanation: "TypeScript types are a compile-time-only construct used for static analysis; the compiler strips them out entirely, producing plain JavaScript with no runtime type checks."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which command generates the tsconfig.json file?"
+    options:
+      - "npm init tsconfig"
+      - "tsc build"
+      - "npx tsc --init"
+      - "npm install tsconfig"
+    answer: 2
+    explanation: "`tsc --init` scaffolds a default tsconfig.json with common compiler options commented out; the other commands are not real TypeScript CLI invocations."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the `strict` compiler option do?"
+    options:
+      - "It enables the full set of strict type-checking rules"
+      - "It disables all type checking for faster builds"
+      - "It forces the use of ES5 output"
+      - "It deletes the node_modules folder before building"
+    answer: 0
+    explanation: "`strict` is a shorthand flag that turns on a bundle of stricter checks (like strictNullChecks and noImplicitAny) rather than loosening or removing type checking."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the difference between `let x: number = 3;` and `let z = 10;`?"
+    options:
+      - "The first uses an explicit type annotation, the second relies on type inference"
+      - "There is no difference at all"
+      - "The second one has no type and can hold any value"
+      - "The first one cannot be reassigned, ever"
+    answer: 0
+    explanation: "TypeScript infers `z`'s type as number from its initializer even without an annotation, so both variables end up typed as number, just declared differently."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which of these is NOT a valid value for a variable of type `number` in TypeScript?"
+    options:
+      - "Infinity"
+      - "-3.14"
+      - "0"
+      - "\"42\" (the string \"42\")"
+    answer: 3
+    explanation: "TypeScript's number type covers all numeric values including Infinity and negatives, but a string like \"42\" is a different type and is not assignable without conversion."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the type `string[][]` describe?"
+    options:
+      - "A tuple with exactly two strings"
+      - "An array whose elements are each a string[]"
+      - "A function returning a string"
+      - "A readonly array of numbers"
+    answer: 1
+    explanation: "`string[][]` is shorthand for `Array<Array<string>>`, i.e. an array of string arrays; a tuple would use bracket-with-fixed-types syntax like `[string, string]`."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key difference between a tuple and a regular array?"
+    options:
+      - "A tuple can only contain numbers"
+      - "A tuple has a fixed length with a specific type per position"
+      - "A tuple cannot be nested"
+      - "There is no difference at runtime or compile time"
+    answer: 1
+    explanation: "A tuple type fixes both the length and the type at each index (e.g. [string, number]), whereas a regular array type just describes a variable-length sequence of one element type."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What happens if you `.push()` onto a `readonly number[]`?"
+    options:
+      - "It works, but only once"
+      - "It silently does nothing"
+      - "The compiler reports an error because push is not available"
+      - "It converts the array to a mutable one automatically"
+    answer: 2
+    explanation: "A readonly array type omits mutating methods like push, splice, and pop from its type, so the compiler flags any attempt to call them as a type error."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What value does `Size.Small` have by default in `enum Size { Small, Medium, Large }`?"
+    options:
+      - "1"
+      - "\"Small\""
+      - "0"
+      - "undefined"
+    answer: 2
+    explanation: "Numeric enums auto-assign values starting at 0 for the first member and incrementing by 1 for each subsequent member unless explicitly overridden."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a key difference between numeric and string enums?"
+    options:
+      - "String enum members do not auto-increment and must each be explicitly assigned"
+      - "Numeric enums cannot be compared with ==="
+      - "String enums cannot be logged to the console"
+      - "There is no difference in behavior"
+    answer: 0
+    explanation: "String enums have no natural incrementing scheme, so every member needs its own explicit string value, unlike numeric enums which auto-increment from the previous member."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does prefixing an enum with `const` do?"
+    options:
+      - "It makes every member optional"
+      - "It inlines the enum's values at compile time and avoids generating a runtime object"
+      - "It converts the enum into a literal union automatically"
+      - "It forces all members to be strings"
+    answer: 1
+    explanation: "A const enum is completely erased at compile time — its usages are replaced directly with the literal values, so no enum object exists in the emitted JavaScript, reducing runtime overhead."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why does `let x: any = 1; console.log(x.length);` compile without error?"
+    options:
+      - "Because `any` disables type checking for that value"
+      - "Because all values in JavaScript have a `.length` property"
+      - "Because TypeScript infers `x` as `string`"
+      - "Because `any` is the same as `unknown`"
+    answer: 0
+    explanation: "The `any` type opts a value out of the type system entirely, so any property access or operation on it is allowed without compile-time checking, even if it fails at runtime."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What must you do before using a value of type `unknown`?"
+    options:
+      - "Nothing, it behaves exactly like `any`"
+      - "Cast it to `any` first"
+      - "Narrow its type with a check like `typeof` or `instanceof`"
+      - "Declare it as `const`"
+    answer: 2
+    explanation: "Unlike any, unknown forces you to prove the value's actual type through a narrowing check (typeof, instanceof, a type guard, etc.) before the compiler will let you use it as that type."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does `arr.pop()?.name` do if `arr` is empty?"
+    options:
+      - "It throws a runtime error"
+      - "It evaluates to undefined without throwing"
+      - "It returns an empty string"
+      - "It does not compile"
+    answer: 1
+    explanation: "pop() on an empty array returns undefined, and optional chaining (?.) short-circuits to undefined instead of throwing when accessing .name on that undefined value."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Given `const count = 0;`, what does `count ?? 10` evaluate to?"
+    options:
+      - "10, because 0 is falsy"
+      - "0, because ?? only falls back on null/undefined"
+      - "undefined"
+      - "It causes a compile error"
+    answer: 1
+    explanation: "The nullish coalescing operator only falls back to its right operand when the left is null or undefined, unlike ||, which would also treat falsy values like 0 as triggering the fallback."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Where must optional parameters be placed in a function's parameter list?"
+    options:
+      - "Anywhere, order does not matter"
+      - "Always first"
+      - "After all required parameters"
+      - "Optional parameters are not supported in TypeScript"
+    answer: 2
+    explanation: "TypeScript requires optional parameters to follow all required ones, since parameters are matched positionally and a required parameter can't come after an omittable one."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does a rest parameter like `...numbers: number[]` allow?"
+    options:
+      - "Exactly one additional optional argument"
+      - "An unlimited number of number arguments collected into an array"
+      - "A single tuple of numbers only"
+      - "Passing numbers only as strings"
+    answer: 1
+    explanation: "A rest parameter gathers any number of trailing arguments (zero or more) into a single array, letting the function accept a variable-length argument list of that type."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a function overload setup, which signatures are visible to callers?"
+    options:
+      - "Only the implementation signature"
+      - "Only the overload signatures, not the general implementation signature"
+      - "All signatures are equally callable including the implementation one"
+      - "None, overloads are resolved only at runtime"
+    answer: 1
+    explanation: "The implementation signature exists only to satisfy the compiler internally and is usually broader/less specific; callers can only invoke the function through one of the declared overload signatures."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does TypeScript check when you assign an object literal to a variable typed with an interface?"
+    options:
+      - "That the object was created with an `implements` clause"
+      - "That the object's shape structurally matches the interface"
+      - "That the object's constructor name matches the interface name"
+      - "Nothing — interfaces are only documentation"
+    answer: 1
+    explanation: "TypeScript uses structural typing: an object satisfies an interface if it has the required properties and types, regardless of how it was constructed or named."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which access modifier allows a member to be used by the declaring class and its subclasses, but not from outside code?"
+    options:
+      - "private"
+      - "protected"
+      - "public"
+      - "readonly"
+    answer: 1
+    explanation: "protected members are accessible in the declaring class and any derived class, but not from unrelated external code, unlike public (accessible everywhere) or private (accessible only in the declaring class)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the `static` keyword mean when applied to a class member?"
+    options:
+      - "The member is read-only after construction"
+      - "The member belongs to the class itself, shared across all instances"
+      - "The member can only be accessed inside the constructor"
+      - "The member is only available in abstract classes"
+    answer: 1
+    explanation: "A static member lives on the class object itself rather than on each instance, so it's shared and accessed via the class name (e.g. ClassName.member) instead of through `this`."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why can't you write `new Animal()` when `Animal` is declared `abstract`?"
+    options:
+      - "Abstract classes can never have a constructor"
+      - "Abstract classes are only allowed one subclass"
+      - "An abstract method has no implementation to run"
+      - "TypeScript doesn't support abstract classes"
+    answer: 2
+    explanation: "An abstract class may declare methods without bodies, meant to be implemented by subclasses; instantiating the abstract class directly would leave those methods with no implementation to call, so TypeScript forbids it."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What problem do generics primarily solve?"
+    options:
+      - "They make code run faster at runtime"
+      - "They let one implementation work with multiple types while preserving type safety"
+      - "They remove the need for interfaces"
+      - "They allow classes to have multiple constructors"
+    answer: 1
+    explanation: "Generics parameterize a type over another type, so a single function or class can operate on many concrete types without losing type checking, avoiding both code duplication and the use of `any`."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What kind of type is `type ID = string | number;`?"
+    options:
+      - "A tuple type"
+      - "A union type"
+      - "A function type"
+      - "An intersection type"
+    answer: 1
+    explanation: "The `|` operator combines types into a union, meaning a value of type ID can be either a string or a number; `&` would instead build an intersection type."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the intersection operator `&` mean in a type definition?"
+    options:
+      - "The value can be any one of the listed types"
+      - "Only the first type is enforced"
+      - "The resulting type must satisfy all combined types simultaneously"
+      - "It creates an enum"
+    answer: 2
+    explanation: "An intersection type combines multiple types into one that must satisfy every member type at once, effectively merging their properties, unlike a union which requires only one to match."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which type guard is best suited for narrowing between primitive types like string and number?"
+    options:
+      - "instanceof"
+      - "typeof"
+      - "in"
+      - "A custom type predicate is required"
+    answer: 1
+    explanation: "typeof works directly on JavaScript's runtime primitive tags (\"string\", \"number\", etc.), while instanceof is meant for class instances and `in` checks for property presence on objects."
+  - type: multiple_choice
+    difficulty: 4
+    text: "In `function isDog(pet: Cat | Dog): pet is Dog { ... }`, what does the `pet is Dog` return type actually do at runtime?"
+    options:
+      - "It throws an error if pet is not a Dog"
+      - "It automatically converts pet into a Dog instance"
+      - "Nothing at runtime — it is a compile-time signal that lets TypeScript narrow the type after the call"
+      - "It removes the Cat type from the union permanently"
+    answer: 2
+    explanation: "A type predicate (`pet is Dog`) has no runtime effect; the function's actual logic determines the boolean returned, and TypeScript only uses the predicate to narrow the static type in branches where the function returns true."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What makes a union of interfaces a 'discriminated union'?"
+    options:
+      - "Every member has at least one optional property"
+      - "Every member shares a common property with a distinct literal type value"
+      - "The union has exactly two members"
+      - "All members extend the same base class"
+    answer: 1
+    explanation: "A discriminated union relies on a shared 'tag' property whose literal type differs per member, letting TypeScript narrow the union to a specific member just by checking that property's value."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the purpose of `const _exhaustive: never = log;` in a default switch branch over a discriminated union?"
+    options:
+      - "It improves runtime performance"
+      - "It forces a compile error if a new union member is added without a matching case"
+      - "It converts log into a string"
+      - "It is required syntax for every switch statement"
+    answer: 1
+    explanation: "After all known cases are handled, the remaining type in the default branch should be `never`; if a new union member is added without a corresponding case, `log` retains a real type and fails to assign to `never`, catching the gap at compile time."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does `Partial<Todo>` produce?"
+    options:
+      - "A type with all properties of Todo made optional"
+      - "A type with only the first property of Todo"
+      - "A type where all properties become readonly"
+      - "An array of Todo objects"
+    answer: 0
+    explanation: "Partial<T> is a utility type that maps over T's properties and marks each one optional, useful for representing partial updates to an object."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Which utility type builds a type with all properties EXCEPT the ones you list?"
+    options:
+      - "Pick<T, K>"
+      - "Omit<T, K>"
+      - "Partial<T>"
+      - "Record<K, T>"
+    answer: 1
+    explanation: "Omit<T, K> constructs a type by removing the keys in K from T, the inverse of Pick<T, K>, which keeps only the specified keys."
+  - type: multiple_choice
+    difficulty: 3
+    text: "How many default exports can a single TypeScript module have?"
+    options:
+      - "Unlimited"
+      - "Exactly one"
+      - "Exactly two"
+      - "Zero, default exports don't exist in TypeScript"
+    answer: 1
+    explanation: "ES modules (which TypeScript follows) allow only one default export per module, though any number of named exports can coexist alongside it."
+  - type: completion
+    difficulty: 2
+    text: "The TypeScript compiler binary is called ____."
+    answer: "tsc"
+    explanation: "`tsc` is the command-line entry point for the TypeScript compiler, used to type-check and transpile .ts files into JavaScript."
+  - type: completion
+    difficulty: 2
+    text: "The operator '??' is called ____ coalescing."
+    answer: "nullish"
+    explanation: "The `??` operator is nullish coalescing: it returns its right-hand operand only when the left is null or undefined, distinguishing it from the `||` logical OR fallback."
+  - type: completion
+    difficulty: 3
+    text: "A pattern where every union member shares a common property typed as a distinct literal value is called a ____ union."
+    answer: "discriminated"
+    explanation: "This is called a discriminated (or tagged) union; the shared literal-typed property acts as the discriminant TypeScript uses to narrow which member a value is."
+  - type: completion
+    difficulty: 2
+    text: "An interface can build on top of another one using the ____ keyword."
+    answer: "extends"
+    explanation: "The `extends` keyword lets an interface inherit all members of one or more other interfaces, adding to or refining them."
+  - type: completion
+    difficulty: 3
+    text: "A class promises to fulfill an interface's contract using the ____ keyword."
+    answer: "implements"
+    explanation: "The `implements` clause tells the compiler to check that the class provides all the members declared by the interface, enforcing the contract at compile time."
+  - type: single_word
+    difficulty: 2
+    text: "What TypeScript keyword declares a set of named constants that exists as a real value at runtime?"
+    answer: "enum"
+    explanation: "Unlike interfaces or type aliases, which are erased, a regular `enum` compiles down to an actual JavaScript object that exists at runtime and can be iterated or referenced."
+  - type: single_word
+    difficulty: 3
+    text: "What is the term for TypeScript refining a value's type inside a conditional based on a runtime check, such as `typeof value === 'string'`?"
+    answer: "narrowing"
+    explanation: "Narrowing is the process by which TypeScript uses control-flow analysis of runtime checks to reduce a broader type (like a union) to a more specific one within a given code branch."
+  - type: single_word
+    difficulty: 4
+    text: "What generic utility type makes every property of an object type optional?"
+    answer: "Partial"
+    explanation: "Partial<T> maps every property of T to an optional version of itself, commonly used for objects representing partial updates or patches."
+  - type: single_word
+    difficulty: 3
+    text: "What is the name of the `?.` operator used to safely access a possibly-missing property?"
+    answer: "optional chaining"
+    explanation: "Optional chaining (`?.`) short-circuits to undefined instead of throwing when accessing a property on a null or undefined value, avoiding manual null checks at each step."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the difference between any and unknown in TypeScript."
+    answer: "any disables type checking entirely, allowing any operation on the value without complaint; unknown also accepts any value but forces you to narrow its type with a check, such as typeof or instanceof, before you can use it, which preserves type safety."
+    explanation: "any opts out of the type system completely, so operations on it are never checked; unknown is the type-safe counterpart that still accepts any value but requires explicit narrowing before you can act on it, catching mistakes the any type would silently allow."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain what a discriminated union is and why it makes narrowing easier than using the in operator on every call site."
+    answer: "A discriminated union is a union of object types that all share a common property, the discriminant, typed as a distinct literal value on each member; TypeScript can automatically narrow the type inside a switch or if statement based purely on that tag, without requiring a manual type guard to be written for each branch."
+    explanation: "Because the discriminant has a distinct literal type per member, checking it once (e.g. in a switch) lets TypeScript infer the exact member type for that branch automatically, rather than needing a bespoke `in`-based or custom type guard for every property combination."
+  - type: open_answer
+    difficulty: 5
+    text: "Explain why const enum produces different output than a regular enum, and mention one limitation of using it."
+    answer: "A const enum is fully inlined at compile time and does not generate a runtime object, producing smaller and faster output than a regular enum; a limitation is that it cannot be used with build tools that transpile files in isolation, such as Babel, since inlining the values correctly requires whole-program type information."
+    explanation: "A regular enum emits an actual object mapping members to values, while a const enum is erased and its member references are replaced directly with literal values at each usage site, which requires the compiler to see the enum's declaration — something single-file transpilers like Babel can't do."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a TypeScript function called double that takes a number and returns it multiplied by 2, with explicit parameter and return types."
+    answer: |
+      ```ts
+      function double(x: number): number {
+        return x * 2;
+      }
+      ```
+    explanation: "The parameter `x: number` and the return type annotation `: number` explicitly document the function's contract, so the compiler flags any call site that passes a non-number or misuses the result."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a TypeScript interface called User with a required name: string property and an optional age?: number property."
+    answer: |
+      ```ts
+      interface User {
+        name: string;
+        age?: number;
+      }
+      ```
+    explanation: "The `?` after `age` marks it optional, meaning an object can satisfy the User interface with or without that property; `name` has no `?`, so it must always be present."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a generic TypeScript function called first that takes an array of type T and returns its first element, typed as T."
+    answer: |
+      ```ts
+      function first<T>(items: T[]): T {
+        return items[0];
+      }
+      ```
+    explanation: "The type parameter <T> lets the function work with an array of any element type while preserving that specific type in the return value, so `first([1,2,3])` is inferred as number and `first(['a','b'])` as string."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a TypeScript discriminated union type called Shape with two variants: a circle with kind: \"circle\" and radius: number, and a square with kind: \"square\" and side: number."
+    answer: |
+      ```ts
+      type Shape =
+        | { kind: "circle"; radius: number }
+        | { kind: "square"; side: number };
+      ```
+    explanation: "The shared `kind` property, typed as a distinct string literal per variant, is the discriminant: checking its value (e.g. `if (shape.kind === \"circle\")`) lets TypeScript narrow to the right variant and safely access `radius` or `side`."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Given `interface Person { name: string; age: number }`, what does `type Keys = keyof Person;` produce?"
+    options:
+      - "\"name\" | \"age\""
+      - "string | number"
+      - "Person[]"
+      - "An array containing [\"name\", \"age\"] at runtime"
+    answer: 0
+    explanation: "`keyof` produces a union of the type's property names as string (or number) literal types — here `\"name\" | \"age\"` — and it exists only at the type level, not as a runtime array."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Given `const person = { name: \"Ada\", age: 30 };`, what does `type PersonType = typeof person;` do?"
+    options:
+      - "It creates a runtime copy of the person object"
+      - "It captures the static type of the person value, inferring { name: string; age: number }"
+      - "It converts person into a string"
+      - "It is invalid — typeof only works on primitives"
+    answer: 1
+    explanation: "In a type position, `typeof` is a type query operator that reads the compile-time type of an existing value, letting you derive a type from a variable instead of writing it out by hand."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the mapped type `type Nullable<T> = { [K in keyof T]: T[K] | null };` do?"
+    options:
+      - "It removes all properties from T"
+      - "It iterates over every key of T and produces a new type where each property's value may also be null"
+      - "It converts T into a tuple"
+      - "It makes every property of T a function"
+    answer: 1
+    explanation: "A mapped type loops over `keyof T` with `[K in keyof T]` and rebuilds each property; here every original property type `T[K]` is unioned with `null`, producing an object type with the same keys but nullable values."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the conditional type `type Flatten<T> = T extends Array<infer U> ? U : T;` do when T is `string[]`?"
+    options:
+      - "It resolves to string[]"
+      - "It resolves to string, extracting the array's element type"
+      - "It resolves to never"
+      - "It causes a compile error because infer cannot be used in a type"
+    answer: 1
+    explanation: "A conditional type with an `infer` pattern-matches T against `Array<infer U>`; when T is string[], U is inferred as string, so Flatten<string[]> resolves to string. If T weren't an array, the type would just resolve to T itself."
+  - type: multiple_choice
+    difficulty: 5
+    text: "Given `type Lang = \"en\" | \"it\"; type Locale = `${Lang}-US`;`, what does Locale evaluate to?"
+    options:
+      - "The literal string type \"en-US\" | \"it-US\""
+      - "A single string type with no further narrowing"
+      - "A compile error, since template literals can't use unions"
+      - "\"Lang-US\""
+    answer: 0
+    explanation: "Template literal types distribute over unions placed inside the ${} interpolation, producing one literal type per combination — here \"en-US\" | \"it-US\" — rather than collapsing to plain string."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What changes when you write `const colors = [\"red\", \"green\"] as const;` instead of `const colors = [\"red\", \"green\"];`?"
+    options:
+      - "colors becomes typed as the readonly tuple [\"red\", \"green\"] with literal element types, instead of a mutable string[]"
+      - "colors is converted to a Set at runtime"
+      - "It has no effect on the inferred type"
+      - "It forces colors to be typed as any[]"
+    answer: 0
+    explanation: "`as const` tells TypeScript to infer the narrowest possible type for a literal: array literals become readonly tuples and string/number literals keep their exact literal type instead of being widened to string or number."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does `interface Scores { [studentId: string]: number; }` describe?"
+    options:
+      - "An interface with exactly one property called studentId"
+      - "An object type that can have any number of string keys, each mapping to a number value"
+      - "A tuple of student IDs and scores"
+      - "A function that takes a string and returns a number"
+    answer: 1
+    explanation: "An index signature describes objects whose set of keys isn't known in advance: any string key is allowed, as long as every corresponding value matches the declared value type — here, number."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Can an abstract class have a constructor with parameters, even though it can't be instantiated directly?"
+    options:
+      - "No, abstract classes can never define a constructor"
+      - "Yes — subclasses call it via super(...), since only direct instantiation of the abstract class itself is forbidden"
+      - "Yes, but the parameters are always ignored"
+      - "Only if every method in the class is also abstract"
+    answer: 1
+    explanation: "An abstract class can declare a normal constructor to initialize shared state; what's disallowed is `new AbstractClass()` directly — a concrete subclass still runs the abstract class's constructor logic through `super(...)`."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In TypeScript function overloads, why does the order of the overload signatures matter?"
+    options:
+      - "It doesn't matter at all — TypeScript checks every signature in parallel"
+      - "TypeScript picks the first overload signature that matches the call, so more specific signatures should be listed before more general ones"
+      - "Only the last overload signature is ever used"
+      - "Overload order only affects runtime performance, not type checking"
+    answer: 1
+    explanation: "Overload resolution tries signatures top to bottom and commits to the first match, so a broader signature listed first could shadow a more specific one that should have applied — specific overloads belong before general ones."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does marking a property readonly in an object type, like `interface Point { readonly x: number; readonly y: number; }`, prevent?"
+    options:
+      - "Creating a Point object at all"
+      - "Reassigning x or y after the object has been created"
+      - "Reading the value of x or y"
+      - "Passing the object as a function argument"
+    answer: 1
+    explanation: "`readonly` on an object type property allows the property to be set once (typically during construction/initialization) but flags any later assignment to it as a compile-time error; it doesn't restrict reading the value or creating the object."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary purpose of a .d.ts declaration file?"
+    options:
+      - "It contains compiled JavaScript output"
+      - "It describes the types of existing JavaScript code (or an API) without providing any implementation"
+      - "It replaces the need for a tsconfig.json"
+      - "It stores runtime configuration for the app"
+    answer: 1
+    explanation: "A `.d.ts` file contains only type information — interfaces, function signatures, module shapes — with no executable code, letting TypeScript type-check against plain JavaScript libraries or external APIs that have no types of their own."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the declare keyword do in a statement like `declare const VERSION: string;`?"
+    options:
+      - "It creates and initializes a new runtime variable called VERSION"
+      - "It tells the compiler that a value named VERSION exists somewhere at runtime, without generating any code for it"
+      - "It marks VERSION as deprecated"
+      - "It is only valid inside class bodies"
+    answer: 1
+    explanation: "`declare` introduces an ambient declaration: it makes a type-checkable promise that a value exists (e.g. injected by a script tag, a build tool, or a global), while emitting no actual JavaScript — the value's real definition lives elsewhere."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What advantage does `const palette = { red: \"#f00\", green: \"#0f0\" } satisfies Record<string, string>;` have over annotating the variable directly as `const palette: Record<string, string> = { ... };`?"
+    options:
+      - "satisfies disables all type checking on the object"
+      - "satisfies checks the object still conforms to the given type, while letting TypeScript keep the more precise inferred type (e.g. individual literal keys) instead of widening it"
+      - "satisfies is only usable with arrays, not objects"
+      - "There is no difference between the two"
+    answer: 1
+    explanation: "A direct type annotation widens the variable to exactly that type, losing the specific keys; `satisfies` verifies conformance to the type but preserves the narrower type TypeScript inferred from the literal, so `palette.red` is still known to exist specifically."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Given `interface Draft { title?: string; body?: string; }`, what does `Required<Draft>` produce?"
+    options:
+      - "A type where title and body both become mandatory (non-optional)"
+      - "A type where title and body both become optional"
+      - "A type with no properties at all"
+      - "An array of Draft objects"
+    answer: 0
+    explanation: "Required<T> is the inverse of Partial<T>: it strips the `?` from every property, making all of them mandatory, even if they were originally declared optional."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Given `type Status = \"draft\" | \"published\" | \"archived\";`, what does `Exclude<Status, \"draft\" | \"archived\">` produce?"
+    options:
+      - "\"published\""
+      - "\"draft\" | \"archived\""
+      - "Status unchanged"
+      - "never"
+    answer: 0
+    explanation: "Exclude<T, U> removes from union T every member assignable to U; removing \"draft\" and \"archived\" from Status leaves only \"published\"."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Given `function createUser(name: string, age: number): void {}`, what does `Parameters<typeof createUser>` produce?"
+    options:
+      - "void"
+      - "The tuple type [string, number]"
+      - "\"name\" | \"age\""
+      - "A function type identical to createUser"
+    answer: 1
+    explanation: "Parameters<T> extracts a function type's parameter list as a tuple type, in order; here it resolves to [string, number], matching createUser's parameters."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does `NonNullable<string | number | null | undefined>` produce?"
+    options:
+      - "string | number"
+      - "null | undefined"
+      - "never"
+      - "string | number | null"
+    answer: 0
+    explanation: "NonNullable<T> strips null and undefined out of a union, leaving only the remaining member types — here string | number."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'heterogeneous enum' in TypeScript, and why is it generally discouraged?"
+    options:
+      - "An enum mixing string and numeric member values in the same declaration, discouraged because it loses the predictable auto-increment behavior and is easy to misuse"
+      - "An enum declared inside a generic function, which is not allowed"
+      - "An enum with more than 10 members"
+      - "An enum shared across two different modules"
+    answer: 0
+    explanation: "A heterogeneous enum mixes string-valued and number-valued members in one enum; because numeric auto-incrementing only makes sense relative to a preceding numeric value, mixing the two is confusing and rarely intentional, so it's generally discouraged."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Given `enum Size { Small, Medium, Large }`, what can Size.Small be used as, besides a runtime value?"
+    options:
+      - "It can also be used as a type, representing just that one specific enum member"
+      - "It can only ever be used as a value, never as a type"
+      - "It automatically becomes a class"
+      - "It can be used as a module name"
+    answer: 0
+    explanation: "Each enum member doubles as its own literal type, so a variable can be annotated as `Size.Small` specifically (narrower than the full `Size` enum type), which is occasionally useful for very precise typing."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does `function getProp<T, K extends keyof T>(obj: T, key: K): T[K]` guarantee that a version without the `K extends keyof T` constraint would not?"
+    options:
+      - "That key is always a string, regardless of T"
+      - "That key is guaranteed to be an actual property name of obj, and the return type is exactly that property's type"
+      - "That obj can never be undefined"
+      - "That the function runs faster"
+    answer: 1
+    explanation: "Constraining K to keyof T means only valid property names of T can be passed as key, and the indexed access type T[K] then gives the precise return type for that specific property, catching typos like a nonexistent key at compile time."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does using `this` as a return type in an interface method, like `interface Builder { setName(name: string): this; }`, enable?"
+    options:
+      - "It forces every implementer to return exactly a Builder instance, never a subtype"
+      - "It lets each method return the runtime type of whatever specific class implements the interface, enabling fluent/chainable APIs that work correctly with subclasses"
+      - "It makes the method static"
+      - "It has no special meaning and behaves like void"
+    answer: 1
+    explanation: "The `this` type is a polymorphic self-type: a subclass implementing setName still returns its own more specific type rather than the base Builder type, so chained calls on a subclass instance keep all of that subclass's members available."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Given `interface Config { url: string; }`, why does `const c: Config = { url: \"x\", timeout: 10 };` fail to compile, while `const obj = { url: \"x\", timeout: 10 }; const c: Config = obj;` succeeds?"
+    options:
+      - "TypeScript performs excess property checks only on object literals assigned directly; assigning through an existing variable relies on normal structural compatibility instead"
+      - "The second version is actually also an error"
+      - "timeout is a reserved keyword in the first version only"
+      - "Object literals are always rejected regardless of shape"
+    answer: 0
+    explanation: "Excess property checking is a stricter check that only applies to fresh object literals, catching likely typos like a misspelled or extra property; once the object is stored in a variable, TypeScript falls back to plain structural typing, where extra properties on a compatible object are allowed."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why is declaring a public function's parameter as unknown generally considered better API design than declaring it any?"
+    options:
+      - "unknown and any behave identically, so it makes no practical difference"
+      - "unknown forces every caller and the function body to explicitly narrow the value before using it, whereas any silently allows any operation without any safety net"
+      - "unknown parameters run faster at runtime"
+      - "unknown automatically validates the value against a JSON schema"
+    answer: 1
+    explanation: "Because unknown accepts any value but blocks operations on it until it's narrowed, it pushes both the implementer and the caller toward explicit, safe type checks, while any would let mistakes slip through undetected at compile time."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between `value as SomeType` and `<SomeType>value` as type assertion syntax?"
+    options:
+      - "They are functionally equivalent, but the angle-bracket form conflicts with JSX syntax, so `as` is the only form usable in .tsx files"
+      - "as only works on primitives"
+      - "The angle-bracket form performs a runtime conversion, while as does not"
+      - "as is deprecated and no longer supported"
+    answer: 0
+    explanation: "Both forms tell the compiler to treat a value as a different (compatible) type without any runtime check; the angle-bracket syntax is ambiguous with JSX element tags, so TypeScript disallows it in .tsx files, making `as` the portable choice."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the non-null assertion in `document.getElementById(\"app\")!.textContent = \"hi\";` tell the compiler?"
+    options:
+      - "That getElementById always throws if the element is missing"
+      - "That the developer is certain the returned value isn't null or undefined, so the compiler should skip its usual null check there"
+      - "That textContent should be treated as optional"
+      - "That the DOM element should be created if missing"
+    answer: 1
+    explanation: "`!` is the non-null assertion operator: it removes null/undefined from the type without any runtime check, trusting the developer's claim — if the element genuinely doesn't exist, this still throws at runtime, since the assertion has no effect on the actual value."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the correct return type for a function like `function fail(message: string) { throw new Error(message); }` that never completes normally?"
+    options:
+      - "void"
+      - "undefined"
+      - "never"
+      - "any"
+    answer: 2
+    explanation: "never describes a function that never successfully returns control to its caller — either it always throws, or it loops forever — which is more precise than void (a function that returns, just without a useful value)."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the practical difference between annotating a callback parameter's return type as void versus undefined?"
+    options:
+      - "They behave identically in every context"
+      - "A void-returning callback type still allows a function that returns some other value to be passed in (the result is just ignored), while undefined strictly requires the function to return undefined"
+      - "undefined is stricter than void only for generic functions"
+      - "void forces the function to be async"
+    answer: 1
+    explanation: "TypeScript special-cases void as a callback return type: it deliberately allows functions returning something else to satisfy it (e.g. passing `arr.push` where a void-returning callback is expected), whereas an explicit undefined return type would reject any function that returns an actual value."
+  - type: multiple_choice
+    difficulty: 1
+    text: "In a TypeScript project set up with Vite, what is Vite mainly responsible for?"
+    options:
+      - "Running a fast development server and bundling the app, using tools like esbuild for quick transpilation"
+      - "Performing the project's static type checking"
+      - "Generating the tsconfig.json file automatically on every build"
+      - "Replacing npm as the package manager"
+    answer: 0
+    explanation: "Vite provides a fast dev server with hot module replacement and a production bundler, typically using esbuild to strip TypeScript types quickly during development; full type checking is usually still handled separately by tsc or your editor."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Does `export * from \"./math-utils\";` in a barrel file forward that module's default export?"
+    options:
+      - "No — it forwards only named exports; the default export needs an explicit re-export like `export { default } from \"./math-utils\";`"
+      - "Yes, it forwards everything including the default export"
+      - "It forwards the default export only if there are no named exports"
+      - "It causes a compile error if the module has a default export"
+    answer: 0
+    explanation: "`export * from` re-exports all named exports automatically, but by design it never forwards a default export, since the importing module would have no name to attach it to without an explicit re-export."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does `type Inventory = Record<string, number>;` describe?"
+    options:
+      - "An object type whose keys are strings and whose values are all numbers, like a dictionary"
+      - "A tuple of a string and a number"
+      - "A function taking a string and returning a number"
+      - "An array of numbers"
+    answer: 0
+    explanation: "Record<K, T> builds an object type with keys of type K and values of type T; Record<string, number> is a type-safe way to describe a string-keyed dictionary of numbers."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which capability does an interface have that a type alias does not?"
+    options:
+      - "Declaration merging — reopening the same interface name to add more members later"
+      - "The ability to describe an object shape"
+      - "The ability to be used as a function parameter type"
+      - "The ability to have optional properties"
+    answer: 0
+    explanation: "Multiple interface declarations with the same name in the same scope are automatically merged into one; type aliases cannot be redeclared this way, though both can equally describe object shapes, be used as parameter types, and have optional properties."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does `constructor(private id: number, public name: string) {}` do in a TypeScript class?"
+    options:
+      - "It only validates the types of id and name without storing them"
+      - "It declares id and name as class fields (with the given access modifiers) and assigns them from the constructor arguments, in one step"
+      - "It makes the constructor itself private"
+      - "It is invalid syntax outside of abstract classes"
+    answer: 1
+    explanation: "Adding an access modifier directly in front of a constructor parameter is shorthand that both declares a class field with that modifier and assigns it from the argument, avoiding a separate field declaration plus a manual `this.x = x;` assignment."
+  - type: completion
+    difficulty: 3
+    text: "The ____ operator produces a union of an object type's property names as literal types, e.g. `keyof Person`."
+    answer: "keyof"
+    explanation: "`keyof` reads an object type and produces a union of its property names as string (or number) literal types, useful for constraining generic keys to a type's actual properties."
+  - type: completion
+    difficulty: 3
+    text: "In a type position, `type Age = ____ person;` captures the compile-time type of the existing value person."
+    answer: "typeof"
+    explanation: "Used as a type query, `typeof` reads the static type TypeScript inferred for a value, letting you derive a type from an existing variable instead of writing it out separately."
+  - type: completion
+    difficulty: 3
+    text: "Appending ____ to a literal expression, like `[1, 2, 3] as ____`, tells TypeScript to infer the narrowest possible readonly, literal type instead of widening it."
+    answer: "as const"
+    explanation: "`as const` narrows array literals to readonly tuples and string/number/boolean literals to their exact literal types, rather than the usual widened types like string[] or number."
+  - type: completion
+    difficulty: 3
+    text: "A function that never returns normally, because it always throws or loops forever, should be typed with the ____ return type."
+    answer: "never"
+    explanation: "never signals that a function never successfully completes and hands control back to its caller, which is more precise than void, a return type that does complete, just without a useful value."
+  - type: single_word
+    difficulty: 4
+    text: "What operator, written directly after an object literal expression, checks a value's conformance to a given type without widening the type TypeScript infers for it?"
+    answer: "satisfies"
+    explanation: "satisfies validates that an expression is compatible with a type while preserving the more specific type TypeScript would otherwise have inferred from the literal, unlike a direct type annotation which widens it."
+  - type: single_word
+    difficulty: 3
+    text: "What is the name for a type like `{ [key: string]: number }` that describes objects with arbitrary keys of a known value type?"
+    answer: "index signature"
+    explanation: "An index signature describes an object whose exact set of keys isn't known ahead of time, only the type of key and the type every value under it must have."
+  - type: single_word
+    difficulty: 4
+    text: "What keyword introduces an ambient declaration, telling the compiler a value exists at runtime without providing an implementation, commonly used in .d.ts files?"
+    answer: "declare"
+    explanation: "`declare` lets you describe a value's type for the compiler's benefit without emitting any actual JavaScript, since the real implementation is assumed to exist elsewhere (a script tag, a build tool, a global)."
+  - type: single_word
+    difficulty: 3
+    text: "What utility type removes null and undefined from a given type?"
+    answer: "NonNullable"
+    explanation: "NonNullable<T> filters null and undefined out of a union type, leaving only the remaining member types."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a generic TypeScript function called pluck that takes an object of type T and a key of type K (constrained so K extends keyof T), and returns the value at that key, typed as T[K]."
+    answer: |
+      ```ts
+      function pluck<T, K extends keyof T>(obj: T, key: K): T[K] {
+        return obj[key];
+      }
+      ```
+    explanation: "Constraining K to keyof T ensures only valid property names of T can be passed as key, and the indexed access type T[K] lets the return type reflect exactly which property was requested."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a mapped type called ReadonlyVersion that takes a type T and produces a new type with the same properties as T, but with every property marked readonly."
+    answer: |
+      ```ts
+      type ReadonlyVersion<T> = {
+        readonly [K in keyof T]: T[K];
+      };
+      ```
+    explanation: "The mapped type iterates over every key K in keyof T and rebuilds each property, prefixing it with readonly so the resulting type keeps the same shape but disallows reassigning any property."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a conditional type called IsString that resolves to the literal type true if the generic type T is exactly string, and false otherwise."
+    answer: |
+      ```ts
+      type IsString<T> = T extends string ? true : false;
+      ```
+    explanation: "A conditional type evaluates its branch based on whether T is assignable to the type after extends; IsString<string> resolves to true, and IsString<number> resolves to false."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a TypeScript interface called Dictionary that uses an index signature to describe an object whose keys are strings and whose values are all numbers."
+    answer: |
+      ```ts
+      interface Dictionary {
+        [key: string]: number;
+      }
+      ```
+    explanation: "The index signature `[key: string]: number` allows any number of string keys on the object, as long as every value assigned to any of them is a number."
+  - type: open_answer
+    difficulty: 3
+    text: "Write an abstract class called Employee with an abstract method computeSalary(): number, and a concrete method printSalary(): void that logs the result of calling computeSalary()."
+    answer: |
+      ```ts
+      abstract class Employee {
+        abstract computeSalary(): number;
+
+        printSalary(): void {
+          console.log(this.computeSalary());
+        }
+      }
+      ```
+    explanation: "computeSalary has no body since it's abstract — every concrete subclass must supply its own implementation — while printSalary is shared, concrete behavior that relies on whatever computeSalary a given subclass provides."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a custom type guard function called isString that takes a parameter of type unknown and returns a boolean, using the type predicate syntax to tell TypeScript the value is a string when it returns true."
+    answer: |
+      ```ts
+      function isString(value: unknown): value is string {
+        return typeof value === "string";
+      }
+      ```
+    explanation: "The `value is string` return type is a type predicate: TypeScript trusts that whenever isString returns true, the argument really was a string, and narrows the type accordingly in any branch guarded by a call to isString."
+  - type: open_answer
+    difficulty: 5
+    text: "Write a generic discriminated union type Result<T> with two variants — { status: \"ok\"; value: T } and { status: \"error\"; message: string } — plus a function unwrap<T>(result: Result<T>): T that returns value on success and throws an Error with message on failure, using a switch with exhaustiveness checking."
+    answer: |
+      ```ts
+      type Result<T> =
+        | { status: "ok"; value: T }
+        | { status: "error"; message: string };
+
+      function unwrap<T>(result: Result<T>): T {
+        switch (result.status) {
+          case "ok":
+            return result.value;
+          case "error":
+            throw new Error(result.message);
+          default:
+            const _exhaustive: never = result;
+            return _exhaustive;
+        }
+      }
+      ```
+    explanation: "The shared status discriminant lets the switch narrow result to each variant automatically; the default branch's never-typed assignment guarantees a compile error if a third variant is ever added without a matching case."
+  - type: open_answer
+    difficulty: 4
+    text: "Write overload signatures for a function called parse: one that takes a string and returns a number, and one that takes a number and returns a string. Then write the single implementation signature and body that handles both cases (convert the string to a number with Number(), and the number to a string with String())."
+    answer: |
+      ```ts
+      function parse(value: string): number;
+      function parse(value: number): string;
+      function parse(value: string | number): string | number {
+        if (typeof value === "string") {
+          return Number(value);
+        }
+        return String(value);
+      }
+      ```
+    explanation: "Callers only ever see the two overload signatures, so parse(\"5\") is typed as returning a number and parse(5) as returning a string, even though a single implementation with a broader string | number signature handles both cases internally."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a constant called directions using as const on the array [\"north\", \"south\", \"east\", \"west\"], then write a type called Direction derived from it using an indexed access type, so Direction is the union of the four literal strings."
+    answer: |
+      ```ts
+      const directions = ["north", "south", "east", "west"] as const;
+      type Direction = (typeof directions)[number];
+      ```
+    explanation: "as const narrows the array to a readonly tuple of literal string types rather than a mutable string[]; typeof directions recovers that tuple type, and indexing it with [number] produces the union of its element types."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a generic class called Box that stores a single private value of type T, with a constructor that accepts the initial value, a getValue(): T method, and a setValue(value: T): void method."
+    answer: |
+      ```ts
+      class Box<T> {
+        private value: T;
+
+        constructor(value: T) {
+          this.value = value;
+        }
+
+        getValue(): T {
+          return this.value;
+        }
+
+        setValue(value: T): void {
+          this.value = value;
+        }
+      }
+      ```
+    explanation: "The type parameter T is fixed once when a Box is instantiated (e.g. new Box<string>(\"hi\")), so getValue and setValue both operate consistently on that same concrete type, with full compile-time type safety instead of using any."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain what excess property checking is in TypeScript, and why it doesn't trigger when you assign an object through an intermediate variable instead of a literal."
+    answer: "Excess property checking is a stricter structural check TypeScript applies specifically to freshly written object literals: if the literal has a property that doesn't exist on the target type, it's flagged as an error, since it's often a typo. When the same object is first assigned to a variable (with its own inferred wider type) and only that variable is assigned to the target, TypeScript instead relies on ordinary structural compatibility, which allows extra properties as long as all required ones are present, so the excess-property error doesn't appear."
+    explanation: "The check exists to catch likely mistakes in literals (a misspelled property name, or one that doesn't belong on the type) at the exact point of definition; once the value is behind a variable, its shape is checked only for compatibility, not exactness, which is standard structural typing behavior."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between marking an object type's properties readonly (or wrapping it in Readonly<T>) and calling Object.freeze() on the actual object at runtime."
+    answer: "readonly and Readonly<T> are purely compile-time constructs: they make the TypeScript compiler reject reassignments to that property in code it checks, but they generate no runtime code and don't prevent mutation through casting, plain JavaScript, or code the compiler doesn't see. Object.freeze() is a runtime operation that actually prevents the object's own properties from being changed, added, or removed, enforced by the JavaScript engine itself regardless of what the type system says."
+    explanation: "Because TypeScript's type annotations are erased during compilation, readonly can only guard against mistakes the compiler can see; true immutability that holds even against `as any` casts or external code requires an actual runtime mechanism like Object.freeze()."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why using unknown for a public function's parameter type is generally safer API design than using any, from the perspective of what the function's own body is allowed to do."
+    answer: "With a parameter typed any, the function body can call any method, access any property, or pass the value anywhere else without the compiler ever objecting, so a typo or wrong assumption about the value's shape goes completely unnoticed until runtime. With a parameter typed unknown, the compiler forces the function body itself to first narrow the value (with typeof, instanceof, a type guard, etc.) before doing anything with it, which means both the implementer and any code that consumes the narrowed result are protected by the type checker rather than trusting an unchecked assumption."
+    explanation: "any effectively turns off type checking for that value everywhere it flows, while unknown only turns it back on once you've proven what the value actually is, which is why unknown is the recommended type for values whose shape isn't known ahead of time, such as parsed JSON or external input."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain what the satisfies operator gives you that a plain type annotation on the same object literal does not."
+    answer: "A plain type annotation widens the variable's type to exactly the annotated type, discarding any more specific information TypeScript could have inferred from the literal, like the exact set of keys or their literal values. satisfies instead checks that the literal is compatible with the given type, producing a compile error if it isn't, but leaves the variable's inferred type as the narrower, more specific type TypeScript would have inferred without any annotation at all, so things like specific property names or literal values remain available afterward."
+    explanation: "This distinction matters when downstream code relies on the precise inferred type, such as accessing a specific known key or getting literal-type autocompletion, which a widening annotation would have erased even though it still validated correctly against the target type."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain, conceptually, what a .d.ts declaration file is for and why you would need one when using a plain JavaScript library from a TypeScript project."
+    answer: "A .d.ts file contains only type declarations — interfaces, function and variable signatures, module shapes — with no actual runtime implementation. A plain JavaScript library has no type information of its own, so without a .d.ts file describing its shape, TypeScript would have to treat everything from it as implicitly any, losing all compile-time checking and autocompletion; a .d.ts file (either shipped with the library, installed separately as an @types package, or written by hand) restores that type safety by telling the compiler what the library's exports actually look like."
+    explanation: "Declaration files let TypeScript's static checking extend across a boundary where no TypeScript source exists, which is essential for adopting TypeScript incrementally alongside existing JavaScript code or third-party libraries."

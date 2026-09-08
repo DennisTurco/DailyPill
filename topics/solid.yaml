@@ -1,0 +1,32 @@
+name: SOLID principles
+category: Computer Science
+difficulty: medium
+ai_generate: true
+is_informational: true
+content: |
+  S - Single Responsibility: a class should have one reason to change
+  O - Open/Closed: open for extension, closed for modification
+  L - Liskov Substitution: subclasses must be substitutable for their superclasses
+  I - Interface Segregation: keep interfaces small and specific
+  D - Dependency Inversion: depend on abstractions, not implementations
+manual_facts:
+  - title: "What does S.O.L.I.D. stand for?"
+    description: "SOLID is an acronym for five object-oriented design principles introduced by Robert C. Martin: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion. Together they aim to make software easier to understand, extend, and maintain over time."
+    link: "https://en.wikipedia.org/wiki/SOLID"
+  - title: "Single Responsibility Principle (S)"
+    description: "A class should have only one reason to change, meaning it should have exactly one job or responsibility. Mixing unrelated responsibilities in one class (e.g. business logic and file I/O) makes both harder to change without affecting the other."
+    link: "https://en.wikipedia.org/wiki/Single-responsibility_principle"
+  - title: "Open/Closed Principle (O)"
+    description: "Software entities should be open for extension but closed for modification. In practice, this means you should be able to add new behavior (e.g. via new subclasses or implementations) without changing existing, already-tested code."
+    link: "https://en.wikipedia.org/wiki/Open%E2%80%93closed_principle"
+  - title: "Liskov Substitution Principle (L)"
+    description: "Objects of a subclass should be substitutable for objects of their superclass without breaking the correctness of the program. If a subclass overrides behavior in a way that violates the base class's contract, callers relying on that contract can break silently."
+    link: "https://en.wikipedia.org/wiki/Liskov_substitution_principle"
+  - title: "Interface Segregation Principle (I)"
+    description: "Clients should not be forced to depend on methods they do not use. Prefer several small, specific interfaces over one large, general-purpose interface, so implementers only need to satisfy the parts that are actually relevant to them."
+    link: "https://en.wikipedia.org/wiki/Interface_segregation_principle"
+  - title: "Dependency Inversion Principle (D)"
+    description: "High-level modules should not depend on low-level modules; both should depend on abstractions. This is the principle behind Dependency Injection: code depends on an interface rather than a concrete implementation, so the implementation can change without touching the dependent code."
+    link: "https://en.wikipedia.org/wiki/Dependency_inversion_principle"
+  - title: "Why SOLID principles matter in practice"
+    description: "SOLID isn't a strict rulebook to follow blindly — it's a set of heuristics that, applied with judgment, tend to reduce coupling and make code easier to test, extend, and reason about. Over-applying them to trivial code can add unnecessary abstraction, so the goal is maintainability, not the letter count."

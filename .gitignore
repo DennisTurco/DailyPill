@@ -1,0 +1,21 @@
+# Python
+backend/.venv/
+backend/**/__pycache__/
+*.pyc
+backend/data/*.db
+backend/data/*.sqlite3
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/dist-electron/
+frontend/release/
+frontend/.vite/
+
+# Env
+.env
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db

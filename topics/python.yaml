@@ -1,0 +1,962 @@
+name: Python
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  Zero-to-hero Python fundamentals: language basics (interpreted, dynamically typed,
+  indentation), operators, input/output and f-strings, control flow (if/for/while),
+  the core collection types (list, tuple, set, dict) and comprehensions, strings,
+  functions (default/keyword args, *args/**kwargs, lambdas, recursion), object-oriented
+  programming (classes, dunder methods, classmethod/staticmethod/property, inheritance,
+  dataclasses), exception handling, and file/JSON/logging basics.
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "Python is best described as which kind of language?"
+    options:
+      - "An interpreted language, executed line by line by an interpreter"
+      - "A language compiled directly into a standalone machine-code executable before it runs"
+      - "A markup language with no executable logic"
+      - "A language that only runs inside a web browser"
+    answer: 0
+    explanation: "Python code is read and executed line by line by an interpreter (CPython, by default), rather than being compiled ahead of time into a native executable like C or Rust; this makes development faster and more portable at some cost to raw execution speed."
+  - type: completion
+    difficulty: 1
+    text: "Python is dynamically typed, meaning you never need to declare a variable's ____ before assigning it a value."
+    answer: "type"
+    explanation: "In Python the interpreter infers a variable's type automatically from the value assigned to it, so there's no type declaration step like `int x = 5;` in statically typed languages."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In Python, what defines which statements belong to a block of code, such as the body of an if statement?"
+    options:
+      - "Indentation (whitespace)"
+      - "Curly braces { }"
+      - "BEGIN and END keywords"
+      - "Parentheses around the block"
+    answer: 0
+    explanation: "Python uses indentation itself to delimit blocks — an inconsistently indented block is a SyntaxError — whereas languages like C or Java use curly braces and don't care about whitespace."
+  - type: single_word
+    difficulty: 1
+    text: "In Python, are strings mutable or immutable? Answer with one word."
+    answer: "immutable"
+    explanation: "Once a string is created, it cannot be changed in place — operations like `.upper()` or slicing always return a brand-new string object rather than modifying the original."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does the // operator do in Python?"
+    options:
+      - "Floor (integer) division, discarding any remainder"
+      - "Regular division that always returns a float"
+      - "Exponentiation"
+      - "Returns the remainder of a division"
+    answer: 0
+    explanation: "// performs floor division, rounding the result down to the nearest whole number (e.g. 7 // 3 is 2); regular division uses a single /, and the remainder is obtained with %."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does the % operator return when applied to two integers in Python?"
+    options:
+      - "The remainder of dividing the first number by the second"
+      - "The integer quotient of the division"
+      - "The result raised to a power"
+      - "Always zero"
+    answer: 0
+    explanation: "% is the modulo operator: 7 % 3 evaluates to 1, the remainder left over after dividing 7 by 3; it's commonly used to test for even/odd numbers via `n % 2 == 0`."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which of the following is the correct way to embed a variable x inside a string using an f-string?"
+    options:
+      - "f\"Value is {x}\""
+      - "\"Value is {x}\""
+      - "fstring(\"Value is\", x)"
+      - "$\"Value is {x}\""
+    answer: 0
+    explanation: "An f-string is created by prefixing the string literal with `f` and placing expressions inside curly braces `{}`, which are evaluated and inserted directly into the output; without the `f` prefix, the braces are just literal text."
+  - type: completion
+    difficulty: 2
+    text: "Since input() always returns a string, to read a whole number from the user you must wrap the call in ____()."
+    answer: "int"
+    explanation: "input() always returns a str regardless of what the user types, so converting the result with int() (or float() for decimals) is necessary before doing arithmetic with it."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which keyword introduces an additional condition that is checked only if the previous if (and any earlier elif) was false?"
+    options:
+      - "elif"
+      - "elseif"
+      - "else if"
+      - "elsif"
+    answer: 0
+    explanation: "Python's keyword for a chained conditional is `elif`, a contraction of 'else if'; the similar-looking `elseif`, `else if`, and `elsif` spellings used by other languages are not valid Python syntax."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What sequence of numbers does range(2, 10, 2) generate?"
+    options:
+      - "2, 4, 6, 8"
+      - "2, 4, 6, 8, 10"
+      - "2, 3, 4, 5, 6, 7, 8, 9"
+      - "0, 2, 4, 6, 8"
+    answer: 0
+    explanation: "range(start, stop, step) begins at 2, increases by 2 each time, and stops before reaching 10 (the stop value is always excluded), producing 2, 4, 6, 8."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which statement immediately terminates the nearest enclosing loop in Python?"
+    options:
+      - "break"
+      - "continue"
+      - "pass"
+      - "exit"
+    answer: 0
+    explanation: "break exits the loop entirely as soon as it executes; continue instead skips only the rest of the current iteration and moves on to the next one, and pass does nothing at all."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a Python for loop that prints the numbers from 1 to 5 inclusive, using range()."
+    answer: |
+      ```python
+      for i in range(1, 6):
+          print(i)
+      ```
+    explanation: "range(1, 6) produces 1, 2, 3, 4, 5 because the stop value (6) is excluded; starting at 1 instead of the default 0 and stopping one past 5 is what makes the range inclusive of 5."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which built-in Python collection type is ordered, mutable, and allows duplicate values?"
+    options:
+      - "list"
+      - "tuple"
+      - "set"
+      - "frozenset"
+    answer: 0
+    explanation: "A list keeps elements in insertion order, can be modified after creation (append, remove, sort, etc.), and freely allows duplicate values; a tuple is similarly ordered but immutable, and sets discard duplicates and have no order."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What makes a tuple different from a list in Python?"
+    options:
+      - "A tuple is immutable — its elements cannot be changed, added, or removed after creation"
+      - "A tuple cannot contain more than one data type"
+      - "A tuple is always sorted automatically"
+      - "A tuple can only be created from strings"
+    answer: 0
+    explanation: "Once a tuple is created, you cannot reassign, add, or remove its elements — attempting `t[0] = x` raises a TypeError; a list supports all of these mutations."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a defining characteristic of a Python set?"
+    options:
+      - "It stores unique, unordered elements with no indexing support"
+      - "It stores ordered key-value pairs"
+      - "It allows duplicate values but no indexing"
+      - "It is immutable once created"
+    answer: 0
+    explanation: "A set automatically discards duplicate values, has no defined ordering, and cannot be accessed by index (set[0] is invalid) — unlike a list or tuple, which are both ordered and indexable."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What must be true of the keys used in a Python dictionary?"
+    options:
+      - "They must be unique and immutable (hashable), such as strings, numbers, or tuples"
+      - "They must be unique but can be any mutable object, such as a list"
+      - "They can be duplicated freely"
+      - "They must all be strings"
+    answer: 0
+    explanation: "Dictionary keys must be hashable, which rules out mutable types like lists (but allows tuples, since tuples are themselves immutable); duplicate keys aren't possible because assigning to an existing key simply overwrites its value."
+  - type: single_word
+    difficulty: 3
+    text: "What exception type does Python raise when you access a dictionary key that doesn't exist using square-bracket syntax, e.g. d['missing']?"
+    answer: "KeyError"
+    explanation: "Square-bracket access requires the key to be present and raises KeyError if it isn't; the get() method avoids this by returning None (or a specified default) instead of raising."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which dictionary method returns a default value instead of raising an error when the requested key is missing?"
+    options:
+      - "get()"
+      - "keys()"
+      - "pop()"
+      - "items()"
+    answer: 0
+    explanation: "dict.get(key, default) returns the value for key if it exists, or the given default (None if not specified) otherwise, avoiding the KeyError that square-bracket access would raise; pop() also accepts a default but additionally removes the key."
+  - type: completion
+    difficulty: 2
+    text: "The list method that adds a single element to the end of a list is called ____()."
+    answer: "append"
+    explanation: "list.append(x) adds x as a single new final element; to add all the elements of another iterable individually instead, you'd use extend() rather than append()."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a Python list comprehension that produces a list of the squares of the integers from 0 to 4 (inclusive)."
+    answer: |
+      ```python
+      squares = [x**2 for x in range(5)]
+      ```
+    explanation: "The comprehension `[x**2 for x in range(5)]` iterates x over 0, 1, 2, 3, 4 and collects x**2 for each into a new list, producing [0, 1, 4, 9, 16] — a compact alternative to writing an explicit for loop with .append()."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a Python function called remove_duplicates that takes a list and returns a new list with duplicate values removed, using a set."
+    answer: |
+      ```python
+      def remove_duplicates(items):
+          return list(set(items))
+      ```
+    explanation: "Converting the list to a set automatically discards duplicate values because sets only store unique elements; wrapping the result back in list() converts it to a list again, though the original order is not preserved since sets are unordered."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the slice expression \"Programming\"[0:7] return?"
+    options:
+      - "\"Program\""
+      - "\"Program \""
+      - "\"gramming\""
+      - "\"Programmin\""
+    answer: 0
+    explanation: "Slicing [0:7] takes characters at indices 0 through 6 (the end index 7 is excluded), which spells out \"Program\" from \"Programming\"."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which string method splits a string into a list of substrings based on a separator (whitespace by default)?"
+    options:
+      - "split()"
+      - "join()"
+      - "strip()"
+      - "replace()"
+    answer: 0
+    explanation: "\"ciao mondo\".split() returns ['ciao', 'mondo'], breaking the string apart at whitespace by default (or at a given separator argument); join() does the opposite, combining a list of strings back into one."
+  - type: completion
+    difficulty: 2
+    text: "The string method that removes leading and trailing whitespace, e.g. \"  ciao  \".____(), is called strip."
+    answer: "strip"
+    explanation: "\"  ciao  \".strip() returns \"ciao\", removing whitespace only from the very start and end of the string; it leaves any whitespace inside the string untouched."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a Python function called reverse_string that takes a string and returns it reversed, using slicing."
+    answer: |
+      ```python
+      def reverse_string(s):
+          return s[::-1]
+      ```
+    explanation: "The slice [::-1] uses a step of -1 with no explicit start or end, which walks through the string from the last character to the first, effectively reversing it in a single expression."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What keyword is used to define a function in Python?"
+    options:
+      - "def"
+      - "func"
+      - "function"
+      - "lambda"
+    answer: 0
+    explanation: "Functions are defined with `def name(parameters):` followed by an indented body; `lambda` creates a small anonymous function expression instead, not a named function definition."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does a Python function return if it has no explicit return statement?"
+    options:
+      - "None"
+      - "0"
+      - "An empty string"
+      - "It raises an error"
+    answer: 0
+    explanation: "Every Python function returns a value, and if execution simply falls off the end of the function body without hitting a return, that value is implicitly None."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Inside a function definition, what does *args collect?"
+    options:
+      - "A tuple containing any extra positional arguments passed to the function"
+      - "A dictionary of extra keyword arguments"
+      - "A list of the function's default parameter values"
+      - "Nothing; it's purely documentation and has no runtime effect"
+    answer: 0
+    explanation: "*args gathers any number of additional positional arguments into a tuple inside the function, letting you write functions that accept a variable number of positional inputs, such as a sum() that works on any count of numbers."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Inside a function definition, what does **kwargs collect?"
+    options:
+      - "A dictionary of extra keyword arguments, mapping each argument name to its value"
+      - "A tuple of extra positional arguments"
+      - "A set of unique argument values"
+      - "A list of parameter type hints"
+    answer: 0
+    explanation: "**kwargs collects any keyword arguments not already matched by named parameters into a dict, so calling stampa_dati(nome=\"Anna\", eta=25) makes kwargs equal to {'nome': 'Anna', 'eta': 25} inside the function."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a lambda in Python?"
+    options:
+      - "A small anonymous function written as a single expression"
+      - "A special kind of loop for iterating over generators"
+      - "A decorator that logs function calls"
+      - "A built-in class used for exception handling"
+    answer: 0
+    explanation: "A lambda, e.g. `lambda a, b: a + b`, defines an unnamed function inline in a single expression, without needing a `def` block; it's commonly used for short callbacks passed to functions like map(), filter(), or sorted()."
+  - type: single_word
+    difficulty: 3
+    text: "What is the general Python term for a function, usually applied with the @ symbol, that wraps another function to modify or extend its behavior?"
+    answer: "decorator"
+    explanation: "A decorator like `@mio_decoratore` takes the function below it as input and returns a new (usually wrapping) function, letting you add behavior — such as logging or timing — before and after the original call without changing its code."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a Python function called is_even that takes an integer and returns True if it is even, False otherwise."
+    answer: |
+      ```python
+      def is_even(n):
+          return n % 2 == 0
+      ```
+    explanation: "The modulo operator % gives the remainder of dividing n by 2; that remainder is 0 exactly when n is even, so the comparison `n % 2 == 0` directly produces the correct boolean without any branching."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a recursive Python function called factorial that computes the factorial of a non-negative integer n (0! is 1)."
+    answer: |
+      ```python
+      def factorial(n):
+          if n == 0:
+              return 1
+          return n * factorial(n - 1)
+      ```
+    explanation: "The base case `n == 0` returning 1 stops the recursion; for any other n, the function multiplies n by the factorial of n - 1, and each recursive call moves n one step closer to the base case."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the purpose of the __init__ method in a Python class?"
+    options:
+      - "It initializes a new instance's attributes automatically when the object is created"
+      - "It permanently deletes the object when called"
+      - "It prints a textual representation of the object"
+      - "It defines constants shared across the whole program"
+    answer: 0
+    explanation: "__init__ is Python's constructor: it runs automatically right after a new object is created, and is where you typically set up instance attributes via `self.attribute = value`."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'self' parameter represent inside an instance method?"
+    options:
+      - "The current instance of the class that the method was called on"
+      - "The class itself, shared by all instances"
+      - "The immediate parent class in the inheritance chain"
+      - "Nothing; it is purely optional and can be omitted"
+    answer: 0
+    explanation: "self is a reference to the specific object the method is being called on, letting the method read and modify that object's own attributes; it must be the first parameter of every instance method, though Python passes it automatically at call time."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between a class attribute and an instance attribute in Python?"
+    options:
+      - "A class attribute is shared by every instance, while an instance attribute belongs to just one object"
+      - "An instance attribute is shared by every instance, while a class attribute belongs to just one object"
+      - "There is no real difference between the two"
+      - "Class attributes can only ever be accessed through the class name, never through an instance"
+    answer: 0
+    explanation: "A class attribute (defined directly in the class body) is one shared value visible to all instances unless an instance defines its own attribute of the same name, which then shadows it just for that object; instance attributes, typically set in __init__ via self, are independent per object from the start."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which dunder (double-underscore) method controls what str(obj) returns for a custom object?"
+    options:
+      - "__str__"
+      - "__len__"
+      - "__init__"
+      - "__add__"
+    answer: 0
+    explanation: "Defining __str__ on a class lets you control the human-readable text produced by str(obj) or print(obj); __len__ instead customizes len(obj), and __add__ customizes the + operator between objects."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which decorator marks a method that receives the class itself (conventionally named cls) as its first parameter, instead of an instance?"
+    options:
+      - "@classmethod"
+      - "@staticmethod"
+      - "@property"
+      - "@abstractmethod"
+    answer: 0
+    explanation: "@classmethod methods take `cls` as their first parameter and are often used as alternative constructors (e.g. Persona.da_stringa(...)); @staticmethod methods instead take neither self nor cls."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does marking a method with @staticmethod indicate?"
+    options:
+      - "The method doesn't automatically receive self or cls, and doesn't depend on instance or class state"
+      - "The method can only ever be called through an instance, never through the class"
+      - "The method automatically becomes private and inaccessible from outside"
+      - "The method overrides a method of the same name in the parent class"
+    answer: 0
+    explanation: "A @staticmethod is essentially a plain function placed inside a class namespace for organizational purposes — it receives no implicit self or cls argument and can't access instance or class state directly, unlike @classmethod or a regular instance method."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of the @property decorator in a Python class?"
+    options:
+      - "It lets a method be accessed with plain attribute syntax while still running custom logic, such as validation"
+      - "It permanently hides an attribute from all code outside the class"
+      - "It declares the class as abstract so it cannot be instantiated"
+      - "It converts a method into a static method"
+    answer: 0
+    explanation: "@property turns a method into something accessed like `obj.eta` rather than `obj.eta()`, and pairing it with a matching `@eta.setter` lets you run validation logic (e.g. rejecting a negative age) on assignment, all without changing how calling code interacts with the attribute."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a subclass's __init__, what does calling super().__init__(...) do?"
+    options:
+      - "Calls the parent class's constructor, reusing its initialization logic"
+      - "Creates a brand-new, unrelated object of the parent class"
+      - "Permanently deletes the parent class from the module"
+      - "Is only valid syntax when the parent class is abstract"
+    answer: 0
+    explanation: "super().__init__(...) explicitly invokes the base class's own __init__ so the subclass can reuse that setup logic (e.g. setting shared attributes) instead of duplicating it, before going on to initialize whatever additional attributes the subclass itself adds."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does applying the @dataclass decorator to a class automatically generate?"
+    options:
+      - "Methods such as __init__, __repr__, and __eq__, based on the class's annotated fields"
+      - "Only the __init__ method, nothing else"
+      - "A ready-to-use database schema for the class"
+      - "Getter and setter methods for every attribute, but no constructor"
+    answer: 0
+    explanation: "@dataclass inspects the class's type-annotated fields and writes __init__ (to set them), __repr__ (for a readable representation), and __eq__ (for value-based equality) automatically, saving you from writing that boilerplate by hand."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a Python class called Rectangle with an __init__ that takes width and height, and a method area() that returns width multiplied by height."
+    answer: |
+      ```python
+      class Rectangle:
+          def __init__(self, width, height):
+              self.width = width
+              self.height = height
+
+          def area(self):
+              return self.width * self.height
+      ```
+    explanation: "__init__ stores width and height as instance attributes via self so each Rectangle object keeps its own values, and area() then reads those same attributes back through self to compute and return their product."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a Python class Dog that inherits from a class Animal (assume Animal already defines a method speak() that prints a generic sound) and overrides speak() to print 'Woof!' instead."
+    answer: |
+      ```python
+      class Dog(Animal):
+          def speak(self):
+              print("Woof!")
+      ```
+    explanation: "Writing `class Dog(Animal):` makes Dog a subclass that inherits everything from Animal by default; defining a new speak() method with the same name inside Dog overrides the inherited version, so Dog instances use this implementation instead of Animal's."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which block in Python contains code that might raise an exception?"
+    options:
+      - "try"
+      - "except"
+      - "catch"
+      - "error"
+    answer: 0
+    explanation: "The try block wraps the code that could fail; if an exception occurs inside it, control immediately jumps to a matching except block instead of crashing the program. Python has no 'catch' keyword — that's the equivalent term used in languages like Java or C#."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which block in a try/except statement always runs, whether or not an exception occurred?"
+    options:
+      - "finally"
+      - "else"
+      - "except"
+      - "pass"
+    answer: 0
+    explanation: "finally executes unconditionally after the try block, whether it succeeded, failed, or even if an exception propagated out — making it the right place for cleanup like closing a file; else, by contrast, only runs when no exception was raised."
+  - type: single_word
+    difficulty: 2
+    text: "What exception is raised in Python when you attempt to divide a number by zero?"
+    answer: "ZeroDivisionError"
+    explanation: "Attempting 10 / 0 (or 10 // 0) raises ZeroDivisionError at runtime; it can be caught with a dedicated `except ZeroDivisionError:` clause, separate from ValueError which covers other kinds of invalid values."
+  - type: multiple_choice
+    difficulty: 3
+    text: "How do you define a custom exception type in Python?"
+    options:
+      - "By creating a class that inherits from Exception (or one of its subclasses)"
+      - "By using a special keyword called customexception"
+      - "By defining a function named exception"
+      - "By importing a decorator called @exception"
+    answer: 0
+    explanation: "A custom exception is just a class, typically with `pass` as its body if no extra behavior is needed, e.g. `class NumeroNegativoError(Exception): pass`; inheriting from Exception lets it be raised and caught like any built-in exception."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a Python try/except block that attempts to convert a string variable called value to an integer, printing 'Invalid number' if a ValueError occurs."
+    answer: |
+      ```python
+      try:
+          number = int(value)
+      except ValueError:
+          print("Invalid number")
+      ```
+    explanation: "int(value) raises ValueError if value can't be parsed as an integer (e.g. the string \"abc\"); catching that specific exception type lets the program handle the bad input gracefully instead of crashing."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why is the 'with' statement the recommended way to work with files in Python?"
+    options:
+      - "It automatically closes the file when the block ends, even if an error occurs inside it"
+      - "It makes file reading noticeably faster than open()/close()"
+      - "It is the only way to read more than one line from a file"
+      - "It automatically converts file contents to JSON"
+    answer: 0
+    explanation: "`with open(...) as file:` wraps file access in a context manager that guarantees file.close() runs when the block exits, even if an exception is raised inside it — avoiding the resource leaks that can happen if you forget to call close() manually."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which function from Python's json module converts a Python object directly into a JSON-formatted string?"
+    options:
+      - "json.dumps()"
+      - "json.dump()"
+      - "json.loads()"
+      - "json.load()"
+    answer: 0
+    explanation: "json.dumps() serializes a Python object into a JSON string in memory; json.dump() instead writes JSON straight to an open file, and the 'loads'/'load' functions do the reverse conversion from JSON back into Python objects."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the default logging level in Python's logging module if no configuration is applied?"
+    options:
+      - "WARNING"
+      - "DEBUG"
+      - "INFO"
+      - "ERROR"
+    answer: 0
+    explanation: "Without calling basicConfig() (or otherwise configuring a level), only WARNING, ERROR, and CRITICAL messages are shown by default; DEBUG and INFO messages are suppressed unless you explicitly lower the level."
+  - type: open_answer
+    difficulty: 2
+    text: "Write Python code that opens a file called 'data.txt' for reading using a with statement and prints its full contents."
+    answer: |
+      ```python
+      with open("data.txt", "r") as file:
+          content = file.read()
+          print(content)
+      ```
+    explanation: "The with statement opens the file in read mode ('r') and binds it to the name file for the duration of the block; file.read() returns the entire contents as one string, and the file is automatically closed once the indented block finishes."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which built-in Python module provides a lightweight, file-based, serverless SQL database?"
+    options:
+      - "sqlite3"
+      - "mysql"
+      - "psycopg2"
+      - "pandas"
+    answer: 0
+    explanation: "sqlite3 ships with every standard Python installation and lets you connect to (and automatically create) a single-file .db database with no separate server process required; mysql and psycopg2 are third-party drivers for MySQL and PostgreSQL, which do require a running server."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the purpose of a Python virtual environment (venv)?"
+    options:
+      - "Isolate a project's installed packages from other projects and the system Python"
+      - "Make Python code run faster"
+      - "Automatically convert Python 2 code to Python 3"
+      - "Compile Python code into a native executable"
+    answer: 0
+    explanation: "A virtual environment (created with `python -m venv env_name`) gives a project its own isolated set of installed packages, so different projects can depend on different (even conflicting) library versions without interfering with each other or the system-wide Python installation."
+  - type: single_word
+    difficulty: 1
+    text: "What is the name of Python's standard command-line tool for installing third-party packages from PyPI? Answer with one word."
+    answer: "pip"
+    explanation: "pip ships with modern Python installations and is used as `pip install <package>` to download and install libraries from the Python Package Index (PyPI)."
+  - type: completion
+    difficulty: 1
+    text: "To install the requests library from the command line, you would run: pip ____ requests"
+    answer: "install"
+    explanation: "`pip install <package_name>` is the standard command for installing a package; other pip subcommands include `uninstall`, `list`, and `freeze`."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does enumerate(my_list) provide when used in a for loop?"
+    options:
+      - "Both the index and the value of each element, as (index, value) pairs"
+      - "Only the values of the list, without any index"
+      - "A reversed copy of the list"
+      - "A new list with duplicates removed"
+    answer: 0
+    explanation: "enumerate() wraps an iterable and yields (index, value) tuples, letting you write `for i, val in enumerate(my_list):` instead of manually tracking a counter with range(len(my_list))."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does zip(list1, list2) produce?"
+    options:
+      - "An iterator of tuples pairing up corresponding elements from list1 and list2"
+      - "A single list with all elements from list1 followed by all elements from list2"
+      - "A dictionary mapping list1 to list2"
+      - "A compressed (zipped) version of the two lists for file storage"
+    answer: 0
+    explanation: "zip() pairs elements at the same position from each iterable into tuples, e.g. zip([1,2],['a','b']) yields (1,'a') and (2,'b'); it stops as soon as the shortest input iterable is exhausted."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a Python for loop that uses enumerate() to print each index and value of a list called items, in the format 'index: value'."
+    answer: |
+      ```python
+      for index, value in enumerate(items):
+          print(f"{index}: {value}")
+      ```
+    explanation: "enumerate(items) yields (index, value) pairs directly, avoiding the need for a manually maintained counter variable or indexing with items[i] inside the loop."
+  - type: multiple_choice
+    difficulty: 2
+    text: "After executing a = 1; b = 2; a, b = b, a, what are the values of a and b?"
+    options:
+      - "a is 2 and b is 1"
+      - "a is 1 and b is 2 (unchanged)"
+      - "a and b both become 2"
+      - "This raises a SyntaxError"
+    answer: 0
+    explanation: "Python evaluates the right-hand side (b, a) into a temporary tuple (2, 1) before assigning it back to (a, b), which is what makes this one-line swap idiom work without a temporary variable."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Given first, *rest = [10, 20, 30, 40], what does rest equal afterward?"
+    options:
+      - "[20, 30, 40]"
+      - "[10, 20, 30, 40]"
+      - "40"
+      - "[10]"
+    answer: 0
+    explanation: "The starred target *rest collects all the remaining elements not captured by first into a list, so first becomes 10 and rest becomes [20, 30, 40]."
+  - type: completion
+    difficulty: 3
+    text: "To modify a module-level (global) variable from inside a function, you must declare it inside the function with the ____ keyword before assigning to it."
+    answer: "global"
+    explanation: "Without `global x`, an assignment to x inside a function creates a new local variable instead of modifying the outer one; `global` tells Python to bind that name to the module-level variable instead."
+  - type: single_word
+    difficulty: 4
+    text: "What keyword lets a nested (inner) function modify a variable belonging to its enclosing function's scope, rather than the global scope? Answer with one word."
+    answer: "nonlocal"
+    explanation: "nonlocal is used inside a nested function to indicate that an assignment should modify the variable found in the nearest enclosing (non-global) scope, which is exactly the situation closures rely on when they need to update captured state."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a closure in Python?"
+    options:
+      - "An inner function that remembers and can access variables from its enclosing function's scope, even after the outer function has finished executing"
+      - "A function that closes (releases) all open file handles automatically"
+      - "A class method that cannot be overridden by subclasses"
+      - "A block of code that cannot raise exceptions"
+    answer: 0
+    explanation: "A closure occurs when a nested function captures a reference to a variable from its enclosing scope; that variable stays alive and accessible to the inner function even after the outer function returns, which is how patterns like counters or configurable callbacks are built."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a Python function called make_counter that returns a new function; each time the returned function is called (with no arguments), it should return the next integer starting from 1, using a closure (no global variables)."
+    answer: |
+      ```python
+      def make_counter():
+          count = 0
+
+          def counter():
+              nonlocal count
+              count += 1
+              return count
+
+          return counter
+      ```
+    explanation: "count is a variable local to make_counter, but the inner counter() function forms a closure over it; nonlocal count lets counter() modify that captured variable on each call instead of creating its own local copy, so the count persists between calls."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between sorted(my_list) and my_list.sort()?"
+    options:
+      - "sorted() returns a new sorted list leaving the original unchanged, while .sort() sorts the list in place and returns None"
+      - ".sort() works on any iterable, while sorted() only works on lists"
+      - "sorted() sorts in place, while .sort() returns a new list"
+      - "There is no difference; they are aliases for the same operation"
+    answer: 0
+    explanation: "sorted() is a built-in function that accepts any iterable and always produces a brand-new sorted list without touching the original; my_list.sort() is a list method that reorders the list in place and returns None, so assigning `my_list = my_list.sort()` is a common bug."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a line of code that sorts a list of dictionaries called people by each dictionary's 'age' key, using sorted() and a key function (do not modify people in place)."
+    answer: |
+      ```python
+      sorted_people = sorted(people, key=lambda p: p["age"])
+      ```
+    explanation: "The key= argument tells sorted() what value to compare for each element; here the lambda extracts the 'age' value from each dictionary, and sorted() uses those extracted values to determine the order without mutating the original people list."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which of the following correctly creates a dictionary mapping each number in range(5) to its square, using a dict comprehension?"
+    options:
+      - "{x: x**2 for x in range(5)}"
+      - "[x: x**2 for x in range(5)]"
+      - "{x, x**2 for x in range(5)}"
+      - "dict(x: x**2 for x in range(5))"
+    answer: 0
+    explanation: "A dict comprehension uses curly braces with a key:value pair before the for clause, e.g. {x: x**2 for x in range(5)} produces {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a dict comprehension that maps each integer from 1 to 5 (inclusive) to its square."
+    answer: |
+      ```python
+      squares = {x: x**2 for x in range(1, 6)}
+      ```
+    explanation: "The comprehension iterates x over 1 through 5 and builds a dictionary entry x: x**2 for each, producing {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which expression produces a set containing only the even numbers from 0 to 9 using a set comprehension?"
+    options:
+      - "{x for x in range(10) if x % 2 == 0}"
+      - "[x for x in range(10) if x % 2 == 0]"
+      - "{x for x in range(10) if x % 2 = 0}"
+      - "set(x for x in range(10), x % 2 == 0)"
+    answer: 0
+    explanation: "A set comprehension uses curly braces around an expression and a for clause, optionally followed by an if condition; {x for x in range(10) if x % 2 == 0} keeps only the values where the modulo condition holds, producing {0, 2, 4, 6, 8}."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which string formatting style, introduced in Python 3.6, is generally considered the most modern and readable?"
+    options:
+      - "f-strings (e.g. f\"Value: {x}\")"
+      - "The % operator (e.g. \"Value: %d\" % x)"
+      - ".format() (e.g. \"Value: {}\".format(x))"
+      - "String concatenation with +"
+    answer: 0
+    explanation: "f-strings let you embed expressions directly inside {} within the string literal itself, which is generally more concise and readable than the older .format() method or the C-style % operator, both of which still work but are less commonly recommended for new code."
+  - type: completion
+    difficulty: 2
+    text: "In old-style % string formatting, the conversion specifier used to insert a string value is %____."
+    answer: "s"
+    explanation: "%s stands in for a string value in printf-style formatting (e.g. \"Hello %s\" % name); %d is used for integers and %f for floating-point numbers."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a line of code (not using an f-string) that uses .format() to produce the string 'Name: Anna, Age: 30' from variables name and age."
+    answer: |
+      ```python
+      result = "Name: {}, Age: {}".format(name, age)
+      ```
+    explanation: ".format() fills the {} placeholders in the string, in order, with the arguments passed to it — here name replaces the first {} and age replaces the second."
+  - type: multiple_choice
+    difficulty: 3
+    text: "When you write @mio_decoratore above a function definition, what does mio_decoratore receive as its argument?"
+    options:
+      - "The function being decorated"
+      - "The return value of the function, once it has been called"
+      - "The name of the function as a string"
+      - "Nothing; decorators take no arguments"
+    answer: 0
+    explanation: "@mio_decoratore applied to a function is equivalent to `funzione = mio_decoratore(funzione)`, so the decorator function receives the original function object as its single argument and typically returns a new wrapper function in its place."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a Python decorator called timer_decorator that prints how many seconds the wrapped function took to execute, using the time module."
+    answer: |
+      ```python
+      import time
+
+      def timer_decorator(func):
+          def wrapper(*args, **kwargs):
+              start = time.time()
+              result = func(*args, **kwargs)
+              end = time.time()
+              print(f"{func.__name__} took {end - start:.4f} seconds")
+              return result
+          return wrapper
+      ```
+    explanation: "wrapper records the time before and after calling the original func, prints the difference, and still returns func's result; using *args and **kwargs lets timer_decorator wrap functions with any signature, not just ones with no parameters."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why are generator functions (using yield) generally more memory-efficient than building and returning a full list?"
+    options:
+      - "They produce one value at a time on demand, instead of holding every value in memory at once"
+      - "They automatically compress values before storing them"
+      - "They store values on disk instead of in RAM"
+      - "They can only produce a maximum of 100 values"
+    answer: 0
+    explanation: "A generator computes and yields each value lazily as it's requested (e.g. by a for loop or next()), and doesn't need to hold the entire sequence in memory simultaneously the way a fully built list does — crucial for very large or even infinite sequences."
+  - type: single_word
+    difficulty: 3
+    text: "Which keyword, when used inside a function body, turns that function into a generator function? Answer with one word."
+    answer: "yield"
+    explanation: "The presence of yield anywhere in a function's body makes Python treat it as a generator function: calling it doesn't run the body immediately but instead returns a generator object that produces values lazily each time yield is reached."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a Python generator function called count_up_to that yields integers from 1 up to (and including) a given n."
+    answer: |
+      ```python
+      def count_up_to(n):
+          i = 1
+          while i <= n:
+              yield i
+              i += 1
+      ```
+    explanation: "Each call to yield i pauses the function and hands back i to the caller; execution resumes right after that yield the next time a value is requested, continuing the loop until i exceeds n."
+  - type: single_word
+    difficulty: 3
+    text: "What exception is raised when next() is called on a generator that has already produced all of its values? Answer with the exact exception name."
+    answer: "StopIteration"
+    explanation: "Once a generator's code runs to completion (or hits a return), any further call to next() raises StopIteration; a for loop catches this exception internally to know when to stop iterating."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the primary purpose of a context manager used with the with statement (beyond just files)?"
+    options:
+      - "To guarantee that setup and cleanup code (like acquiring and releasing a resource) run reliably, even if an exception occurs inside the block"
+      - "To make code execute faster by skipping error checks"
+      - "To automatically convert all variables inside the block to strings"
+      - "To restrict the block to run only once per program"
+    answer: 0
+    explanation: "A context manager defines __enter__ (setup) and __exit__ (cleanup) methods; the with statement calls __enter__ before the block and __exit__ after it unconditionally, which is why it's used for files, database connections, locks, and any other resource that must be released even when an error is raised."
+  - type: open_answer
+    difficulty: 5
+    text: "Write a class ManagedResource that can be used with the with statement (implement __enter__ and __exit__): it should print 'Opening resource' when entering the block and 'Closing resource' when leaving it, regardless of whether an exception occurred."
+    answer: |
+      ```python
+      class ManagedResource:
+          def __enter__(self):
+              print("Opening resource")
+              return self
+
+          def __exit__(self, exc_type, exc_value, traceback):
+              print("Closing resource")
+              return False
+      ```
+    explanation: "__enter__ runs when the with block starts and its return value is bound to the `as` variable; __exit__ always runs when the block ends, whether it finished normally or an exception propagated out, which is exactly the guarantee that makes context managers reliable for cleanup — returning False here lets any exception continue propagating rather than being suppressed."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between == and is when comparing two variables in Python?"
+    options:
+      - "== compares the values for equality, while is checks whether both variables refer to the exact same object in memory"
+      - "is compares values, while == checks object identity"
+      - "They always behave identically for every type"
+      - "== only works on numbers, is only works on strings"
+    answer: 0
+    explanation: "== calls the object's __eq__ method to compare values (e.g. two separate lists with the same contents are == equal), whereas is checks identity — whether both names point to the very same object in memory, which is why `a == b` can be True while `a is b` is False for two distinct but equal objects."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the well-known pitfall in this code? def add_item(item, items=[]): items.append(item); return items"
+    options:
+      - "The default list [] is created only once when the function is defined, so it is shared and mutated across every call that doesn't pass its own items argument"
+      - "The function will raise a TypeError every time it is called"
+      - "Python does not allow mutable default arguments and this code fails to run"
+      - "items.append(item) silently does nothing because items is a parameter"
+    answer: 0
+    explanation: "Default argument values are evaluated once, when the function is defined, not on every call; since a list is mutable, repeated calls without an explicit items argument keep appending to that same shared list object instead of starting fresh each time, producing surprising accumulated results."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function called describe that takes a required name parameter, followed by any number of additional positional arguments, followed by any number of keyword arguments, and prints all three pieces of information."
+    answer: |
+      ```python
+      def describe(name, *args, **kwargs):
+          print(f"Name: {name}")
+          print(f"Extra positional args: {args}")
+          print(f"Keyword args: {kwargs}")
+      ```
+    explanation: "Parameters must appear in this order in the signature: required positional parameters first, then *args to collect any extra positional arguments into a tuple, then **kwargs to collect any keyword arguments into a dict."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the walrus operator := do in an expression like `if (n := len(data)) > 10:`?"
+    options:
+      - "It assigns the value of len(data) to n and evaluates to that same value, all within the expression"
+      - "It compares n to len(data) for equality"
+      - "It declares n as a constant that cannot be reassigned"
+      - "It is only valid inside a for loop, not an if statement"
+    answer: 0
+    explanation: "The walrus operator (introduced in Python 3.8) lets you assign to a variable as part of a larger expression, avoiding a separate assignment statement beforehand; here n is bound to len(data) and the if condition then checks whether that same value is greater than 10."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is true about a type hint such as def greet(name: str) -> str: in standard Python?"
+    options:
+      - "It documents the expected types for tools and readers, but Python does not enforce it at runtime"
+      - "Python raises a TypeError automatically if greet is called with a non-string argument"
+      - "It makes the function run faster by pre-compiling it to that type"
+      - "It is required syntax; functions cannot be defined without type hints"
+    answer: 0
+    explanation: "Type hints are optional annotations mainly used by static type checkers (like mypy) and IDEs for autocompletion and error detection; standard Python itself does not check or enforce them at runtime, so calling greet(42) would not raise an error on its own."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which dunder method must a class implement to customize what the == operator does between two of its instances?"
+    options:
+      - "__eq__"
+      - "__cmp__"
+      - "__equals__"
+      - "__is__"
+    answer: 0
+    explanation: "Defining __eq__(self, other) lets you control the logic behind obj1 == obj2 for instances of your class; without it, Python falls back to comparing object identity, meaning two separate but 'equal' objects would compare as not equal."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Which dunder method needs to be defined on a class so that instances can be compared with the < operator (e.g. to sort them with sorted())?"
+    options:
+      - "__lt__"
+      - "__less__"
+      - "__compare__"
+      - "__order__"
+    answer: 0
+    explanation: "__lt__(self, other) defines the behavior of obj1 < obj2; sorted() and list.sort() rely on this method (directly, or via a key function) whenever they need to compare custom objects to determine their order."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Given class C(A, B): pass, where both A and B define a method foo(), which foo() does an instance of C call by default?"
+    options:
+      - "A's foo(), because Python's MRO searches base classes left-to-right as listed in the class definition"
+      - "B's foo(), because the last listed base class always wins"
+      - "It's undefined and Python raises an error at class definition time"
+      - "Both foo() methods run, one after the other"
+    answer: 0
+    explanation: "Python's Method Resolution Order (computed with the C3 linearization algorithm) searches C, then A, then B, then object, for single inheritance chains like this — so the first base class listed, A, takes precedence unless a more complex hierarchy changes the linearization."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of Python's abc module (ABC and abstractmethod)?"
+    options:
+      - "To define abstract base classes that cannot be instantiated directly and force subclasses to implement specific methods"
+      - "To automatically generate documentation for a class"
+      - "To convert a regular class into a dataclass"
+      - "To make all methods of a class private"
+    answer: 0
+    explanation: "A class inheriting from ABC with one or more methods marked @abstractmethod cannot be instantiated on its own; any concrete subclass must override every abstract method, which is how Python enforces that subclasses implement a required interface."
+  - type: open_answer
+    difficulty: 4
+    text: "Write an abstract base class Shape (inheriting from ABC) with an abstract method area(), and a subclass Circle that stores a radius attribute and implements area() as pi * radius ** 2 (you may hardcode pi as 3.14159 or import math)."
+    answer: |
+      ```python
+      from abc import ABC, abstractmethod
+
+      class Shape(ABC):
+          @abstractmethod
+          def area(self):
+              pass
+
+      class Circle(Shape):
+          def __init__(self, radius):
+              self.radius = radius
+
+          def area(self):
+              return 3.14159 * self.radius ** 2
+      ```
+    explanation: "Shape cannot be instantiated directly because it has an unimplemented @abstractmethod; Circle becomes a concrete class only because it provides its own area() implementation, satisfying the contract that Shape defines."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does writing `raise NewError(\"failed\") from original_exception` accomplish compared to a plain `raise NewError(\"failed\")`?"
+    options:
+      - "It explicitly chains the exceptions, recording original_exception as the new one's __cause__ so both appear in the traceback"
+      - "It silently suppresses original_exception so it never appears anywhere"
+      - "It converts original_exception into a warning instead of an exception"
+      - "It has no effect; 'from' is not valid Python syntax in a raise statement"
+    answer: 0
+    explanation: "The `from` clause sets the new exception's __cause__ attribute to the original one, and Python's default traceback printer shows both, with a note like 'The above exception was the direct cause of the following exception' — making it clear the new error occurred while handling the first one, rather than looking like an unrelated, uncaught original exception."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a custom exception class called InsufficientFundsError that inherits from Exception and stores an extra attribute called amount_missing, set from an argument passed to its __init__."
+    answer: |
+      ```python
+      class InsufficientFundsError(Exception):
+          def __init__(self, amount_missing):
+              super().__init__(f"Insufficient funds: missing {amount_missing}")
+              self.amount_missing = amount_missing
+      ```
+    explanation: "Calling super().__init__(...) passes a message up to the base Exception class so str(exception) still works as expected, while separately storing amount_missing as an instance attribute lets calling code catch the exception and inspect exactly how much was missing, e.g. `except InsufficientFundsError as e: print(e.amount_missing)`."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Between the WARNING and ERROR logging levels, which one is considered more severe?"
+    options:
+      - "ERROR"
+      - "WARNING"
+      - "They are equally severe"
+      - "Severity depends on the operating system"
+    answer: 0
+    explanation: "Python's logging levels increase in severity in this order: DEBUG < INFO < WARNING < ERROR < CRITICAL, so ERROR represents a more serious problem than WARNING."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between json.load() and json.loads() in Python's json module?"
+    options:
+      - "json.load() reads and parses JSON from an open file object, while json.loads() parses JSON from a string already in memory"
+      - "json.load() parses a string, while json.loads() reads from a file"
+      - "They are exact synonyms with no difference"
+      - "json.loads() only works with lists, never with objects/dicts"
+    answer: 0
+    explanation: "The trailing 's' in loads/dumps stands for 'string': json.load(file) reads directly from a file-like object, while json.loads(text) parses a JSON string you already have in a Python variable; the same distinction applies to json.dump() (file) versus json.dumps() (string)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between json.dump() and json.dumps()?"
+    options:
+      - "json.dump() writes JSON directly to an open file, while json.dumps() returns the JSON as a string in memory"
+      - "json.dump() returns a string, while json.dumps() writes to a file"
+      - "json.dumps() can only serialize numbers"
+      - "There is no difference between the two"
+    answer: 0
+    explanation: "json.dump(obj, file) serializes obj and writes the resulting JSON text straight into the given file object, whereas json.dumps(obj) does the same serialization but returns the JSON text as a Python string instead of writing it anywhere."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why do sqlite3 queries in Python typically use placeholders like ? instead of inserting variable values directly into the SQL string with f-strings or %?"
+    options:
+      - "To prevent SQL injection by letting the database driver safely escape the values"
+      - "Because f-strings are not supported inside SQL statements at all"
+      - "Placeholders make the query run without needing a cursor"
+      - "It's purely a stylistic convention with no functional benefit"
+    answer: 0
+    explanation: "Passing values as a separate parameters tuple (e.g. cursor.execute(\"SELECT * FROM utenti WHERE email = ?\", (email,))) lets the database driver treat them strictly as data, never as executable SQL syntax, which closes off SQL injection attacks that become possible when untrusted input is concatenated directly into a query string."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does hashing (e.g. with SHA-256) do to a piece of data?"
+    options:
+      - "Produces a fixed-length digest from which the original data cannot practically be recovered"
+      - "Encrypts the data reversibly so it can later be decrypted back to the original"
+      - "Compresses the data to save disk space while keeping it fully recoverable"
+      - "Translates the data into a different human language"
+    answer: 0
+    explanation: "A hash function like SHA-256 always produces an output of the same fixed length regardless of input size, and the process is one-way: unlike encryption, there's no key or method to reverse a hash back into the original data, which is why hashing is used for integrity checks and password storage rather than for hiding data you need to retrieve later."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the purpose of a tool like auto-py-to-exe / PyInstaller in a Python project?"
+    options:
+      - "To package a Python script and its dependencies into a standalone executable that can run without a separate Python installation"
+      - "To automatically translate Python code into C++ for better performance"
+      - "To format and lint Python source code"
+      - "To manage virtual environments"
+    answer: 0
+    explanation: "PyInstaller (which auto-py-to-exe provides a GUI for) bundles the Python interpreter, the script, and its required libraries into a single distributable executable, so the program can be run on a machine that doesn't have Python installed at all."

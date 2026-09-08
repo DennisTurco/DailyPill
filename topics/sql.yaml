@@ -1,0 +1,986 @@
+name: SQL
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  DBMS fundamentals, ACID properties, normalization, relational algebra
+  (selection, projection, union, difference, cartesian product, join),
+  ER diagrams, SQL clauses (SELECT/FROM/WHERE/JOIN/GROUP BY/HAVING/ORDER BY),
+  aggregate functions, constraints (PRIMARY KEY, FOREIGN KEY, UNIQUE, NOT NULL),
+  transactions (BEGIN/COMMIT/ROLLBACK), indexes, triggers.
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does DBMS stand for?"
+    options:
+      - "Database Management System"
+      - "Data Backup Management Server"
+      - "Distributed Base Management Schema"
+      - "Database Model Storage"
+    answer: 0
+    explanation: "A DBMS (Database Management System) is the software that manages large, persistent, shared collections of data, handling privacy, reliability, efficiency, and effectiveness."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which of the following is NOT one of the ACID properties?"
+    options:
+      - "Atomicity"
+      - "Consistency"
+      - "Isolation"
+      - "Availability"
+    answer: 3
+    explanation: "ACID stands for Atomicity, Consistency, Isolation, and Durability; Availability is not part of ACID (it's a separate concern often discussed alongside the CAP theorem in distributed systems)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'Durability' property of ACID guarantee?"
+    options:
+      - "Once committed, a transaction's changes survive even a system failure"
+      - "All transaction operations run fully isolated from each other"
+      - "The database always returns to a consistent state automatically"
+      - "Queries execute in constant time regardless of data size"
+    answer: 0
+    explanation: "Durability means that once a transaction is committed, its effects are permanent and will survive crashes or power loss; isolation and consistency are separate ACID properties."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a transaction in a DBMS?"
+    options:
+      - "A set of operations treated as a single indivisible (atomic) unit"
+      - "A single SQL SELECT statement"
+      - "A backup of the entire database"
+      - "A type of index"
+    answer: 0
+    explanation: "A transaction groups multiple operations so they either all succeed or all fail together, with no partial results left in the database."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the main goal of database normalization?"
+    options:
+      - "Reduce data redundancy and improve data integrity"
+      - "Increase the number of tables to improve security"
+      - "Make queries slower but more accurate"
+      - "Merge all tables into one for simplicity"
+    answer: 0
+    explanation: "Normalization organizes data across tables through a sequence of normal forms specifically to eliminate redundant data and prevent update/insert/delete anomalies."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does First Normal Form (1NF) require?"
+    options:
+      - "Eliminating repeating groups / duplicate values within a column"
+      - "Removing partial dependencies on part of a composite key"
+      - "Removing transitive dependencies between non-key columns"
+      - "Guaranteeing referential integrity between tables"
+    answer: 0
+    explanation: "1NF requires atomic column values with no repeating groups; removing partial dependencies is 2NF, and removing transitive dependencies is 3NF."
+  - type: multiple_choice
+    difficulty: 1
+    text: "In the relational model, what is used to represent data and the relationships between it?"
+    options:
+      - "Tables (relations)"
+      - "Trees"
+      - "Graphs only"
+      - "XML documents"
+    answer: 0
+    explanation: "The relational model organizes data into tables (relations) with rows and columns; trees and graphs describe the hierarchical and network models instead."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In relational algebra, which symbol represents the Selection operator?"
+    options:
+      - "σ (sigma)"
+      - "π (pi)"
+      - "ρ (rho)"
+      - "⋈ (bowtie)"
+    answer: 0
+    explanation: "Selection is denoted by sigma (σ); pi (π) is projection, rho (ρ) is rename, and the bowtie (⋈) is join."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In relational algebra, which symbol represents the Projection operator?"
+    options:
+      - "π (pi)"
+      - "σ (sigma)"
+      - "⋈ (bowtie)"
+      - "∪ (union)"
+    answer: 0
+    explanation: "Projection is denoted by pi (π), listing the attributes to keep; sigma is selection, the bowtie is join, and ∪ is union."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the Projection operator do in relational algebra?"
+    options:
+      - "Selects specific columns (attributes) of a relation, removing duplicate rows"
+      - "Selects the rows of a relation that satisfy a condition"
+      - "Renames the attributes of a relation"
+      - "Combines two relations based on a common attribute"
+    answer: 0
+    explanation: "Projection keeps only the listed attributes and removes duplicate resulting rows; filtering rows by a condition is selection, and combining relations is join."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the Selection operator do in relational algebra?"
+    options:
+      - "Selects the rows (tuples) of a relation that satisfy a given condition"
+      - "Selects specific columns of a relation"
+      - "Combines two relations into one"
+      - "Removes duplicate rows from a relation"
+    answer: 0
+    explanation: "Selection filters rows based on a boolean condition while keeping the same set of attributes; choosing specific columns is projection, not selection."
+  - type: multiple_choice
+    difficulty: 4
+    text: "For the Union or Difference operator to be valid between two relations, what must be true?"
+    options:
+      - "The relations must be union-compatible: same number and domain of attributes"
+      - "The relations must share at least one common attribute name"
+      - "The relations must have exactly the same number of rows"
+      - "The relations must come from the same physical database file"
+    answer: 0
+    explanation: "Union and difference require union-compatible (homogeneous) relations, meaning the same number of attributes with matching domains in the same order; join is the operator that instead relies on shared attribute names."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which SQL JOIN returns only the rows that have matching values in both tables?"
+    options:
+      - "INNER JOIN"
+      - "LEFT JOIN"
+      - "RIGHT JOIN"
+      - "FULL JOIN"
+    answer: 0
+    explanation: "INNER JOIN keeps only rows with a match on both sides; the outer joins (LEFT/RIGHT/FULL) also keep unmatched rows from one or both sides, filling gaps with NULL."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which SQL JOIN returns all rows from the left table, with NULLs for right-table columns when there's no match?"
+    options:
+      - "LEFT JOIN"
+      - "INNER JOIN"
+      - "RIGHT JOIN"
+      - "CROSS JOIN"
+    answer: 0
+    explanation: "LEFT JOIN preserves every row from the left table regardless of a match, filling right-side columns with NULL when there's no corresponding row."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which SQL clause filters individual rows before any grouping is applied?"
+    options:
+      - "WHERE"
+      - "HAVING"
+      - "GROUP BY"
+      - "ORDER BY"
+    answer: 0
+    explanation: "WHERE filters raw rows before grouping/aggregation happens; HAVING filters after GROUP BY has already produced groups."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which SQL clause filters groups of rows after GROUP BY has already been applied?"
+    options:
+      - "HAVING"
+      - "WHERE"
+      - "ORDER BY"
+      - "SELECT"
+    answer: 0
+    explanation: "HAVING operates on the aggregated groups produced by GROUP BY, which is why it can filter on aggregate functions like COUNT() or AVG(), unlike WHERE."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which SQL clause groups rows that share the same value in one or more columns, typically used with aggregate functions?"
+    options:
+      - "GROUP BY"
+      - "ORDER BY"
+      - "WHERE"
+      - "HAVING"
+    answer: 0
+    explanation: "GROUP BY collapses rows sharing the same values into groups, over which aggregate functions like SUM() or COUNT() are then computed."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which SQL aggregate function returns the number of rows?"
+    options:
+      - "COUNT()"
+      - "SUM()"
+      - "AVG()"
+      - "MAX()"
+    answer: 0
+    explanation: "COUNT() counts rows (or non-null values in a column); SUM(), AVG(), and MAX() compute a total, an average, and a maximum value respectively."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does a PRIMARY KEY constraint guarantee?"
+    options:
+      - "Every value in the column (or column combination) is unique and not null"
+      - "Every value can be duplicated as long as it is not null"
+      - "Every value must reference a row in another table"
+      - "Every value must be numeric"
+    answer: 0
+    explanation: "A PRIMARY KEY enforces both uniqueness and non-nullability, making it a reliable identifier for each row; referencing another table's values is instead what a FOREIGN KEY does."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does a FOREIGN KEY constraint enforce?"
+    options:
+      - "That a column's value matches a value in a column of another table"
+      - "That a column's value is always unique across the table"
+      - "That a column can never contain a null value"
+      - "That a column is automatically full-text indexed"
+    answer: 0
+    explanation: "A FOREIGN KEY enforces referential integrity by requiring a column's values to exist in a referenced column (typically a primary key) of another table."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of a database index?"
+    options:
+      - "Speed up data retrieval by creating a fast lookup structure on a column"
+      - "Automatically back up the table on a schedule"
+      - "Enforce that a column is never null"
+      - "Encrypt sensitive data at rest"
+    answer: 0
+    explanation: "An index works like a book's index, letting the engine locate matching rows without scanning the entire table, at the cost of extra storage and slower writes."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a trigger in a database?"
+    options:
+      - "A procedure automatically executed in response to an INSERT, UPDATE, or DELETE event"
+      - "A scheduled job that runs at a fixed time regardless of data changes"
+      - "A type of index used specifically for full-text search"
+      - "A constraint that prevents duplicate rows"
+    answer: 0
+    explanation: "A trigger fires automatically when a matching data-changing event occurs on a table, unlike a scheduled job which runs on a timer independent of data changes."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In an Entity-Relationship (ER) diagram, what shape typically represents an entity?"
+    options:
+      - "Rectangle"
+      - "Diamond"
+      - "Oval"
+      - "Circle"
+    answer: 0
+    explanation: "Entities are drawn as rectangles; relationships are diamonds, and attributes are ovals attached to entities or relationships."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In an ER diagram, what shape typically represents a relationship between entities?"
+    options:
+      - "Diamond"
+      - "Rectangle"
+      - "Oval"
+      - "Triangle"
+    answer: 0
+    explanation: "Relationships are drawn as diamonds connecting the related entity rectangles and are labeled with a verb describing the interaction."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the ROLLBACK statement do in a SQL transaction?"
+    options:
+      - "Undoes all changes made during the current transaction"
+      - "Permanently saves all changes made during the transaction"
+      - "Creates a new table from the transaction's results"
+      - "Locks the affected tables for other users"
+    answer: 0
+    explanation: "ROLLBACK reverts every change made since the transaction began, restoring the database to its prior state; COMMIT is the opposite, making changes permanent."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the COMMIT statement do in a SQL transaction?"
+    options:
+      - "Makes all changes made during the transaction permanent"
+      - "Cancels all changes made during the transaction"
+      - "Creates a backup of the affected table"
+      - "Starts a new transaction"
+    answer: 0
+    explanation: "COMMIT finalizes the transaction, permanently applying its changes to the database; ROLLBACK is what discards them instead."
+  - type: completion
+    difficulty: 2
+    text: "The SQL statement used to remove an entire table from the database is ____ TABLE."
+    answer: "DROP"
+    explanation: "DROP TABLE removes both the table's structure and its data entirely, unlike DELETE which only removes rows and TRUNCATE which empties a table but keeps its definition."
+  - type: completion
+    difficulty: 3
+    text: "The SQL constraint that forbids duplicate non-null values in a column, but still allows NULLs, is called ____."
+    answer: "UNIQUE"
+    explanation: "UNIQUE enforces distinct non-null values while still permitting NULLs (often more than one, depending on the engine), unlike PRIMARY KEY which also forbids NULL."
+  - type: completion
+    difficulty: 2
+    text: "The SQL clause used to sort a query's results is ORDER ____."
+    answer: "BY"
+    explanation: "ORDER BY sorts the result set by one or more columns, ascending (ASC, the default) or descending (DESC)."
+  - type: completion
+    difficulty: 3
+    text: "In relational algebra, the operator (symbol ρ) that changes a relation's attribute names without changing its data is called ____."
+    answer: "rename"
+    explanation: "The rename operator only relabels attributes in the schema; the actual tuples and their values are left completely unchanged."
+  - type: single_word
+    difficulty: 2
+    text: "What is the relational-algebra term for a single row of a table?"
+    answer: "tuple"
+    explanation: "A tuple is one row of a relation, i.e. one ordered set of attribute values; the set of all attribute names is the relation's schema."
+  - type: single_word
+    difficulty: 3
+    text: "What SQL keyword, followed by TRANSACTION, explicitly starts a new transaction?"
+    answer: "BEGIN"
+    explanation: "BEGIN TRANSACTION marks the start of a unit of work that will later be finalized with COMMIT or undone with ROLLBACK."
+  - type: single_word
+    difficulty: 4
+    text: "What do we call an index type where the table's physical row order matches the index's order?"
+    answer: "clustered"
+    explanation: "A clustered index physically reorders the table's storage to match the index key, which is why a table can have at most one clustered index; non-clustered indexes keep a separate logical ordering."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the difference between a LEFT JOIN and an INNER JOIN."
+    answer: "An INNER JOIN returns only rows that have matching values in both tables; a LEFT JOIN returns all rows from the left table plus any matching rows from the right table, filling in NULLs for the right table's columns when there is no match."
+    explanation: "The key distinction is what happens to unmatched rows: INNER JOIN drops them, while LEFT JOIN keeps every left-side row and pads missing right-side data with NULL."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why WHERE cannot be used to filter on the result of an aggregate function like COUNT(), and what should be used instead."
+    answer: "WHERE filters individual rows before any grouping or aggregation happens, so aggregate results don't exist yet at that point; HAVING filters groups after GROUP BY and aggregation have already been applied, which is why conditions on aggregate functions must go in HAVING instead of WHERE."
+    explanation: "This comes down to SQL's logical execution order: FROM/WHERE run before GROUP BY, while HAVING runs after grouping and aggregation, so only HAVING can reference values like COUNT(*) that only exist once groups are formed."
+  - type: open_answer
+    difficulty: 5
+    text: "Explain what the four ACID properties guarantee together, and why they matter for a database's reliability."
+    answer: "Atomicity ensures a transaction either fully completes or has no effect at all; Consistency ensures it moves the database from one valid state to another; Isolation ensures concurrent transactions don't interfere with each other's intermediate results; Durability ensures committed changes survive a crash. Together they let a DBMS process concurrent transactions safely without corrupting or losing data."
+    explanation: "Each property covers a different failure mode — partial writes, invalid states, concurrency interference, and data loss on crash — so together they let a database stay correct even under concurrent load and unexpected failures."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL query that selects the name and price columns from a products table, only for rows where price is greater than 100."
+    answer: |
+      ```sql
+      SELECT name, price
+      FROM products
+      WHERE price > 100;
+      ```
+    explanation: "SELECT lists the columns to return, FROM names the source table, and WHERE filters individual rows by a condition evaluated before any grouping — exactly what's needed here since there's no aggregation involved."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a SQL query that counts how many rows exist in each category of a products table, using GROUP BY."
+    answer: |
+      ```sql
+      SELECT category, COUNT(*) AS total
+      FROM products
+      GROUP BY category;
+      ```
+    explanation: "GROUP BY collapses rows sharing the same category value into one group each, and COUNT(*) then counts how many original rows fell into each group; the AS total alias just names the resulting column."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a SQL INNER JOIN query that returns the customer name and order date, joining a customers table and an orders table on customers.id = orders.customer_id."
+    answer: |
+      ```sql
+      SELECT customers.name, orders.order_date
+      FROM customers
+      INNER JOIN orders ON customers.id = orders.customer_id;
+      ```
+    explanation: "INNER JOIN combines matching rows from both tables based on the ON condition; here it pairs each customer with their orders by matching the customer's id against the order's customer_id, dropping customers with no orders."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does SELECT DISTINCT do?"
+    options:
+      - "Removes duplicate rows from the result set"
+      - "Removes duplicate columns from a table"
+      - "Deletes duplicate rows from the table permanently"
+      - "Sorts the result set"
+    answer: 0
+    explanation: "DISTINCT deduplicates the rows returned by a query based on the selected columns; it only affects the result set, it never modifies or deletes anything in the underlying table."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between UNION and UNION ALL?"
+    options:
+      - "UNION removes duplicate rows from the combined result, UNION ALL keeps them"
+      - "UNION ALL removes duplicates and UNION keeps them"
+      - "They behave identically in every database"
+      - "UNION combines columns side by side, UNION ALL stacks rows"
+    answer: 0
+    explanation: "UNION implicitly applies a DISTINCT pass over the combined rows from both queries, which costs extra processing; UNION ALL just concatenates all rows including duplicates, and is faster when duplicates are acceptable or known not to occur."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a subquery?"
+    options:
+      - "A query nested inside another SQL statement"
+      - "A query that creates a new table"
+      - "A query that can only return one column"
+      - "A stored, precompiled query"
+    answer: 0
+    explanation: "A subquery is a SELECT embedded inside another query's WHERE, FROM, or SELECT clause, used to compute an intermediate result that the outer query then uses."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the EXISTS operator check in a correlated subquery?"
+    options:
+      - "Whether the subquery returns at least one row"
+      - "Whether a specific value exists in a column"
+      - "Whether a table exists in the database"
+      - "Whether a column allows NULL values"
+    answer: 0
+    explanation: "EXISTS returns true as soon as the subquery produces any row at all, regardless of its content, which is why it can be faster than IN for existence checks — the engine can stop scanning at the first match."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a Common Table Expression (CTE), introduced with the WITH keyword?"
+    options:
+      - "A named temporary result set that can be referenced within the same query"
+      - "A permanent view stored in the database schema"
+      - "A type of index"
+      - "A trigger that runs before a query"
+    answer: 0
+    explanation: "A CTE defines a temporary, named result set scoped to a single statement, making complex queries more readable by breaking them into named steps; unlike a VIEW, it isn't persisted in the database schema."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a self-join?"
+    options:
+      - "A join of a table with itself, using table aliases to distinguish the two instances"
+      - "A join that requires no ON condition"
+      - "A join that only returns unmatched rows"
+      - "A join between two different databases"
+    answer: 0
+    explanation: "A self-join treats a single table as if it were two separate tables via aliases (e.g. a and b), which is useful for comparing rows within the same table, such as finding employees who share the same manager."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In a LIKE pattern, what does the % wildcard match?"
+    options:
+      - "Zero or more characters of any kind"
+      - "Exactly one character"
+      - "A literal percent sign only"
+      - "Any single digit"
+    answer: 0
+    explanation: "% matches any sequence of characters, including an empty one; to match exactly one arbitrary character instead, SQL's LIKE uses the _ wildcard."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does a CASE WHEN expression do in a SELECT statement?"
+    options:
+      - "Returns different values based on conditions, similar to if/else"
+      - "Deletes rows that match a condition"
+      - "Creates a new table conditionally"
+      - "Groups rows based on a condition"
+    answer: 0
+    explanation: "CASE WHEN evaluates conditions in order for each row and returns the value tied to the first true condition (or an ELSE value), letting you compute conditional output inline in a query."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does a SQL VIEW represent?"
+    options:
+      - "A virtual table defined by a stored query, always reflecting the underlying data"
+      - "A physical copy of a table's data"
+      - "A backup of a table"
+      - "A type of index"
+    answer: 0
+    explanation: "A VIEW doesn't store data itself; it stores a query definition, and every time you SELECT from the view, the database re-runs that query against the current underlying tables."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a stored procedure?"
+    options:
+      - "A precompiled, named set of SQL statements stored in the database and invoked by name"
+      - "A single SELECT statement saved as a view"
+      - "A type of foreign key constraint"
+      - "A backup snapshot of the database"
+    answer: 0
+    explanation: "A stored procedure bundles one or more SQL statements, often with parameters and control flow, under a name in the database, so applications can call it directly instead of sending raw SQL every time."
+  - type: completion
+    difficulty: 2
+    text: "The SQL clause that combines the results of two SELECT queries into one, removing duplicate rows by default, is ____."
+    answer: "UNION"
+    explanation: "UNION merges the row sets of two compatible queries and deduplicates the combined result; UNION ALL is the variant that skips deduplication."
+  - type: completion
+    difficulty: 2
+    text: "In a LIKE pattern, the wildcard that matches exactly one character is ____."
+    answer: "_"
+    explanation: "The underscore wildcard stands in for exactly one arbitrary character, while % stands in for zero or more characters."
+  - type: single_word
+    difficulty: 3
+    text: "What is the single-word term for a SELECT query nested inside another query?"
+    answer: "subquery"
+    explanation: "A subquery is a query embedded inside another statement's WHERE, FROM, or SELECT clause to compute an intermediate result used by the outer query."
+  - type: single_word
+    difficulty: 3
+    text: "What is the single-word term for a virtual table defined by a stored SELECT query?"
+    answer: "view"
+    explanation: "A view stores only the query definition, not the data itself, and is re-evaluated against the current underlying tables every time it's queried."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a SQL query using LEFT JOIN that lists every customer's name together with their order dates, including customers who have never placed an order (assume customers.id = orders.customer_id)."
+    answer: |
+      ```sql
+      SELECT customers.name, orders.order_date
+      FROM customers
+      LEFT JOIN orders ON customers.id = orders.customer_id;
+      ```
+    explanation: "LEFT JOIN keeps every row from customers (the left table) even when there's no matching row in orders, filling order_date with NULL for customers who never ordered, unlike INNER JOIN which would drop them."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a SQL query that finds all products priced above the average price of all products, using a subquery."
+    answer: |
+      ```sql
+      SELECT *
+      FROM products
+      WHERE price > (SELECT AVG(price) FROM products);
+      ```
+    explanation: "The subquery `(SELECT AVG(price) FROM products)` runs first and produces a single number, the average price, which the outer query then compares each row's price against."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL query that returns the distinct list of category values from a products table."
+    answer: |
+      ```sql
+      SELECT DISTINCT category
+      FROM products;
+      ```
+    explanation: "DISTINCT removes duplicate values from the result set, so even if many products share the same category, each category value appears only once in the output."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL query that finds all customers whose name starts with the letter 'A', using LIKE."
+    answer: |
+      ```sql
+      SELECT *
+      FROM customers
+      WHERE name LIKE 'A%';
+      ```
+    explanation: "The pattern 'A%' matches any value starting with 'A' followed by zero or more of any character; the % wildcard is what allows the rest of the name to be anything."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a SQL query that selects each product's name and price, adding a computed column that shows 'Expensive' if price is greater than 100 and 'Affordable' otherwise, using CASE WHEN."
+    answer: |
+      ```sql
+      SELECT name, price,
+          CASE
+              WHEN price > 100 THEN 'Expensive'
+              ELSE 'Affordable'
+          END AS price_category
+      FROM products;
+      ```
+    explanation: "CASE WHEN evaluates the condition for each row individually and returns 'Expensive' or falls through to ELSE 'Affordable'; AS price_category just names the resulting computed column."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a CREATE TABLE statement for an employees table with an integer id as primary key, a name column that cannot be null, and a department_id column that is a foreign key referencing departments(id)."
+    answer: |
+      ```sql
+      CREATE TABLE employees (
+          id INT PRIMARY KEY,
+          name VARCHAR(100) NOT NULL,
+          department_id INT,
+          FOREIGN KEY (department_id) REFERENCES departments(id)
+      );
+      ```
+    explanation: "PRIMARY KEY marks id as the unique row identifier, NOT NULL forbids a missing name, and the FOREIGN KEY clause enforces that department_id, if set, must match an existing id in the departments table."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a SQL query using EXISTS that finds all customers who have placed at least one order (assume customers.id = orders.customer_id)."
+    answer: |
+      ```sql
+      SELECT *
+      FROM customers c
+      WHERE EXISTS (
+          SELECT 1
+          FROM orders o
+          WHERE o.customer_id = c.id
+      );
+      ```
+    explanation: "The correlated subquery checks, for each customer row, whether any matching order exists; EXISTS only cares that at least one row comes back, so selecting a literal 1 inside it is a common convention since the selected value itself is discarded."
+  - type: open_answer
+    difficulty: 5
+    text: "Write a query using a Common Table Expression (WITH) that computes the total order amount per customer, then selects only the customers whose total exceeds 1000 (assume orders has customer_id and amount columns)."
+    answer: |
+      ```sql
+      WITH customer_totals AS (
+          SELECT customer_id, SUM(amount) AS total
+          FROM orders
+          GROUP BY customer_id
+      )
+      SELECT *
+      FROM customer_totals
+      WHERE total > 1000;
+      ```
+    explanation: "The CTE customer_totals computes and names an intermediate result (each customer's summed order amount) that the final SELECT can then filter with a plain WHERE, avoiding the need to repeat the aggregation subquery or use HAVING on a nested query."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In DBMS architecture, the physical level and the logical level are complemented by a third level that defines how data is presented to end users and applications. What is this level called?"
+    options:
+      - "View level (external level)"
+      - "Network level"
+      - "Storage level"
+      - "Compilation level"
+    answer: 0
+    explanation: "The physical level describes how data is actually stored, the logical level describes what data is stored and how it relates, and the view level describes how different users or applications see that data."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does pessimistic locking do to prevent concurrency conflicts?"
+    options:
+      - "Locks the records involved for the duration of a transaction, blocking concurrent access to them"
+      - "Allows concurrent access and only checks for conflicts at commit time"
+      - "Removes the need for transactions entirely"
+      - "Automatically retries every failed transaction indefinitely"
+    answer: 0
+    explanation: "Pessimistic locking assumes conflicts are likely, so it locks affected records upfront for the transaction's duration; optimistic locking instead allows concurrent access and only checks for conflicts when committing."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does optimistic locking do, as opposed to pessimistic locking?"
+    options:
+      - "Allows concurrent access to data and only checks for conflicts when the transaction commits"
+      - "Locks all rows in the table immediately when a transaction starts"
+      - "Prevents any transaction from ever reading uncommitted data"
+      - "Encrypts data for the duration of the transaction"
+    answer: 0
+    explanation: "Optimistic locking assumes conflicts are rare, so it lets transactions proceed concurrently and only verifies at commit time that no conflicting change happened, avoiding the overhead of upfront locks."
+  - type: completion
+    difficulty: 2
+    text: "A ____ backup copies the entire database, while incremental and differential backups only copy the data changed since a previous backup."
+    answer: "full"
+    explanation: "A full backup is a complete copy of the database and serves as the baseline that incremental and differential backups build on."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between an incremental backup and a differential backup?"
+    options:
+      - "Incremental copies only data changed since the last backup of any type; differential copies data changed since the last full backup"
+      - "Incremental always copies the whole database; differential copies nothing"
+      - "They are the same technique with different names"
+      - "Differential backups don't require a prior full backup to exist"
+    answer: 0
+    explanation: "Incremental backups chain off the most recent backup (full or incremental), keeping each one small, while differential backups always measure changes against the last full backup, making restores simpler but each differential backup larger over time."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In database performance tuning, what does caching do?"
+    options:
+      - "Stores results of frequent queries in memory to reduce repeated access time to the underlying data"
+      - "Splits a large table into smaller physical pieces"
+      - "Creates a lookup structure on a column to speed up searches"
+      - "Encrypts query results before returning them to the client"
+    answer: 0
+    explanation: "Caching keeps frequently accessed query results in memory so subsequent identical requests avoid re-reading and recomputing from the underlying storage; this is distinct from indexing (a lookup structure) and partitioning (splitting a table)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In database performance tuning, what does partitioning do?"
+    options:
+      - "Divides a large table into smaller, more manageable physical pieces to improve performance and management"
+      - "Stores query results in memory for faster reuse"
+      - "Creates a secondary sorted structure to speed up lookups on a column"
+      - "Combines several small tables into a single large table"
+    answer: 0
+    explanation: "Partitioning splits a large table's storage into smaller pieces (e.g. by date range or key), so queries that target one partition can skip scanning the rest of the data."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the difference between a clustered index and a non-clustered index, and why a table can have only one clustered index."
+    answer: "A clustered index physically reorders the table's rows on disk to match the index key, so there is only one actual physical ordering of the data. A non-clustered index instead keeps a separate structure with pointers back to the table's rows, leaving the physical row order untouched. Because a table's rows can only be physically sorted in one way at a time, a table can have at most one clustered index but can have several non-clustered indexes."
+    explanation: "The physical-storage aspect is the key distinction: clustering rewrites the data's actual disk order, which is inherently a one-at-a-time property, whereas non-clustered indexes are additional lookup structures layered on top without touching row order."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In database access control, what is the difference between authentication and authorization?"
+    options:
+      - "Authentication verifies a user's identity, while authorization determines what that authenticated user is allowed to do"
+      - "Authentication determines permissions, while authorization verifies identity"
+      - "They both mean the same thing: verifying a user's identity"
+      - "Authentication applies only to encrypted databases"
+    answer: 0
+    explanation: "Authentication answers 'who are you?' by confirming identity (e.g. via a password), while authorization answers 'what can you do?' by checking permissions once identity is established."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between encrypting data 'at rest' and encrypting data 'in transit'?"
+    options:
+      - "Encryption at rest protects stored data on disk; encryption in transit protects data while it moves across a network"
+      - "Encryption at rest protects data during a network transfer; encryption in transit protects stored files"
+      - "They are two names for the exact same encryption technique"
+      - "Encryption at rest only applies to database backups, never to live tables"
+    answer: 0
+    explanation: "Data at rest is data sitting in storage (files, disks, backups), while data in transit is data actively moving between systems (e.g. client to server); each needs its own encryption mechanism to stay protected."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of database auditing?"
+    options:
+      - "Monitoring and logging user activity to detect or prevent unauthorized access and suspicious behavior"
+      - "Automatically encrypting every table in the database"
+      - "Physically reordering rows on disk for faster access"
+      - "Removing duplicate rows from query results"
+    answer: 0
+    explanation: "Auditing records who did what and when, which lets administrators later detect suspicious behavior or prove compliance; it doesn't change how data is stored or queried."
+  - type: multiple_choice
+    difficulty: 4
+    text: "In relational algebra, what does the Division operator (A / B) compute?"
+    options:
+      - "The tuples of A that are associated, in A, with every tuple of B"
+      - "The tuples that appear in both A and B"
+      - "The tuples of A that do not appear in B"
+      - "All possible combinations of tuples from A and B"
+    answer: 0
+    explanation: "Division is the relational-algebra equivalent of a 'for all' query: given A(x,y) and B(y), it returns the x values that are paired with every single y value found in B, such as finding students enrolled in every required course."
+  - type: multiple_choice
+    difficulty: 4
+    text: "In relational algebra, a natural join between two relations is called 'incomplete' when...?"
+    options:
+      - "At least one tuple from one of the operand relations does not contribute to any tuple of the result"
+      - "Every tuple from both operand relations contributes to at least one tuple of the result"
+      - "No tuple from either operand relation contributes to the result at all"
+      - "The two relations being joined share no attribute names"
+    answer: 0
+    explanation: "A join is complete when every tuple from both relations contributes to the result, empty when no tuple from either contributes, and incomplete when only some tuples from one or both relations make it into the result."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key difference between a theta join and a natural join?"
+    options:
+      - "A theta join matches rows using an arbitrary boolean condition, while a natural join matches automatically on attributes sharing the same name in both relations"
+      - "A theta join can only use equality conditions, while a natural join can use any condition"
+      - "A natural join requires manually specifying the join condition, while a theta join is fully automatic"
+      - "They always produce identical results regardless of the relations involved"
+    answer: 0
+    explanation: "Theta join is the general case, filtering the cartesian product by any condition (equality, inequality, etc.); natural join is a specific case that automatically equates attributes with matching names and removes the duplicate column."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In an ER diagram, a relationship where one instance of entity A can be associated with many instances of entity B, but each instance of B relates to only one instance of A, is called a...?"
+    options:
+      - "One-to-many relationship"
+      - "One-to-one relationship"
+      - "Many-to-many relationship"
+      - "Zero-to-zero relationship"
+    answer: 0
+    explanation: "One-to-many is asymmetric: one side can have multiple associated instances on the other side, while each of those instances links back to only a single instance on the first side; one-to-one and many-to-many describe the other two cardinality patterns."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'weak entity' in an ER diagram?"
+    options:
+      - "An entity that cannot be uniquely identified by its own attributes alone and depends on a relationship with another (owner) entity"
+      - "An entity that has no attributes at all"
+      - "An entity that can appear only once in the entire diagram"
+      - "An entity that can never participate in a relationship"
+    answer: 0
+    explanation: "A weak entity lacks enough attributes of its own to form a unique key, so it relies on an identifying relationship with an owner entity plus a partial key to be uniquely identified, such as an 'order line' that only makes sense tied to its 'order'."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which of the following is NOT a valid trigger timing keyword in SQL?"
+    options:
+      - "DURING"
+      - "BEFORE"
+      - "AFTER"
+      - "INSTEAD OF"
+    answer: 0
+    explanation: "SQL triggers fire BEFORE, AFTER, or INSTEAD OF the triggering event; DURING is not a recognized trigger timing keyword."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which of the following is a typical use case for a database trigger?"
+    options:
+      - "Automatically maintaining an audit table that logs changes made to another table"
+      - "Physically compressing a table's storage on disk"
+      - "Replacing the need for a WHERE clause in SELECT queries"
+      - "Permanently precomputing the result of every JOIN in the database"
+    answer: 0
+    explanation: "Triggers commonly enforce referential or data integrity, monitor changes, or write to auditing tables automatically whenever an INSERT, UPDATE, or DELETE happens on the watched table."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a trigger definition, what does the FOR EACH ROW clause specify?"
+    options:
+      - "The trigger executes once for every row affected by the triggering statement, rather than once for the whole statement"
+      - "The trigger only fires on the very first row affected"
+      - "The trigger disables row-level locking for the statement"
+      - "The trigger applies only to SELECT statements"
+    answer: 0
+    explanation: "A row-level trigger (FOR EACH ROW) fires once per affected row and can reference that row's old/new values; a statement-level trigger, without FOR EACH ROW, fires only once no matter how many rows the statement touches."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which SQL statement is used to add, remove, or modify columns on an existing table without recreating it?"
+    options:
+      - "ALTER TABLE"
+      - "CREATE TABLE"
+      - "UPDATE TABLE"
+      - "MODIFY DATABASE"
+    answer: 0
+    explanation: "ALTER TABLE changes an existing table's structure, such as adding or dropping columns, while CREATE TABLE only defines a brand-new table."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between DROP INDEX and DROP TABLE?"
+    options:
+      - "DROP INDEX removes only a lookup structure, leaving the table and its data intact; DROP TABLE removes the table's structure and all its data"
+      - "DROP INDEX deletes every row in the table; DROP TABLE only removes the index"
+      - "They are interchangeable and behave identically"
+      - "DROP INDEX permanently deletes the entire database"
+    answer: 0
+    explanation: "DROP INDEX only removes the index structure used for faster lookups, without touching the underlying rows; DROP TABLE removes the table definition together with all of its data."
+  - type: completion
+    difficulty: 3
+    text: "In some SQL dialects, the ____ keyword used after SELECT can store a query's result rows directly into a new temporary table."
+    answer: "INTO"
+    explanation: "SELECT ... INTO new_table copies the query's result set into a newly created table, which is handy for temporarily materializing an intermediate result."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What distinguishes a correlated subquery from a non-correlated (simple) subquery?"
+    options:
+      - "A correlated subquery references a column from the outer query and is re-evaluated for each outer row; a non-correlated subquery runs independently once"
+      - "A correlated subquery can only appear in the FROM clause"
+      - "A non-correlated subquery always returns multiple rows"
+      - "There is no real difference; the two terms are interchangeable"
+    answer: 0
+    explanation: "A correlated subquery depends on the current row of the outer query, so conceptually it runs once per outer row, while a non-correlated subquery is self-contained and can be evaluated a single time regardless of the outer query."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why does the condition `column = NULL` never match any row in standard SQL?"
+    options:
+      - "NULL represents an unknown value, so comparing it with = evaluates to unknown rather than true; IS NULL must be used instead"
+      - "NULL is treated as the literal string 'NULL' and rarely equals a column's actual value"
+      - "Because rows with NULL columns are automatically excluded from every table"
+      - "Because `= NULL` is a syntax error rejected before the query runs"
+    answer: 0
+    explanation: "SQL uses three-valued logic where any comparison involving NULL (an unknown value) yields unknown rather than true or false, so `= NULL` never matches; the IS NULL / IS NOT NULL predicates exist specifically to test for NULL correctly."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the SQL BETWEEN operator do?"
+    options:
+      - "Checks if a value falls within an inclusive range defined by two boundary values"
+      - "Checks if a value matches any value in a specified list"
+      - "Checks if a value is NULL"
+      - "Joins two tables together on a shared column"
+    answer: 0
+    explanation: "BETWEEN x AND y is shorthand for `>= x AND <= y`, so both boundary values are included in the match, unlike IN which tests membership in an explicit list of values."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does Second Normal Form (2NF) require, beyond satisfying 1NF?"
+    options:
+      - "Elimination of partial dependencies, where a non-key attribute depends on only part of a composite primary key"
+      - "Elimination of transitive dependencies between non-key attributes"
+      - "Elimination of repeating groups or duplicate values within a single column"
+      - "Elimination of every foreign key from the schema"
+    answer: 0
+    explanation: "2NF applies specifically to tables with a composite primary key: it requires every non-key attribute to depend on the entire key, not just part of it, removing partial dependencies."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does Third Normal Form (3NF) require, beyond satisfying 2NF?"
+    options:
+      - "Elimination of transitive dependencies, where a non-key attribute depends on another non-key attribute instead of directly on the key"
+      - "Elimination of partial dependencies on part of a composite key"
+      - "Elimination of repeating groups within a single column"
+      - "Elimination of every NULL value from the table"
+    answer: 0
+    explanation: "3NF removes transitive dependencies: if attribute C depends on B, and B depends on the primary key, then C should be moved to its own table rather than depending indirectly on the key through B."
+  - type: multiple_choice
+    difficulty: 4
+    text: "How does Boyce-Codd Normal Form (BCNF) relate to Third Normal Form (3NF)?"
+    options:
+      - "BCNF is a stricter version of 3NF that additionally requires every determinant of a functional dependency to be a candidate key"
+      - "BCNF is a weaker, more permissive version of 3NF"
+      - "BCNF and 3NF are unrelated normal forms that address different problems"
+      - "BCNF only applies to tables that have no candidate keys at all"
+    answer: 0
+    explanation: "BCNF tightens 3NF by closing a loophole where 3NF still allows certain anomalies when a table has multiple overlapping candidate keys; BCNF requires that anything determining another attribute must itself be a candidate key."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a composite primary key?"
+    options:
+      - "A primary key made up of two or more columns whose combination uniquely identifies each row"
+      - "A primary key that automatically increments with every new row"
+      - "A primary key that references another table's column"
+      - "A primary key that allows duplicate values as long as one column differs"
+    answer: 0
+    explanation: "A composite primary key combines multiple columns into a single key constraint, so uniqueness is only guaranteed by the combination, not by any single column alone; common in junction tables like order_items."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a self-referencing foreign key?"
+    options:
+      - "A foreign key column in a table that references the primary key of that very same table, e.g. to model a manager-employee hierarchy"
+      - "A foreign key column that references a column with the exact same name in another table"
+      - "A foreign key column that can never contain a NULL value"
+      - "A primary key column that is also declared UNIQUE"
+    answer: 0
+    explanation: "A self-referencing foreign key lets a table point back to itself, which is the standard way to model hierarchical or tree-like relationships within a single table, such as employees referencing their own manager's id."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL query that selects all products from a products table with a price between 50 and 100, inclusive, using BETWEEN."
+    answer: |
+      ```sql
+      SELECT *
+      FROM products
+      WHERE price BETWEEN 50 AND 100;
+      ```
+    explanation: "BETWEEN 50 AND 100 is inclusive on both ends, equivalent to `price >= 50 AND price <= 100`."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL query that selects all customers from a customers table whose country is either 'Italy', 'France', or 'Germany', using IN."
+    answer: |
+      ```sql
+      SELECT *
+      FROM customers
+      WHERE country IN ('Italy', 'France', 'Germany');
+      ```
+    explanation: "IN checks membership in the given list, which is a more concise equivalent of chaining several OR conditions together."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL query that selects all rows from a customers table, ordered first by country ascending and then by name descending."
+    answer: |
+      ```sql
+      SELECT *
+      FROM customers
+      ORDER BY country ASC, name DESC;
+      ```
+    explanation: "ORDER BY can take multiple columns; rows are sorted by the first column, and ties are then broken using the following columns, each with its own ASC or DESC direction."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a CREATE TABLE statement for an order_items table with order_id and product_id columns forming a composite primary key, plus a quantity column."
+    answer: |
+      ```sql
+      CREATE TABLE order_items (
+          order_id INT,
+          product_id INT,
+          quantity INT,
+          PRIMARY KEY (order_id, product_id)
+      );
+      ```
+    explanation: "Listing both columns inside a single PRIMARY KEY (...) clause creates a composite key, so uniqueness is enforced on the combination of order_id and product_id rather than on either column alone."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a CREATE TABLE statement for an employees table with an integer id as primary key, a name column that cannot be null, and a manager_id column that is a self-referencing foreign key pointing to employees(id)."
+    answer: |
+      ```sql
+      CREATE TABLE employees (
+          id INT PRIMARY KEY,
+          name VARCHAR(100) NOT NULL,
+          manager_id INT,
+          FOREIGN KEY (manager_id) REFERENCES employees(id)
+      );
+      ```
+    explanation: "The FOREIGN KEY clause references the same table's id column, letting manager_id point to another row in employees; it's left nullable so top-level employees with no manager can have manager_id set to NULL."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a SQL query using a correlated subquery that finds every product whose price is higher than the average price of products in that same category (assume products has category and price columns)."
+    answer: |
+      ```sql
+      SELECT p1.*
+      FROM products p1
+      WHERE p1.price > (
+          SELECT AVG(p2.price)
+          FROM products p2
+          WHERE p2.category = p1.category
+      );
+      ```
+    explanation: "The inner subquery is correlated because it references p1.category from the outer query, so it recomputes a different average for every outer row instead of running once for the whole table."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a SQL query using NOT EXISTS that finds all customers who have never placed an order (assume customers.id = orders.customer_id)."
+    answer: |
+      ```sql
+      SELECT *
+      FROM customers c
+      WHERE NOT EXISTS (
+          SELECT 1
+          FROM orders o
+          WHERE o.customer_id = c.id
+      );
+      ```
+    explanation: "NOT EXISTS returns true only when the correlated subquery finds no matching order row for that customer, which is generally the safest way to express 'has none of' in SQL, avoiding the NULL pitfalls of NOT IN."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a SQL statement that adds a new nullable column named discount of type DECIMAL(5,2) to an existing products table."
+    answer: |
+      ```sql
+      ALTER TABLE products
+      ADD COLUMN discount DECIMAL(5,2);
+      ```
+    explanation: "ALTER TABLE ... ADD COLUMN modifies an existing table's structure in place; since no NOT NULL constraint is specified, the new column defaults to allowing NULL for all existing rows."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a SQL trigger named log_new_order that runs AFTER INSERT on an orders table and inserts a row into an order_audit table recording the new order's id and the current timestamp (assume order_audit has columns order_id and logged_at, and the newly inserted row is available as NEW)."
+    answer: |
+      ```sql
+      CREATE TRIGGER log_new_order
+      AFTER INSERT
+      ON orders
+      FOR EACH ROW
+      INSERT INTO order_audit (order_id, logged_at) VALUES (NEW.id, NOW());
+      ```
+    explanation: "AFTER INSERT means the trigger fires once the new order row is already committed to orders, and FOR EACH ROW makes it run once per inserted row, using NEW.id to reference that row's just-inserted id."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a SQL statement that creates a non-clustered index named idx_customers_email on the email column of a customers table."
+    answer: |
+      ```sql
+      CREATE INDEX idx_customers_email
+      ON customers (email);
+      ```
+    explanation: "CREATE INDEX builds a separate lookup structure on the email column to speed up searches and filters on it, without changing the table's physical row order."
+  - type: open_answer
+    difficulty: 5
+    text: "Write a SQL query that finds all student_id values from an enrollments table (columns student_id, course_id) who are enrolled in every course listed in a courses table (column course_id), using GROUP BY and HAVING — conceptually equivalent to the relational-algebra Division operator."
+    answer: |
+      ```sql
+      SELECT student_id
+      FROM enrollments
+      WHERE course_id IN (SELECT course_id FROM courses)
+      GROUP BY student_id
+      HAVING COUNT(DISTINCT course_id) = (SELECT COUNT(*) FROM courses);
+      ```
+    explanation: "Grouping by student_id and comparing the count of distinct enrolled courses against the total number of required courses selects only students who match every single course, which is exactly what relational-algebra Division computes."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a SQL statement that increases the price of every product in the 'Electronics' category by 10 percent."
+    answer: |
+      ```sql
+      UPDATE products
+      SET price = price * 1.10
+      WHERE category = 'Electronics';
+      ```
+    explanation: "UPDATE modifies existing rows in place; the WHERE clause restricts the change to Electronics products, and multiplying price by 1.10 applies a 10 percent increase to each matching row."

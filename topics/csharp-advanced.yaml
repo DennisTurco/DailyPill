@@ -1,0 +1,983 @@
+name: Advanced C#
+category: Computer Science
+difficulty: hard
+ai_generate: true
+content: |
+  LINQ, async/await, delegates and events, generics, reflection, garbage collector
+manual_questions:
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which keyword declares an asynchronous method in C#?"
+    options:
+      - "async"
+      - "await"
+      - "task"
+      - "thread"
+    answer: 0
+    explanation: "The `async` modifier marks a method as asynchronous, enabling the use of `await` inside it; `await` itself is used to suspend on an awaitable, not to declare the method."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which LINQ method throws an exception if no matching element is found?"
+    options:
+      - "FirstOrDefault"
+      - "First"
+      - "Any"
+      - "Count"
+    answer: 1
+    explanation: "First() throws InvalidOperationException when the sequence is empty or no element matches; FirstOrDefault() instead returns the type's default value, and Any/Count don't throw for an empty result."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the 'yield return' statement create?"
+    options:
+      - "An iterator"
+      - "A thread"
+      - "A delegate"
+      - "A generic constraint"
+    answer: 0
+    explanation: "'yield return' turns a method into a state-machine-based iterator that produces values lazily on each MoveNext() call, rather than building the entire collection up front."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which interface must a class implement to support the foreach loop?"
+    options:
+      - "IEnumerable"
+      - "IComparable"
+      - "IDisposable"
+      - "ICloneable"
+    answer: 0
+    explanation: "foreach compiles to calls against GetEnumerator(), which IEnumerable (or IEnumerable<T>) provides; the other interfaces are for comparison, resource cleanup, and cloning respectively."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is boxing in C#?"
+    options:
+      - "Converting a value type to a reference type"
+      - "Converting a reference type to a value type"
+      - "Wrapping a delegate in an event"
+      - "Compiling a generic method"
+    answer: 0
+    explanation: "Boxing wraps a value type (like an int) in an object on the heap so it can be treated as a reference type; the reverse operation, unboxing, extracts the value type back out."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which keyword lets a method accept a variable number of arguments?"
+    options:
+      - "params"
+      - "ref"
+      - "out"
+      - "in"
+    answer: 0
+    explanation: "'params' lets callers pass any number of arguments (including zero) that get collected into an array parameter; ref/out/in modify how a single parameter is passed, not its count."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'using' statement (not the directive) do?"
+    options:
+      - "Automatically disposes an IDisposable object"
+      - "Imports a namespace"
+      - "Declares a type alias"
+      - "Enables nullable reference types"
+    answer: 0
+    explanation: "The 'using' statement wraps a block in a try/finally that calls Dispose() on the object automatically, ensuring unmanaged resources are released; importing namespaces is what the 'using directive' does instead."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which access modifier restricts a member to the same assembly?"
+    options:
+      - "internal"
+      - "protected"
+      - "private"
+      - "public"
+    answer: 0
+    explanation: "'internal' members are visible anywhere within the declaring assembly but not from other assemblies; protected restricts to subclasses, private to the declaring type, and public has no restriction."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the 'in' parameter modifier do?"
+    options:
+      - "Passes the argument by reference as read-only"
+      - "Passes the argument by value"
+      - "Marks a covariant generic parameter"
+      - "Marks the parameter as optional"
+    answer: 0
+    explanation: "'in' passes an argument by reference to avoid copying large structs, but the compiler prevents the method from modifying it, unlike 'ref' which allows mutation."
+  - type: multiple_choice
+    difficulty: 5
+    text: "Which modifier marks a generic type parameter as covariant?"
+    options:
+      - "out"
+      - "in"
+      - "ref"
+      - "params"
+    answer: 0
+    explanation: "'out' on a generic type parameter marks it covariant, meaning it can only appear in output positions and allows IFoo<Derived> to be used where IFoo<Base> is expected; 'in' marks contravariance instead."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'closure' in C#?"
+    options:
+      - "A lambda expression that captures variables from its enclosing scope"
+      - "A sealed class"
+      - "A static constructor"
+      - "A finalizer"
+    answer: 0
+    explanation: "A closure is a lambda or anonymous method that keeps a live reference to variables from the scope in which it was created, letting it read and modify them even after that scope has returned."
+  - type: multiple_choice
+    difficulty: 5
+    text: "What does the 'volatile' keyword guarantee for a field?"
+    options:
+      - "Reads and writes are not reordered or cached across threads"
+      - "Compound operations on the field are atomic"
+      - "The field can never be changed"
+      - "The field is collected immediately by the garbage collector"
+    answer: 0
+    explanation: "'volatile' prevents the compiler and CPU from reordering or caching accesses to the field, ensuring other threads see the latest write; it does not make multi-step operations like increment atomic."
+  - type: completion
+    difficulty: 2
+    text: "The C# keyword used to catch exceptions is ____."
+    answer: "catch"
+    explanation: "A 'catch' block follows a 'try' block and handles exceptions thrown within it, optionally filtering by exception type."
+  - type: completion
+    difficulty: 3
+    text: "To prevent a class from being inherited, mark it with the ____ keyword."
+    answer: "sealed"
+    explanation: "'sealed' on a class stops any other class from deriving from it, which can also let the JIT compiler apply certain optimizations since no override is possible."
+  - type: completion
+    difficulty: 3
+    text: "The keyword used together with 'try' to guarantee cleanup code always runs is ____."
+    answer: "finally"
+    explanation: "A 'finally' block executes whether or not an exception was thrown or caught, making it the standard place for guaranteed cleanup like releasing resources."
+  - type: single_word
+    difficulty: 2
+    text: "What keyword declares a field that can only be assigned at declaration or in the constructor?"
+    answer: "readonly"
+    explanation: "'readonly' fields can be set only inline or within a constructor of the declaring class; after construction, any further assignment is a compile error."
+  - type: single_word
+    difficulty: 3
+    text: "What is the C# term for wrapping a value type inside an object reference?"
+    answer: "boxing"
+    explanation: "Boxing allocates a heap object to hold a copy of a value type so it can be used wherever a reference type or object is expected."
+  - type: single_word
+    difficulty: 4
+    text: "What is the mechanism called that lets code inspect types and members at runtime?"
+    answer: "reflection"
+    explanation: "Reflection is the .NET API (System.Reflection) that lets code examine assemblies, types, and members, and even invoke them dynamically, at runtime rather than compile time."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the difference between Task and Task<T> in C# async programming."
+    answer: "Task represents an asynchronous operation that does not return a value, while Task<T> represents an asynchronous operation that returns a value of type T."
+    explanation: "Task is the async equivalent of a void-returning method — it represents the operation's completion but carries no result; Task<T> additionally exposes a Result property (or awaited value) of type T once the operation finishes."
+  - type: open_answer
+    difficulty: 5
+    text: "Explain why 'async void' methods should generally be avoided in C#, except for event handlers."
+    answer: "async void methods cannot be awaited, so exceptions thrown inside them cannot be caught by the caller and can crash the application; they should only be used for event handlers, where the framework requires a void signature."
+    explanation: "Because there's no Task to await, the caller has no way to observe completion or catch exceptions from an async void method — unhandled exceptions instead propagate to the SynchronizationContext and can crash the process; event handlers are the sole exception because their delegate signature is fixed to void."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'await' do at the point it is called?"
+    options:
+      - "Suspends the method logically without blocking the calling thread"
+      - "Blocks the calling thread until the task completes"
+      - "Spawns a new dedicated thread"
+      - "Cancels the awaited task"
+    answer: 0
+    explanation: "'await' yields control back to the caller and schedules a continuation for when the awaited task completes, freeing the current thread rather than blocking it — unlike calling .Result or .Wait()."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which async return type is generally discouraged except in event handlers?"
+    options:
+      - "Task"
+      - "Task<T>"
+      - "async void"
+      - "ValueTask"
+    answer: 2
+    explanation: "async void methods can't be awaited or have their exceptions observed by the caller, so they're discouraged everywhere except event handlers, which require a void-returning delegate signature."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'await Task.WhenAll(t1, t2, t3)' produce when each task is a Task<T>?"
+    options:
+      - "An array containing each task's result, in argument order"
+      - "A single merged Task with no result"
+      - "Only the result of whichever task finishes first"
+      - "Nothing; WhenAll returns void"
+    answer: 0
+    explanation: "Task.WhenAll on Task<T> arguments returns a Task<T[]> whose result array preserves the order the tasks were passed in, not the order they completed; WhenAny would instead give just the first-completed task."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of a CancellationToken?"
+    options:
+      - "To cooperatively signal that an ongoing operation should stop"
+      - "To forcibly kill a thread immediately"
+      - "To pause a task indefinitely"
+      - "To set a task's scheduling priority"
+    answer: 0
+    explanation: "A CancellationToken carries a cooperative cancellation signal that running code must check (or that throws OperationCanceledException) — it requests cancellation rather than forcibly terminating a thread."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why is ConfigureAwait(false) commonly used in library code?"
+    options:
+      - "To avoid capturing and resuming on the original synchronization context"
+      - "To make the awaited task run in parallel"
+      - "To increase the operation's timeout"
+      - "To disable cancellation support"
+    answer: 0
+    explanation: "ConfigureAwait(false) tells the awaiter not to resume the continuation on the captured SynchronizationContext (e.g. a UI thread), avoiding unnecessary context switches and a common source of deadlocks in library code."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What commonly causes the classic UI-thread deadlock when mixing blocking calls with async code?"
+    options:
+      - "Blocking on .Result or .Wait() while the continuation needs to resume on that same captured UI thread"
+      - "Using await inside a loop"
+      - "Using Task.WhenAll instead of Task.WhenAny"
+      - "Passing a CancellationToken to an async method"
+    answer: 0
+    explanation: "The UI thread blocks waiting on .Result/.Wait(), but the async method's continuation needs that same thread's SynchronizationContext to resume — since the thread is blocked, the continuation can never run, producing a deadlock."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the += operator do on a multicast delegate?"
+    options:
+      - "Adds a method to the delegate's invocation list"
+      - "Sums the return values of two delegates"
+      - "Removes a method from the invocation list"
+      - "Creates an entirely new delegate type"
+    answer: 0
+    explanation: "Delegate += combines delegates by appending the right-hand method(s) to the invocation list, producing a multicast delegate; -= is what removes a method from that list."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a multicast delegate with a return value, what does invoking it return?"
+    options:
+      - "Only the return value of the last method invoked"
+      - "The sum of all return values"
+      - "A list containing every return value"
+      - "Only the return value of the first method invoked"
+    answer: 0
+    explanation: "When a multicast delegate is invoked, all methods in its invocation list run in order, but the caller only receives the return value of the last one invoked — earlier results are discarded."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which built-in delegate type represents a method that returns no value?"
+    options:
+      - "Action"
+      - "Func"
+      - "Predicate"
+      - "Delegate"
+    answer: 0
+    explanation: "Action and its generic variants represent methods with a void return type; Func always returns a value (its last type parameter), and Predicate<T> is a Func<T, bool> specifically for boolean tests."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the classic 'captured variable' pitfall when a lambda inside a loop captures the loop variable itself instead of a per-iteration copy?"
+    options:
+      - "All the lambdas end up observing the same final value of that variable"
+      - "The loop throws a runtime exception"
+      - "Lambdas cannot be created inside loops at all"
+      - "The compiler rejects the code"
+    answer: 0
+    explanation: "A closure captures the variable itself, not a snapshot of its value; if all lambdas share the same captured loop variable, they all see whatever value it holds when they eventually execute, typically the loop's final value (this is fixed in modern C# for 'for each' but remains a classic pitfall for indexed loops sharing one variable)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why do C# events only let external code add or remove handlers, instead of exposing the underlying delegate directly?"
+    options:
+      - "Because the 'event' keyword generates restricted add/remove accessors around the delegate field"
+      - "Because events are read-only fields with no accessors at all"
+      - "Because events must always be async"
+      - "Because delegates cannot be declared public"
+    answer: 0
+    explanation: "The 'event' keyword compiles to a private delegate field plus public add/remove accessor methods, so outside code can only subscribe or unsubscribe (+=/-=) and can't reassign, invoke, or clear the delegate directly."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the safest way to invoke a multicast event to avoid a race between the null-check and the invocation?"
+    options:
+      - "Copy the delegate to a local variable first, then use ?.Invoke() on the copy"
+      - "Check for null and then invoke directly on the field"
+      - "Wrap every invocation in a try/catch"
+      - "Mark the event field as volatile"
+    answer: 0
+    explanation: "Checking the field for null and then invoking it separately leaves a window where another thread could unsubscribe the last handler in between, causing a NullReferenceException; copying to a local first (or using ?.Invoke() on that local) makes the null-check-and-invoke effectively atomic against that race."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does Dependency Injection let a class do?"
+    options:
+      - "Receive its dependencies from the outside instead of constructing them itself"
+      - "Automatically generate its own interfaces"
+      - "Skip using interfaces entirely"
+      - "Avoid declaring a constructor"
+    answer: 0
+    explanation: "Dependency Injection supplies a class's collaborators (typically via constructor parameters) from an external source instead of the class creating them itself, decoupling it from concrete implementations."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is the Service Locator pattern generally considered an anti-pattern compared to constructor injection?"
+    options:
+      - "It hides a class's real dependencies instead of declaring them explicitly"
+      - "It is always slower at runtime"
+      - "It cannot be used together with interfaces"
+      - "It requires significantly more memory"
+    answer: 0
+    explanation: "With Service Locator, a class pulls dependencies from a global registry internally, so its public API doesn't reveal what it actually needs, making the code harder to test and understand compared to declaring dependencies explicitly in the constructor."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In ASP.NET Core's built-in DI container, how long does a Scoped service live by default?"
+    options:
+      - "For the duration of a single request or scope"
+      - "For the entire lifetime of the application"
+      - "Only for a single method call"
+      - "Until it is manually disposed by application code"
+    answer: 0
+    explanation: "A Scoped service gets one instance per created scope, which in ASP.NET Core typically corresponds to a single HTTP request; Singleton lives for the app's lifetime and Transient creates a new instance every time it's requested."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'captive dependency'?"
+    options:
+      - "A singleton service that holds a reference to a scoped service, keeping it alive too long"
+      - "A service the container cannot resolve at all"
+      - "A circular dependency between two services"
+      - "A service that has been registered more than once"
+    answer: 0
+    explanation: "Because a singleton is constructed once and lives for the app's lifetime, injecting a scoped (or transient) service into it captures that instance and keeps it alive far beyond its intended scope, breaking the scoping model."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Dependency Injection is the practical mechanism most closely associated with which SOLID principle?"
+    options:
+      - "Dependency Inversion Principle"
+      - "Single Responsibility Principle"
+      - "Open/Closed Principle"
+      - "Liskov Substitution Principle"
+    answer: 0
+    explanation: "The Dependency Inversion Principle states that high-level modules should depend on abstractions, not concrete implementations; DI is the common technique for supplying those abstractions from outside, putting the principle into practice."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key structural difference between IQueryable<T> and IEnumerable<T>?"
+    options:
+      - "IQueryable exposes an Expression Tree plus a provider that can translate the query, e.g. into SQL"
+      - "IQueryable can only ever be used with in-memory arrays"
+      - "IEnumerable supports remote query translation and IQueryable does not"
+      - "There is no real difference between the two"
+    answer: 0
+    explanation: "IQueryable<T> carries an Expression tree and an IQueryProvider that can translate LINQ operators into another query language (like SQL) for execution at the source, whereas IEnumerable<T> just enumerates items already in memory using LINQ to Objects."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Where does a filter typically execute when applied through IEnumerable<T> against data already loaded from a database?"
+    options:
+      - "In memory, on the client, after all rows have already been loaded"
+      - "On the database, via generated SQL"
+      - "On a separate background worker thread"
+      - "It never actually executes"
+    answer: 0
+    explanation: "Once data is materialized into an IEnumerable<T> (e.g. after ToList()), any further LINQ filtering runs as compiled delegates over the in-memory collection, not as SQL against the database."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which of these forces immediate execution of a LINQ query?"
+    options:
+      - "ToList()"
+      - "Where()"
+      - "Select()"
+      - "OrderBy()"
+    answer: 0
+    explanation: "ToList() enumerates the whole query right away and materializes the results into a list; Where/Select/OrderBy just build up the deferred query without executing it."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'deferred execution' in LINQ?"
+    options:
+      - "The query only runs when its results are actually iterated, not when it is defined"
+      - "The query runs immediately as soon as it is defined"
+      - "The query runs on a fixed timer"
+      - "The query never actually runs"
+    answer: 0
+    explanation: "Most LINQ operators build a query object describing the operation but don't execute it until something enumerates the results (a foreach, ToList(), etc.), which is what 'deferred execution' means."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the N+1 query problem?"
+    options:
+      - "Running one query for the main entities, then N extra queries to load a related entity for each of them"
+      - "Running exactly two queries regardless of data size"
+      - "A query that returns N+1 duplicate rows"
+      - "A deadlock that occurs between N separate queries"
+    answer: 0
+    explanation: "The N+1 problem happens when code loads a list of N entities with one query, then lazily triggers a separate query per entity to fetch a related object, resulting in N+1 total round trips instead of one query with a join or Include()."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does ORM stand for?"
+    options:
+      - "Object-Relational Mapper"
+      - "Object Runtime Manager"
+      - "Output Record Model"
+      - "Online Repository Manager"
+    answer: 0
+    explanation: "ORM stands for Object-Relational Mapper, a tool (like EF Core) that maps between object-oriented code and relational database tables."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In EF Core's Code First approach, what drives the database schema?"
+    options:
+      - "The C# entity classes and their configuration"
+      - "An existing database that gets scaffolded into classes"
+      - "Hand-written SQL scripts only"
+      - "XML configuration files"
+    answer: 0
+    explanation: "In Code First, the developer writes C# entity classes and configuration (data annotations or Fluent API), and EF Core generates migrations/schema from those; Database First works the other way around, scaffolding classes from an existing database."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the DbContext in EF Core?"
+    options:
+      - "The session with the database that holds the model, DbSets and the change tracker"
+      - "A single database table"
+      - "A static utility class with no state"
+      - "A raw connection string"
+    answer: 0
+    explanation: "DbContext represents a unit-of-work/session with the database: it exposes DbSet<T> properties for querying entities and tracks changes made to loaded entities so they can be persisted with SaveChanges()."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does .AsNoTracking() do in an EF Core query?"
+    options:
+      - "Tells EF Core not to add the returned entities to the change tracker"
+      - "Deletes the entities from the database"
+      - "Forces eager loading of every relation"
+      - "Disables SQL translation entirely, forcing client evaluation"
+    answer: 0
+    explanation: "AsNoTracking() returns entities without registering them in the context's change tracker, which reduces memory and CPU overhead for read-only queries since EF doesn't need to snapshot them for later change detection."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which EF Core method performs eager loading of a navigation property?"
+    options:
+      - "Include()"
+      - "Attach()"
+      - "AsNoTracking()"
+      - "FromSqlRaw()"
+    answer: 0
+    explanation: "Include() tells EF Core to load a related navigation property as part of the same query (typically via a SQL join), avoiding the need for separate lazy-loaded queries per entity."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Which EF Core change-tracker state indicates a tracked entity whose properties have changed since it was loaded?"
+    options:
+      - "Modified"
+      - "Added"
+      - "Detached"
+      - "Unchanged"
+    answer: 0
+    explanation: "The change tracker marks an entity as Modified once one of its tracked property values differs from the originally loaded snapshot; Added is for new entities, Detached for untracked ones, and Unchanged for entities matching their original values."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'internal' access modifier restrict a type or member to?"
+    options:
+      - "The same assembly"
+      - "The same namespace only"
+      - "The same class only"
+      - "Subclasses only, regardless of assembly"
+    answer: 0
+    explanation: "'internal' makes a type or member visible to any code in the same compiled assembly, regardless of namespace, but invisible to code in other assemblies."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the correct distinction between an assembly and a namespace in C#?"
+    options:
+      - "An assembly is the compiled unit (.dll/.exe) and the real boundary for 'internal'; a namespace is just a logical grouping of names"
+      - "They are effectively synonyms"
+      - "A namespace is the compiled unit, and an assembly is only a logical grouping"
+      - "'internal' is scoped to the namespace, not the assembly"
+    answer: 0
+    explanation: "An assembly is the physical compiled output (.dll or .exe) and defines the true visibility boundary for 'internal'; a namespace is purely a naming/organizational construct that can span multiple assemblies or coexist with other namespaces in one assembly."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'protected internal' mean?"
+    options:
+      - "Accessible from the same assembly, OR from a subclass in any assembly"
+      - "Accessible only from subclasses in the same assembly"
+      - "Accessible only within the declaring class"
+      - "Accessible from nowhere outside the declaring assembly, even for subclasses"
+    answer: 0
+    explanation: "'protected internal' is a union of the two modifiers: any code in the same assembly can access the member, and so can any subclass regardless of which assembly it's in — it's less restrictive than either modifier alone."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'private protected' mean?"
+    options:
+      - "Accessible only from a subclass, and only if that subclass is in the same assembly"
+      - "Accessible from any code in the same assembly"
+      - "Accessible from any subclass in any assembly"
+      - "Identical in meaning to 'private'"
+    answer: 0
+    explanation: "'private protected' is an intersection, not a union: access requires being both a subclass and in the same assembly as the declaring type, making it more restrictive than 'protected internal'."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'sealed' do when applied to a class?"
+    options:
+      - "It prevents the class from being inherited"
+      - "It prevents the class from being instantiated"
+      - "It makes all of the class's members static"
+      - "It makes the class abstract"
+    answer: 0
+    explanation: "'sealed' stops any other class from deriving from it; it says nothing about instantiation, static members, or abstractness (in fact 'abstract' and 'sealed' are mutually exclusive on a class)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'sealed override' do on a method?"
+    options:
+      - "It blocks any further override of that method in derived classes"
+      - "It makes the method private"
+      - "It turns the method into a static method"
+      - "It makes the method abstract"
+    answer: 0
+    explanation: "A method marked 'sealed override' still overrides its base implementation but prevents any class further down the hierarchy from overriding it again, locking in that implementation."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In which scenario is the 'partial' keyword most commonly used?"
+    options:
+      - "Splitting a class between designer-generated code and hand-written code"
+      - "Making a class thread-safe"
+      - "Preventing a class from being inherited"
+      - "Declaring a class as immutable"
+    answer: 0
+    explanation: "'partial' lets a single type's definition span multiple files, most commonly used to keep designer/tool-generated code separate from the developer's hand-written code in the same class (e.g. WinForms, EF Core scaffolded entities)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What must be true for two partial declarations to be merged by the compiler into one type?"
+    options:
+      - "Same assembly, same namespace, same type name, and both parts marked 'partial'"
+      - "They only need to share the same file name"
+      - "They only need to share the same access modifier"
+      - "Partial types cannot span more than one file, so this never applies"
+    answer: 0
+    explanation: "The compiler merges partial declarations only when they're compiled into the same assembly, share the same namespace and type name, and each declaration is explicitly marked with the 'partial' keyword."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is 'Primitive Obsession'?"
+    options:
+      - "Using primitive types like int or string to represent richer domain concepts, losing type safety"
+      - "Using too many private fields inside a class"
+      - "Overusing generic type parameters"
+      - "Avoiding the use of interfaces altogether"
+    answer: 0
+    explanation: "Primitive Obsession is a code smell where domain concepts (like an email address or an order ID) are represented as bare primitives (string, int) instead of dedicated types, losing validation and making it easy to mix up unrelated values of the same primitive type."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In Domain-Driven Design, what distinguishes a Value Object from an Entity?"
+    options:
+      - "A Value Object is defined by its values and has no identity of its own, and is typically immutable"
+      - "A Value Object always has a unique, database-generated ID"
+      - "An Entity has no identity, only values"
+      - "There is no real distinction between the two"
+    answer: 0
+    explanation: "A Value Object's equality is based purely on its attribute values (two objects with the same values are interchangeable) and it's typically immutable, whereas an Entity is defined by a persistent identity that stays the same even as its attribute values change."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What equality semantics does a 'record struct' have by default in C#?"
+    options:
+      - "Structural (value-based) equality, generated automatically by the compiler"
+      - "Reference equality, exactly like a plain class"
+      - "No equality support at all"
+      - "Equality only if IEquatable is implemented manually"
+    answer: 0
+    explanation: "Records (including record struct) get compiler-synthesized value-based equality: two instances are equal if all their properties are equal, unlike plain classes/structs which default to reference or member-by-member equality without the generated Equals/GetHashCode overrides."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the main compile-time benefit of a Strongly Typed ID, such as OrderId, instead of a plain int?"
+    options:
+      - "The compiler prevents accidentally passing the wrong kind of ID where a different one is expected"
+      - "It reduces the memory used to store the ID"
+      - "It automatically validates the ID against the database"
+      - "It removes the need for a primary key in the database"
+    answer: 0
+    explanation: "Wrapping a raw int in a distinct type like OrderId means the compiler rejects code that accidentally passes a CustomerId where an OrderId is expected, catching a class of bugs that plain ints of the same underlying type can't detect."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the main conceptual difference between Thread and Task in .NET?"
+    options:
+      - "Thread represents an OS-level unit of execution; Task represents the future completion of an operation"
+      - "Thread and Task are interchangeable synonyms in modern .NET"
+      - "Task always creates a brand-new OS thread"
+      - "Thread natively supports cancellation tokens and Task does not"
+    answer: 0
+    explanation: "A Thread is a low-level, direct wrapper around an OS thread; a Task is a higher-level abstraction representing an operation's eventual result, which may run on a thread-pool thread, run synchronously, or not use a dedicated OS thread at all (e.g. with async I/O)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which API is generally recommended for offloading short CPU-bound work onto the thread pool?"
+    options:
+      - "Task.Run"
+      - "new Thread(...)"
+      - "Thread.Abort"
+      - "ThreadPool.SetMaxThreads"
+    answer: 0
+    explanation: "Task.Run schedules work on the shared, efficiently managed thread pool, which is well suited to short CPU-bound work; creating a dedicated new Thread has higher overhead and is better reserved for long-running or special-purpose work."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does Thread.Join() do?"
+    options:
+      - "Blocks the calling thread until the target thread finishes"
+      - "Starts a brand-new thread"
+      - "Permanently suspends the target thread"
+      - "Marks the thread as a background thread"
+    answer: 0
+    explanation: "Join() makes the calling thread wait synchronously until the thread it's called on has completed execution, which is useful for simple thread synchronization."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a race condition?"
+    options:
+      - "Concurrent access to shared state where at least one thread writes, without proper synchronization"
+      - "Any situation where two threads simply run at the same time"
+      - "A deadlock caused by two locks"
+      - "A thread that never terminates"
+    answer: 0
+    explanation: "A race condition occurs specifically when multiple threads access shared mutable state concurrently and at least one is writing, without synchronization, so the outcome depends unpredictably on timing; merely running concurrently isn't by itself a race condition."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What do the four Coffman conditions describe?"
+    options:
+      - "The conditions that must all hold simultaneously for a deadlock to occur"
+      - "The four possible states of a Task"
+      - "The stages of garbage collection"
+      - "The steps of the compiler-generated async state machine"
+    answer: 0
+    explanation: "The Coffman conditions (mutual exclusion, hold and wait, no preemption, circular wait) are the four necessary conditions that must all be true simultaneously for a deadlock to be possible; breaking any one of them prevents deadlock."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the 'volatile' keyword guarantee in C#?"
+    options:
+      - "Visibility of the latest value across threads, but not atomicity of compound operations like x++"
+      - "Full atomicity of any operation performed on the field"
+      - "That the field's value can never change"
+      - "That the field is garbage collected immediately after use"
+    answer: 0
+    explanation: "'volatile' only ensures reads see the most recently written value across threads by preventing certain reordering/caching; it does not make multi-step operations like increment atomic — that requires Interlocked or locking."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which class provides atomic operations like Increment and CompareExchange without needing a full lock?"
+    options:
+      - "Interlocked"
+      - "Monitor"
+      - "Mutex"
+      - "ThreadLocal"
+    answer: 0
+    explanation: "The Interlocked class provides low-level, hardware-backed atomic operations (Increment, Decrement, CompareExchange, etc.) that are faster than a full lock/Monitor for simple operations on a single variable."
+  - type: completion
+    difficulty: 2
+    text: "The .NET mechanism that reuses worker threads to avoid the cost of creating new ones each time is called the thread ____."
+    answer: "pool"
+    explanation: "The thread pool maintains a set of reusable worker threads so that short-lived work (like Task.Run) doesn't pay the overhead of creating and destroying an OS thread each time."
+  - type: completion
+    difficulty: 3
+    text: "In EF Core, Fluent API mappings are configured by overriding the ____ method on DbContext."
+    answer: "OnModelCreating"
+    explanation: "OnModelCreating(ModelBuilder) is the DbContext method where Fluent API calls configure entity mappings, relationships, keys, and constraints as an alternative to data annotations."
+  - type: completion
+    difficulty: 2
+    text: "The C# access modifier that restricts a member to the same assembly is called ____."
+    answer: "internal"
+    explanation: "'internal' members are visible throughout the declaring assembly but hidden from other assemblies referencing it."
+  - type: completion
+    difficulty: 2
+    text: "The keyword that prevents a class from being inherited in C# is ____."
+    answer: "sealed"
+    explanation: "Marking a class 'sealed' stops any other class from deriving from it, closing off further extension via inheritance."
+  - type: single_word
+    difficulty: 3
+    text: "What is the DDD term for an object whose equality is based purely on its contained values rather than an identity?"
+    answer: "Value Object"
+    explanation: "A Value Object represents a concept defined entirely by its attribute values; two Value Objects with identical values are considered equal and interchangeable, unlike an Entity, which is defined by a persistent identity."
+  - type: single_word
+    difficulty: 3
+    text: "What is the name of the .NET synchronization primitive that allows at most N threads concurrent access to a resource?"
+    answer: "SemaphoreSlim"
+    explanation: "SemaphoreSlim maintains a count of available 'slots' and blocks threads once that count reaches zero, letting up to N threads access a resource concurrently, unlike a lock/Monitor which allows only one."
+  - type: single_word
+    difficulty: 2
+    text: "What is the term for a situation where multiple threads block forever because each holds a resource the other needs?"
+    answer: "deadlock"
+    explanation: "A deadlock happens when two or more threads each hold a resource the other is waiting for, so none can proceed and all block indefinitely."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the difference between IEnumerable<T> and IQueryable<T>, and why the distinction matters when querying a database with Entity Framework Core."
+    answer: "IEnumerable<T> represents an in-memory sequence iterated via LINQ to Objects, so filtering happens in memory after the data has already been loaded; IQueryable<T> exposes an expression tree that a provider like EF Core translates into SQL, so filtering happens on the database itself, which reduces the amount of data transferred and processed by the application."
+    explanation: "The practical impact is where filtering executes: chaining LINQ on an IQueryable lets EF Core build SQL that filters at the database, pulling back only the needed rows, while chaining on an IEnumerable (e.g. after an early ToList()) forces all rows to be loaded first and filtered in application memory, which is far less efficient for large datasets."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain what a captive dependency is in the context of .NET dependency injection lifetimes, and why it is a problem."
+    answer: "A captive dependency occurs when a singleton service holds a reference to a scoped or transient service; because the singleton lives for the whole application, it keeps the shorter-lived service alive far longer than intended, breaking the scoping model and potentially causing stale or unsafe shared state."
+    explanation: "Since the singleton is constructed once and its injected dependencies are captured at that time, a scoped service injected into it effectively becomes a singleton too — it never gets recreated per-request, which can leak stale data across requests or cause thread-safety issues if the scoped service wasn't designed to be shared."
+  - type: open_answer
+    difficulty: 5
+    text: "Explain why 'async void' methods are discouraged in C# except for event handlers, beyond what was already covered for exception propagation."
+    answer: "async void methods cannot be awaited, so the caller has no Task to observe for completion, cannot compose them with WhenAll/WhenAny, and cannot know when the work has actually finished; this makes them unsuitable for anything except event handlers, where the framework requires a void-returning signature."
+    explanation: "Without a returned Task, calling code has no handle to await, chain, or check status on, so it can't reliably sequence work after the async void call or detect failures programmatically — the caller just fires it and hopes for the best."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a C# method called IsEven that takes an int parameter and returns true if it is even, false otherwise."
+    answer: |
+      ```csharp
+      public bool IsEven(int number)
+      {
+          return number % 2 == 0;
+      }
+      ```
+    explanation: "The remainder operator % gives the remainder of dividing by 2; a number is even exactly when that remainder is 0, so comparing `number % 2 == 0` directly produces the boolean result without any branching."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a LINQ query (method syntax) that filters a List<int> called numbers down to only the values greater than 10."
+    answer: |
+      ```csharp
+      var result = numbers.Where(n => n > 10).ToList();
+      ```
+    explanation: "Where() is the LINQ filtering operator: it takes a predicate lambda and lazily produces only the elements for which the predicate returns true; ToList() then materializes that sequence into a concrete List<int>."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a C# class called Point with two public auto-implemented properties, X and Y, both of type int."
+    answer: |
+      ```csharp
+      public class Point
+      {
+          public int X { get; set; }
+          public int Y { get; set; }
+      }
+      ```
+    explanation: "The `{ get; set; }` syntax is an auto-implemented property: the compiler generates a hidden backing field automatically, so you don't need to write a private field and the getter/setter bodies yourself for this simple case."
+  - type: open_answer
+    difficulty: 4
+    text: "Write an async C# method called GetDataAsync that returns a Task<string>, awaits Task.Delay(100), and then returns the string \"done\"."
+    answer: |
+      ```csharp
+      public async Task<string> GetDataAsync()
+      {
+          await Task.Delay(100);
+          return "done";
+      }
+      ```
+    explanation: "The method is marked async so it can use await; Task.Delay(100) asynchronously waits 100ms without blocking the thread, and once it completes, the method resumes and returns \"done\", which the compiler wraps into the promised Task<string>."
+    explanation: "Beyond swallowing exceptions, the lack of a returned Task means the caller has no handle to await, compose with WhenAll/WhenAny, or use to detect completion at all, making async void methods effectively fire-and-forget and unsuitable for any composable async workflow — event handlers are exempt only because their delegate signature is fixed by the framework."
+  - type: multiple_choice
+    difficulty: 4
+    text: "In .NET 9, what does 'await foreach' over Task.WhenEach(tasks) let you do that Task.WhenAll does not?"
+    options:
+      - "Consume each task's result as soon as it completes, in completion order, without waiting for all of them"
+      - "Automatically cancel every task once the first one throws"
+      - "Merge every task's result into a single aggregated value"
+      - "Guarantee results are produced in the same order the tasks were created"
+    answer: 0
+    explanation: "Task.WhenEach returns an async stream that yields each completed Task as soon as it finishes, letting the caller start processing results incrementally in completion order, whereas Task.WhenAll only completes once every task has finished."
+  - type: multiple_choice
+    difficulty: 3
+    text: "You need to run a heavy CPU-bound computation over a large in-memory collection, expressed naturally as a chained LINQ query with Select and Where. Which approach fits best?"
+    options:
+      - "PLINQ, using AsParallel() on the query"
+      - "Parallel.ForEach with a lambda that ignores the return value"
+      - "Task.WhenAll wrapping one Task.Run per element"
+      - "A single-threaded foreach loop, since LINQ cannot run in parallel"
+    answer: 0
+    explanation: "PLINQ (AsParallel) is designed exactly for CPU-bound work already expressed as a LINQ pipeline; Parallel.ForEach is better suited to an imperative loop style, and wrapping every element in its own Task.Run adds overhead PLINQ's partitioning avoids."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why would you choose ReaderWriterLockSlim over a plain lock for a cache that is read thousands of times per second but updated only occasionally?"
+    options:
+      - "It lets multiple readers access the cache concurrently while still giving a writer exclusive access"
+      - "It makes read operations atomic without any locking at all"
+      - "It automatically retries failed writes"
+      - "It replaces the need for thread-safe collections entirely"
+    answer: 0
+    explanation: "A plain lock serializes all access, including reads that don't conflict with each other; ReaderWriterLockSlim allows any number of concurrent readers via EnterReadLock, only blocking readers while a writer holds EnterWriteLock, which is far better for read-heavy workloads."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does ConcurrentDictionary<TKey,TValue>.AddOrUpdate guarantee when called concurrently from multiple threads on the same key?"
+    options:
+      - "The add-or-update operation for that key happens atomically, without external locking"
+      - "It blocks all other keys in the dictionary until it completes"
+      - "It silently ignores the update if another thread is currently reading"
+      - "It throws an exception if the key already exists"
+    answer: 0
+    explanation: "AddOrUpdate performs its add-or-update logic atomically per key using internal synchronization, so concurrent callers don't corrupt the dictionary or lose updates, without requiring the caller to take an explicit lock."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does Interlocked.CompareExchange(ref location, newValue, comparand) do?"
+    options:
+      - "Atomically replaces location with newValue only if location currently equals comparand, and returns the original value"
+      - "Atomically swaps location and newValue unconditionally"
+      - "Blocks the calling thread until location changes"
+      - "Increments location by newValue if comparand is greater than zero"
+    answer: 0
+    explanation: "CompareExchange is the classic compare-and-swap primitive: it checks whether location still equals comparand and, only in that case, replaces it with newValue, all as one atomic hardware operation — it's the foundation of many lock-free algorithms."
+  - type: multiple_choice
+    difficulty: 4
+    text: "According to Amdahl's law, if only 70% of a program's work can be parallelized, what happens as you add more and more processor cores?"
+    options:
+      - "The maximum possible speedup converges to a fixed limit (about 3.33x here), no matter how many cores you add"
+      - "The speedup grows linearly and without bound as cores increase"
+      - "The program eventually runs slower than on a single core"
+      - "The serial portion of the work also becomes parallelizable automatically"
+    answer: 0
+    explanation: "Amdahl's law states the speedup is 1 / ((1-P) + P/N); as N approaches infinity the term P/N vanishes and the speedup is capped at 1/(1-P), so with P=0.7 the ceiling is about 3.33x — the unparallelizable 30% dominates once N is large."
+  - type: multiple_choice
+    difficulty: 4
+    text: "A delegate is declared as 'delegate void Handler(Cane c)'. Thanks to contravariance, which method can be assigned to it?"
+    options:
+      - "A method with signature 'void Gestisci(Animale a)', where Cane derives from Animale"
+      - "A method with signature 'void Gestisci(Gatto g)', an unrelated type"
+      - "Only a method with the exact signature 'void Gestisci(Cane c)'"
+      - "A method returning Animale instead of void"
+    answer: 0
+    explanation: "Contravariance lets a delegate accept a method whose parameter type is a base type of the one declared, because a method that can handle any Animale can certainly handle a Cane; a method expecting the more specific Cane could not safely substitute in the other direction."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the standard .NET signature followed by an EventHandler<TEventArgs> delegate?"
+    options:
+      - "void Handler(object? sender, TEventArgs e)"
+      - "TEventArgs Handler(object? sender)"
+      - "void Handler(TEventArgs e, object? sender)"
+      - "object Handler(TEventArgs e)"
+    answer: 0
+    explanation: "The idiomatic .NET event pattern passes the source of the event as 'sender' and event-specific data as a second parameter of type TEventArgs (or a subclass of EventArgs), always returning void."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'shadow property' in EF Core?"
+    options:
+      - "A property that exists in the EF Core model and maps to a column, but is not declared on the C# entity class"
+      - "A private field that EF Core ignores completely"
+      - "A computed property that only exists in memory and is never persisted"
+      - "A duplicate of an existing property used only for validation"
+    answer: 0
+    explanation: "A shadow property (like CreatedAt or IsDeleted) is tracked and persisted by EF Core's model even though it has no corresponding C# property on the entity class; it's accessed through the change tracker via EF.Property<T> or ChangeTracker APIs."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does mapping a class with OwnsOne() in EF Core Fluent API achieve?"
+    options:
+      - "It maps a Value-Object-like type as part of the owner's table (or a related table) without giving it its own independent identity"
+      - "It creates a many-to-many relationship between the owner and the owned type"
+      - "It forces the owned type to always be lazy-loaded"
+      - "It marks the owned type as an aggregate root with its own DbSet"
+    answer: 0
+    explanation: "Owned entities model DDD Value Objects: EF Core maps their properties (often into the same table as the owner, e.g. via column prefixes) without treating the owned type as a separate entity with its own key and DbSet."
+  - type: multiple_choice
+    difficulty: 4
+    text: "In EF Core's Table-Per-Hierarchy (TPH) inheritance mapping, how is an entire class hierarchy typically stored?"
+    options:
+      - "In a single table with a discriminator column identifying each row's concrete type, leaving many columns nullable"
+      - "In one separate table per class in the hierarchy, joined together when queried"
+      - "In one table per concrete leaf type, duplicating inherited columns"
+      - "EF Core does not support mapping class hierarchies at all"
+    answer: 0
+    explanation: "TPH puts every type in the hierarchy into one table and uses a discriminator column to tell rows apart, minimizing joins at the cost of nullable columns for properties that don't apply to every subtype; TPT uses one table per type with joins, and TPC duplicates columns per concrete type."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What happens when EF Core detects, via a [Timestamp] rowversion column, that a row changed since it was loaded, during SaveChangesAsync()?"
+    options:
+      - "It throws a DbUpdateConcurrencyException instead of applying the update"
+      - "It silently overwrites the database row with the in-memory values"
+      - "It automatically merges the two versions field by field"
+      - "It retries the update indefinitely until it succeeds"
+    answer: 0
+    explanation: "EF Core includes the concurrency token in the UPDATE's WHERE clause; if no row matches (because the token changed), zero rows are affected and EF Core raises DbUpdateConcurrencyException so the application can decide how to resolve the conflict, implementing optimistic concurrency."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In .NET 8, what problem do keyed DI services (AddKeyedScoped, [FromKeyedServices]) solve?"
+    options:
+      - "Registering multiple implementations of the same interface and resolving a specific one by a string or object key"
+      - "Encrypting service registrations so only authorized code can resolve them"
+      - "Automatically disposing services in a specific order"
+      - "Allowing a service to be resolved before the container is built"
+    answer: 0
+    explanation: "Keyed services let you register several implementations of the same interface (e.g. different payment providers) under distinct keys and resolve the right one explicitly, replacing patterns that previously relied on switch statements or manual factories."
+  - type: completion
+    difficulty: 3
+    text: "A multicast delegate exposes its list of subscribed methods through the ____ method, which returns a Delegate[] array."
+    answer: "GetInvocationList"
+    explanation: "GetInvocationList() returns each Delegate in the multicast chain individually, which is useful for invoking them one by one with isolated error handling or for inspecting subscribers during debugging."
+  - type: completion
+    difficulty: 2
+    text: "The ____ expression creates a new record instance that copies an existing one while changing only the specified members."
+    answer: "with"
+    explanation: "The 'with' expression is compiler-generated support for non-destructive mutation on records: it copies all members from the source instance and then applies the given property assignments to produce a new, independent instance."
+  - type: single_word
+    difficulty: 3
+    text: "Which generic type gives each thread its own independent, isolated instance of a value, avoiding shared mutable state without locking?"
+    answer: "ThreadLocal<T>"
+    explanation: "ThreadLocal<T> lazily creates and stores a separate value per thread that accesses it, so each thread reads and writes its own copy instead of contending over shared state — useful for per-thread counters, buffers, or caches."
+  - type: single_word
+    difficulty: 2
+    text: "Which C# 9 property accessor allows a property to be set only during object construction (constructor or object initializer), never afterward?"
+    answer: "init"
+    explanation: "An 'init' accessor behaves like a setter that is only callable while the object is being constructed (via the constructor body or an object initializer); any assignment attempted after construction is a compile-time error, which makes it useful for immutable-by-default models."
+  - type: open_answer
+    difficulty: 3
+    text: "The following C# code is meant to print 0, 1, 2 but instead prints 3, 3, 3 due to a classic closure capture bug:\n```csharp\nvar azioni = new List<Action>();\nfor (int i = 0; i < 3; i++)\n{\n    azioni.Add(() => Console.WriteLine(i));\n}\nforeach (var azione in azioni) azione();\n```\nRewrite the loop body so it correctly prints 0, 1, 2."
+    answer: |
+      ```csharp
+      var azioni = new List<Action>();
+      for (int i = 0; i < 3; i++)
+      {
+          int copia = i;
+          azioni.Add(() => Console.WriteLine(copia));
+      }
+      foreach (var azione in azioni) azione();
+      ```
+    explanation: "Each lambda captures the variable itself, not a snapshot of its value; introducing 'copia' inside the loop body creates a brand-new local variable per iteration, so each closure captures its own distinct variable instead of the single shared loop counter that ends up at 3."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a C# lambda expression assigned to a variable called sommaCurried of type Func<int, Func<int, int>> that implements curried addition, so that sommaCurried(10)(5) evaluates to 15."
+    answer: |
+      ```csharp
+      Func<int, Func<int, int>> sommaCurried = x => y => x + y;
+      ```
+    explanation: "Currying turns a two-argument function into a chain of single-argument functions: the outer lambda captures x in a closure and returns an inner lambda that adds y to it, so calling sommaCurried(10) yields a new Func<int,int> that adds 10 to whatever it's given."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a minimal generic C# class Result<T> with a private constructor, static factory methods Success(T value) and Failure(string error), and public properties IsSuccess, Value and Error, so that callers can represent an operation's outcome without throwing exceptions."
+    answer: |
+      ```csharp
+      public sealed class Result<T>
+      {
+          public bool IsSuccess { get; }
+          public T? Value { get; }
+          public string? Error { get; }
+
+          private Result(bool isSuccess, T? value, string? error)
+          {
+              IsSuccess = isSuccess;
+              Value = value;
+              Error = error;
+          }
+
+          public static Result<T> Success(T value) => new(true, value, null);
+          public static Result<T> Failure(string error) => new(false, default, error);
+      }
+      ```
+    explanation: "The private constructor forces callers through the two named factory methods, which set IsSuccess consistently with whether a value or an error message is present, letting an operation report failure as ordinary data instead of throwing and forcing a try/catch at every call site."
+  - type: open_answer
+    difficulty: 3
+    text: "Write an async C# method called ProcessAllAsync that takes a List<string> urls and an HttpClient, and downloads all of them concurrently but limits concurrency to at most 3 simultaneous requests using a SemaphoreSlim, awaiting all downloads to complete."
+    answer: |
+      ```csharp
+      public async Task ProcessAllAsync(List<string> urls, HttpClient httpClient)
+      {
+          using var throttle = new SemaphoreSlim(3);
+
+          var tasks = urls.Select(async url =>
+          {
+              await throttle.WaitAsync();
+              try
+              {
+                  await httpClient.GetStringAsync(url);
+              }
+              finally
+              {
+                  throttle.Release();
+              }
+          });
+
+          await Task.WhenAll(tasks);
+      }
+      ```
+    explanation: "Each download first awaits the semaphore, which only allows 3 callers past WaitAsync() at once; the finally block guarantees Release() runs even if the download throws, and Task.WhenAll composes all the individual per-URL tasks into one awaitable that completes once every download (or throttle wait) has finished."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a C# readonly struct called Money with two properties, decimal Amount and string Currency, that implements IEquatable<Money> so two Money values are equal when both Amount and Currency match."
+    answer: |
+      ```csharp
+      public readonly struct Money : IEquatable<Money>
+      {
+          public decimal Amount { get; }
+          public string Currency { get; }
+
+          public Money(decimal amount, string currency)
+          {
+              Amount = amount;
+              Currency = currency;
+          }
+
+          public bool Equals(Money other) =>
+              Amount == other.Amount && Currency == other.Currency;
+
+          public override bool Equals(object? obj) =>
+              obj is Money other && Equals(other);
+
+          public override int GetHashCode() => HashCode.Combine(Amount, Currency);
+      }
+      ```
+    explanation: "readonly struct communicates that Money instances never mutate after construction; implementing IEquatable<Money> gives a strongly-typed Equals that avoids boxing in generic collections, and overriding GetHashCode consistently with Equals (using both fields) keeps the type well-behaved in dictionaries and hash sets."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the main tradeoff between EF Core's TPH (Table-Per-Hierarchy) and TPT (Table-Per-Type) inheritance mapping strategies."
+    answer: "TPH stores the whole class hierarchy in a single table with a discriminator column, which avoids joins and is usually faster to query, but leaves many columns nullable since not every subtype uses every property. TPT stores each type in its own table linked by a shared primary key, giving a more normalized schema with no unused nullable columns, but requires joins across tables to reconstruct a full entity, which is more expensive as the hierarchy grows."
+    explanation: "The choice is a classic normalization-versus-query-cost tradeoff: TPH sacrifices schema cleanliness (nullable columns for subtype-specific data) for fewer joins and generally better read performance, while TPT keeps a cleaner relational schema at the cost of join overhead that increases with the number of types involved in a query."
