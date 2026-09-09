@@ -143,9 +143,11 @@ public class SeedLoaderService(AppDbContext context, AppSettings settings) : ISe
 
     private static bool TryGetBool(Dictionary<object, object> dict, string key, out bool value)
     {
-        if (TryGetRaw(dict, key, out var raw) && raw is bool b)
+        // YamlDotNet's dynamic Dictionary<object,object> deserialization resolves scalars as
+        // strings (not bool/int), so "true"/"false" text needs an explicit parse here.
+        if (TryGetRaw(dict, key, out var raw) && raw is not null && bool.TryParse(raw.ToString(), out var parsed))
         {
-            value = b;
+            value = parsed;
             return true;
         }
         value = false;

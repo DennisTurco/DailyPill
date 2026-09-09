@@ -3,7 +3,13 @@ bin/
 obj/
 backend-dist/
 DailyPill.Api/data/*.db
+DailyPill.Api/data/*.db-shm
+DailyPill.Api/data/*.db-wal
 DailyPill.Api/data/*.sqlite3
+*.csproj.user
+
+# Visual Studio
+.vs/
 
 # Node / frontend
 frontend/node_modules/

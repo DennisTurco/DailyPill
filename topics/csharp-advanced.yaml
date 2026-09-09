@@ -981,3 +981,677 @@ manual_questions:
     text: "Explain the main tradeoff between EF Core's TPH (Table-Per-Hierarchy) and TPT (Table-Per-Type) inheritance mapping strategies."
     answer: "TPH stores the whole class hierarchy in a single table with a discriminator column, which avoids joins and is usually faster to query, but leaves many columns nullable since not every subtype uses every property. TPT stores each type in its own table linked by a shared primary key, giving a more normalized schema with no unused nullable columns, but requires joins across tables to reconstruct a full entity, which is more expensive as the hierarchy grows."
     explanation: "The choice is a classic normalization-versus-query-cost tradeoff: TPH sacrifices schema cleanliness (nullable columns for subtype-specific data) for fewer joins and generally better read performance, while TPT keeps a cleaner relational schema at the cost of join overhead that increases with the number of types involved in a query."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which keyword allows a method to be overridden in a derived class?"
+    options:
+      - "virtual"
+      - "override"
+      - "sealed"
+      - "static"
+    answer: 0
+    explanation: "'virtual' on a base class method allows derived classes to provide their own implementation via 'override'; without it, a method can only be hidden with 'new', not properly overridden."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which keyword must a derived class use to provide a new implementation of a virtual method?"
+    options:
+      - "override"
+      - "virtual"
+      - "abstract"
+      - "base"
+    answer: 0
+    explanation: "'override' explicitly replaces the base class's virtual (or abstract) implementation with the derived class's own, participating in dynamic dispatch so the overridden version runs even when called through a base-typed reference."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is calling a virtual method from inside a base class constructor considered risky?"
+    options:
+      - "The derived class's override can run before the derived class's own constructor has finished initializing its fields"
+      - "It causes a compile-time error"
+      - "It always throws a NullReferenceException at runtime"
+      - "Virtual methods cannot be called from constructors at all"
+    answer: 0
+    explanation: "Construction runs base-to-derived, but virtual dispatch still resolves to the most-derived override; if that override touches fields the derived constructor hasn't set yet, it can observe them in their default, uninitialized state."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Since C# 8, what can an interface contain that was traditionally only possible in classes?"
+    options:
+      - "A default implementation for one of its members"
+      - "Private instance fields with state"
+      - "A parameterless public constructor"
+      - "Sealed members"
+    answer: 0
+    explanation: "Default interface methods let an interface provide a body for a member; implementing types can use it as-is or override it, which is especially useful for adding new members to an interface without breaking every existing implementation."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which keyword declares a type that cannot be instantiated directly but can be inherited from?"
+    options:
+      - "abstract"
+      - "sealed"
+      - "static"
+      - "partial"
+    answer: 0
+    explanation: "An 'abstract' class can declare abstract members with no body that subclasses must implement, and 'new AbstractClass()' is a compile error — it can only be used as a base type."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the expression 'x switch { < 2 => \"small\", < 10 => \"medium\", _ => \"large\" }' evaluate to when x is 5?"
+    options:
+      - "\"medium\""
+      - "\"small\""
+      - "\"large\""
+      - "A compile-time error"
+    answer: 0
+    explanation: "Relational patterns in a switch expression are checked top to bottom; 5 fails '< 2' but satisfies '< 10', so the second arm's result, \"medium\", is produced — the discard pattern '_' only applies if no earlier arm matches."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the null-coalescing operator '??' do in 'var name = input ?? \"default\";'?"
+    options:
+      - "Uses input if it's not null, otherwise uses \"default\""
+      - "Throws if input is null"
+      - "Always overwrites input with \"default\""
+      - "Checks whether input equals \"default\""
+    answer: 0
+    explanation: "'??' evaluates its left operand; if that's null, it evaluates and returns the right operand instead, giving a concise way to supply a fallback value without an explicit if/else."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the null-conditional operator '?.' do when called on a null reference, e.g. 'person?.Name'?"
+    options:
+      - "Short-circuits and evaluates to null instead of throwing NullReferenceException"
+      - "Throws NullReferenceException immediately"
+      - "Automatically creates a new instance of the type"
+      - "Is a compile-time error if person could be null"
+    answer: 0
+    explanation: "'?.' checks the left-hand side for null before accessing the member; if it's null, the whole expression short-circuits to null (or to the type's default, when chained further) instead of dereferencing a null reference."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the null-forgiving operator '!' do, e.g. in 'value!.ToString()'?"
+    options:
+      - "Suppresses the compiler's nullable-reference-type warning, with no effect at runtime"
+      - "Converts a nullable value type to its non-nullable equivalent at runtime"
+      - "Throws immediately if value is null"
+      - "Assigns null to value"
+    answer: 0
+    explanation: "'!' is purely a compile-time annotation telling the nullable-reference-types analysis 'trust me, this isn't null here' — it silences the warning but performs no actual null check, so a genuinely null value still causes a NullReferenceException at the point it's dereferenced."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'count ??= 0;' do?"
+    options:
+      - "Assigns 0 to count only if count is currently null"
+      - "Always assigns 0 to count"
+      - "Throws if count is not already 0"
+      - "Compares count to 0 and returns a bool"
+    answer: 0
+    explanation: "The null-coalescing assignment operator '??=' assigns the right-hand value only when the left-hand variable is currently null, leaving any existing non-null value untouched — useful for lazily initializing a field or variable."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which built-in collection type stores unique elements with no defined ordering?"
+    options:
+      - "HashSet<T>"
+      - "List<T>"
+      - "Queue<T>"
+      - "Stack<T>"
+    answer: 0
+    explanation: "HashSet<T> automatically discards duplicate values (based on equality) and does not guarantee any particular iteration order, unlike List<T> which preserves insertion order and allows duplicates."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which .NET collection type provides FIFO (first-in, first-out) ordering?"
+    options:
+      - "Queue<T>"
+      - "Stack<T>"
+      - "HashSet<T>"
+      - "SortedSet<T>"
+    answer: 0
+    explanation: "Queue<T> enqueues items at one end and dequeues them from the other, preserving the order items were added; Stack<T> is the LIFO counterpart, popping the most recently pushed item first."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which interface must a type implement to support default sorting via 'list.Sort()' with no comparer argument?"
+    options:
+      - "IComparable<T>"
+      - "IComparer<T>"
+      - "IEquatable<T>"
+      - "IEnumerable<T>"
+    answer: 0
+    explanation: "IComparable<T> is implemented on the type itself and defines its natural ordering via CompareTo(); IComparer<T> instead defines an external, alternate ordering that can be passed in without modifying the original type."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of IComparer<T> as opposed to IComparable<T>?"
+    options:
+      - "It defines an external, alternate sort order without modifying the type being sorted"
+      - "It is required before a type can be stored in any collection"
+      - "It makes a type's instances immutable"
+      - "It is only usable with value types, never reference types"
+    answer: 0
+    explanation: "A separate IComparer<T> implementation can be passed to Sort() or OrderBy() to sort by a different criterion (e.g. by Age instead of a Person's natural Name ordering), without needing to change the IComparable<T> implementation on Person itself."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which of these C# types is immutable, meaning every apparent modification actually returns a brand-new instance?"
+    options:
+      - "string"
+      - "StringBuilder"
+      - "List<char>"
+      - "char[]"
+    answer: 0
+    explanation: "Every string operation like .ToUpper() or .Substring() returns a new string object rather than modifying the original in place; StringBuilder exists specifically to provide efficient, genuinely mutable string building."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why is StringBuilder generally preferred over repeated '+' string concatenation inside a loop?"
+    options:
+      - "Each '+' concatenation on strings allocates a brand-new string, which is wasteful when repeated many times"
+      - "The '+' operator does not work on strings in C#"
+      - "StringBuilder is required to use string interpolation"
+      - "Repeated concatenation causes a compile-time error"
+    answer: 0
+    explanation: "Because strings are immutable, every '+' concatenation must allocate an entirely new string and copy both operands into it; StringBuilder maintains an internal resizable buffer and appends into it, avoiding that repeated allocation and copying cost."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'catch (Exception ex) when (ex.Message.Contains(\"timeout\"))' do?"
+    options:
+      - "Only catches the exception if the condition in the 'when' clause is true; otherwise it keeps propagating"
+      - "Always catches the exception, then checks the condition afterward"
+      - "Is invalid syntax in C#"
+      - "Suppresses the exception entirely regardless of the condition"
+    answer: 0
+    explanation: "An exception filter ('when' clause) is evaluated before the catch block runs; if it's false, that catch clause is skipped as if it didn't match at all, and the exception continues propagating to look for another handler, preserving the original stack trace."
+  - type: multiple_choice
+    difficulty: 2
+    text: "When a try block has multiple catch clauses for different exception types, how must they be ordered?"
+    options:
+      - "More specific (derived) exception types before more general (base) ones"
+      - "Alphabetically by exception type name"
+      - "General exception types before specific ones"
+      - "Order does not matter at all"
+    answer: 0
+    explanation: "Catch clauses are tried in the order they're written, and the first matching one wins; putting a general type like Exception before a more specific one like ArgumentException would mean the specific catch is unreachable, which the compiler flags as an error."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the base class of every exception type in .NET?"
+    options:
+      - "System.Exception"
+      - "System.Object"
+      - "System.Error"
+      - "System.SystemException"
+    answer: 0
+    explanation: "Every exception, built-in or custom, ultimately derives from System.Exception, which is why a bare 'catch (Exception ex)' can catch anything thrown, though catching that broadly is usually discouraged in favor of specific exception types."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the generic constraint 'where T : class' require of T?"
+    options:
+      - "T must be a reference type"
+      - "T must be a value type"
+      - "T must implement IComparable"
+      - "T must have a public parameterless constructor"
+    answer: 0
+    explanation: "'where T : class' restricts a generic parameter to reference types (so 'null' is a valid value for T), the opposite of 'where T : struct', which restricts it to value types."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the generic constraint 'where T : new()' require of T?"
+    options:
+      - "T must have an accessible public parameterless constructor"
+      - "T must be a static class"
+      - "T must be a sealed class"
+      - "T must implement IDisposable"
+    answer: 0
+    explanation: "'new()' lets generic code write 'new T()' to create an instance, which the compiler would otherwise reject since it can't know in general whether an arbitrary T has a parameterless constructor; the constraint must be listed last if combined with other constraints."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the constraint 'where T : IComparable<T>' allow a generic method to do?"
+    options:
+      - "Call T.CompareTo(T) to compare two instances of T directly"
+      - "Automatically sort any List<T> without further code"
+      - "Guarantee T has value semantics"
+      - "Allow T to be used as a dictionary key with no further constraints"
+    answer: 0
+    explanation: "Constraining T to IComparable<T> tells the compiler every T instance exposes CompareTo(), so a generic method like Max<T>(T a, T b) can call a.CompareTo(b) to decide ordering, something it couldn't do on an unconstrained T."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the main benefit of a generic method like 'T Max<T>(T a, T b) where T : IComparable<T>' over an object-based equivalent?"
+    options:
+      - "Type safety at compile time, without boxing value types or casting the result"
+      - "It runs on a separate thread automatically"
+      - "It removes the need for any constraints at all"
+      - "It allows mixing completely unrelated types in a single call"
+    answer: 0
+    explanation: "An object-based Max(object a, object b) would need to box every value type argument and cast the result back, losing compile-time type checking; the generic version keeps everything strongly typed and avoids the extra allocation boxing would cause."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which keyword is used to overload an operator, such as '+', for a custom type in C#?"
+    options:
+      - "operator"
+      - "overload"
+      - "override"
+      - "implicit"
+    answer: 0
+    explanation: "A method like 'public static Vector2 operator +(Vector2 a, Vector2 b)' overloads '+' for that type; 'override' is unrelated (used for virtual members), and 'implicit'/'explicit' are for user-defined conversions, not arithmetic operators."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What must be true of an overloaded operator method's signature in C#?"
+    options:
+      - "It must be declared both public and static"
+      - "It must be private and instance-level"
+      - "It must return void"
+      - "It can only take a single parameter"
+    answer: 0
+    explanation: "Operator overloads are always public static methods on the type — there's no 'this' instance receiving the call, since operators like '+' conceptually act on two independent operands passed as parameters."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does defining 'public int this[int index] { get; set; }' inside a class add to it?"
+    options:
+      - "The ability to access instances with array-like syntax, e.g. obj[3]"
+      - "A static array field automatically"
+      - "Automatic implementation of IEnumerable"
+      - "A default constructor that takes an index"
+    answer: 0
+    explanation: "This is an indexer: it lets instances of the class be read and written using square-bracket syntax as if they were an array, while the getter/setter body controls what actually happens (e.g. delegating to an internal array or dictionary)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which modifier on the first parameter of a static method makes it usable as an extension method?"
+    options:
+      - "this"
+      - "ref"
+      - "params"
+      - "out"
+    answer: 0
+    explanation: "Marking the first parameter with 'this' (e.g. 'public static bool IsPalindrome(this string s)') lets callers invoke it with instance-method syntax, like \"racecar\".IsPalindrome(), even though it's really a static method defined elsewhere."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Extension methods must be defined inside what kind of class?"
+    options:
+      - "A static class"
+      - "A sealed class"
+      - "An abstract class"
+      - "A partial class specifically"
+    answer: 0
+    explanation: "Extension methods are static methods that must live in a static class; the class itself can't be instantiated, but its methods extend the apparent API of the type named by the 'this' parameter."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'var (name, age) = person;' do, assuming 'person' returns a tuple '(string, int)'?"
+    options:
+      - "Deconstructs the tuple into two separate local variables, name and age"
+      - "Creates a new Person object from name and age"
+      - "Is a compile-time error; tuples cannot be deconstructed this way"
+      - "Only works if person is itself a variable, not a method call"
+    answer: 0
+    explanation: "Deconstruction unpacks a tuple's elements positionally into new variables in one statement, avoiding the need to access .Item1/.Item2 (or named tuple fields) separately."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which C# feature lets a method return multiple values without an 'out' parameter or a dedicated class?"
+    options:
+      - "Tuples"
+      - "Delegates"
+      - "Indexers"
+      - "Extension methods"
+    answer: 0
+    explanation: "A method can return e.g. '(int min, int max) GetRange(...)' and callers can deconstruct or access .min/.max directly, avoiding the ceremony of declaring a small class or using 'out' parameters just to return two or three related values."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which attribute allows an enum's values to be safely combined with bitwise OR, e.g. Permissions.Read | Permissions.Write?"
+    options:
+      - "[Flags]"
+      - "[Serializable]"
+      - "[Obsolete]"
+      - "[Combinable]"
+    answer: 0
+    explanation: "[Flags] signals that an enum's values are meant to be combined as bit flags (typically powers of two: 1, 2, 4, 8...) and improves ToString()'s output to show the combined names instead of just a raw number; it doesn't change the underlying bitwise mechanics, which work on any enum, but documents the intent."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the default underlying numeric type of a C# enum?"
+    options:
+      - "int"
+      - "byte"
+      - "long"
+      - "short"
+    answer: 0
+    explanation: "Unless a different underlying type is specified (e.g. 'enum Color : byte'), every C# enum uses int (System.Int32) to store its values by default."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary memory-related difference between a struct and a class in C#?"
+    options:
+      - "A struct is a value type, typically stored inline (often on the stack); a class is a reference type, allocated on the heap"
+      - "A struct is always allocated on the heap, exactly like a class"
+      - "A class cannot contain any fields, only methods"
+      - "There is no real difference; 'struct' is just a legacy synonym for 'class'"
+    answer: 0
+    explanation: "Value types like structs are copied by value and commonly live inline (on the stack, or embedded within whatever contains them); reference types like classes are allocated on the managed heap, and variables of that type merely hold a reference to the object."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What happens when you assign one struct variable to another, e.g. 'var b = a;' where a is a struct?"
+    options:
+      - "The entire value is copied; a and b become independent, unrelated instances"
+      - "Both variables end up referencing the same underlying instance"
+      - "It throws an exception, since structs cannot be reassigned"
+      - "Only the first field is copied"
+    answer: 0
+    explanation: "Value-type assignment copies the full value bit-for-bit into the destination variable, so subsequently modifying a's fields has no effect on b, unlike assigning a class reference, where both variables would then point to the same object."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What happens when you assign one class variable to another, e.g. 'var b = a;' where a is a class instance?"
+    options:
+      - "Both variables now reference the exact same underlying object"
+      - "A completely independent deep copy of the object is created"
+      - "Only the object's public fields are copied"
+      - "It is a compile-time error unless the class implements ICloneable"
+    answer: 0
+    explanation: "Reference-type assignment copies the reference (essentially a pointer), not the object it points to, so mutating the object through b is visible through a as well, since they both point at the same instance on the heap."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the LINQ 'GroupBy' operator do?"
+    options:
+      - "Groups elements that share a common key into separate groupings"
+      - "Removes duplicate elements from a sequence"
+      - "Sorts elements by a key in ascending order"
+      - "Joins two sequences together based on a shared key"
+    answer: 0
+    explanation: "GroupBy(keySelector) partitions a sequence into IGrouping<TKey, TElement> buckets, one per distinct key value, letting you then aggregate or enumerate each group separately — conceptually similar to SQL's GROUP BY."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the LINQ 'Join' operator do?"
+    options:
+      - "Combines elements of two sequences that share a matching key, similar to a SQL inner join"
+      - "Concatenates two sequences end-to-end"
+      - "Merges two sequences element-by-element by position, regardless of key"
+      - "Filters a sequence down to elements present in both inputs"
+    answer: 0
+    explanation: "Join takes two sequences plus key selectors for each, and produces one result per pair of elements whose keys match — exactly analogous to an inner join between two tables in SQL; Zip is the operator that instead pairs elements purely by position."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the LINQ 'Aggregate' operator do?"
+    options:
+      - "Applies an accumulator function over a sequence to produce a single combined value"
+      - "Splits a sequence into equally sized batches"
+      - "Sorts a sequence in descending order"
+      - "Removes null elements from a sequence"
+    answer: 0
+    explanation: "Aggregate repeatedly applies a function that combines an accumulated value with the next element (e.g. summing, building a running product, or concatenating strings), similar to a manual fold/reduce loop, ultimately returning just the final accumulated result."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'SelectMany' do differently from 'Select' in LINQ?"
+    options:
+      - "It flattens a sequence of sequences into a single, flat sequence"
+      - "It applies a filter predicate instead of a projection"
+      - "It sorts the results before returning them"
+      - "It behaves identically to Select in every case"
+    answer: 0
+    explanation: "If a projection produces a collection per element (e.g. mapping each Order to its list of OrderLines), Select would give you a sequence of sequences (List<List<OrderLine>>), while SelectMany flattens all those inner sequences into one single, flat sequence of OrderLine."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does the 'static' modifier mean when applied to a class member?"
+    options:
+      - "The member belongs to the type itself, not to any individual instance"
+      - "The member can only be called once during the program's lifetime"
+      - "The member is automatically thread-safe"
+      - "The member cannot be changed once set"
+    answer: 0
+    explanation: "A static field or method is shared across the whole type rather than existing separately per object; it's accessed via the type name (e.g. Math.Sqrt(x)) rather than through an instance reference."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Can a static class in C# have instance constructors or be instantiated with 'new'?"
+    options:
+      - "No — a static class cannot be instantiated at all and may only contain static members"
+      - "Yes, but only with a parameterless constructor"
+      - "Yes, and it behaves exactly like a sealed class otherwise"
+      - "Only if it implements an interface"
+    answer: 0
+    explanation: "A 'static class' is implicitly sealed and abstract at the IL level, has no instance constructor, and the compiler rejects any attempt to write 'new StaticClass()'; every member it declares must itself be static."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the pattern 'if (shape is Circle { Radius: > 0 } c)' check and do?"
+    options:
+      - "Checks that shape is a Circle with a Radius property greater than 0, and if so binds it to the new variable c"
+      - "Checks only that shape is not null, ignoring its actual type"
+      - "Declares c but performs no type or property check at all"
+      - "Is invalid syntax; property patterns cannot be combined with relational patterns"
+    answer: 0
+    explanation: "This combines a type pattern (is Circle), a property pattern ({ Radius: ... }), and a relational pattern (> 0) into one condition: shape must actually be a Circle instance, and that instance's Radius must be greater than 0, with the whole thing bound to c only if every part matches."
+  - type: completion
+    difficulty: 2
+    text: "The switch ____ (introduced in C# 8) lets 'x switch { ... }' be written as an expression that produces a value, rather than a statement."
+    answer: "expression"
+    explanation: "A switch expression evaluates to a value directly (e.g. 'var r = x switch { 1 => \"one\", _ => \"other\" };'), unlike a classic switch statement, which executes case blocks with 'break' and doesn't itself produce a value."
+  - type: single_word
+    difficulty: 2
+    text: "What is the C# term for defining multiple methods with the same name but different parameter lists within the same type?"
+    answer: "overloading"
+    explanation: "Method overloading lets a type expose several methods sharing one name (e.g. several Console.WriteLine variants), distinguished purely by their parameter types/count, which the compiler resolves at the call site — this is unrelated to overriding, which replaces a base class's implementation instead."
+  - type: single_word
+    difficulty: 2
+    text: "What C# keyword, when applied to a field, means it can only be assigned inline or inside a constructor of the declaring class, never afterward?"
+    answer: "readonly"
+    explanation: "A 'readonly' field's value is fixed once construction completes; any attempt to assign it from a regular method is a compile-time error, unlike 'const', which additionally requires the value to be known at compile time."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a C# interface called IShape with a single method 'double Area();', and a class Circle implementing it that stores a radius (via its constructor) and computes the area as Math.PI * radius * radius."
+    answer: |
+      ```csharp
+      public interface IShape
+      {
+          double Area();
+      }
+
+      public class Circle : IShape
+      {
+          private readonly double _radius;
+
+          public Circle(double radius)
+          {
+              _radius = radius;
+          }
+
+          public double Area() => Math.PI * _radius * _radius;
+      }
+      ```
+    explanation: "IShape declares the contract every shape must satisfy (an Area() method) without saying anything about how it's computed; Circle stores its own radius privately and implements Area() using the standard circle-area formula, satisfying the interface."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a C# abstract class Animal with an abstract method MakeSound() that returns void, and a subclass Dog that overrides it to print \"Woof!\" to the console."
+    answer: |
+      ```csharp
+      public abstract class Animal
+      {
+          public abstract void MakeSound();
+      }
+
+      public class Dog : Animal
+      {
+          public override void MakeSound()
+          {
+              Console.WriteLine("Woof!");
+          }
+      }
+      ```
+    explanation: "Animal declares MakeSound() with no body at all (abstract), forcing every concrete subclass to supply its own implementation; Dog satisfies that requirement by overriding it to print \"Woof!\", and Animal itself can never be instantiated directly."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a generic C# class Stack<T> that uses a List<T> internally, with a method Push(T item) to add an item, a method T Pop() to remove and return the most recently pushed item, and a property bool IsEmpty."
+    answer: |
+      ```csharp
+      public class Stack<T>
+      {
+          private readonly List<T> _items = new();
+
+          public bool IsEmpty => _items.Count == 0;
+
+          public void Push(T item)
+          {
+              _items.Add(item);
+          }
+
+          public T Pop()
+          {
+              var last = _items[^1];
+              _items.RemoveAt(_items.Count - 1);
+              return last;
+          }
+      }
+      ```
+    explanation: "Push always appends to the end of the internal list; Pop reads and removes that same last element (using the C# 8 index-from-end operator '^1'), which is what gives the structure its LIFO (last-in, first-out) behavior, and IsEmpty is a simple computed property checking the count."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a C# extension method called IsPalindrome on string that returns true if the string reads the same forwards and backwards, ignoring case."
+    answer: |
+      ```csharp
+      public static class StringExtensions
+      {
+          public static bool IsPalindrome(this string value)
+          {
+              var normalized = value.ToLowerInvariant();
+              var reversed = new string(normalized.Reverse().ToArray());
+              return normalized == reversed;
+          }
+      }
+      ```
+    explanation: "The 'this string value' parameter turns IsPalindrome into an extension method callable as \"Racecar\".IsPalindrome(); lowercasing first makes the comparison case-insensitive, and comparing the normalized string to its own reversed form checks the palindrome property directly."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a C# method called SafeDivide that takes two int parameters and returns an int?, returning null instead of throwing a DivideByZeroException when the divisor is zero."
+    answer: |
+      ```csharp
+      public int? SafeDivide(int numerator, int denominator)
+      {
+          if (denominator == 0)
+          {
+              return null;
+          }
+          return numerator / denominator;
+      }
+      ```
+    explanation: "Returning 'int?' (Nullable<int>) lets the method express 'no valid result' as null instead of throwing, letting callers check HasValue or use '??' to supply a fallback, which is often more convenient than wrapping every call in a try/catch."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a C# switch expression method called Describe(int score) that returns \"Excellent\" for score >= 90, \"Good\" for score >= 70, \"Average\" for score >= 50, and \"Poor\" for anything lower."
+    answer: |
+      ```csharp
+      public string Describe(int score) => score switch
+      {
+          >= 90 => "Excellent",
+          >= 70 => "Good",
+          >= 50 => "Average",
+          _ => "Poor"
+      };
+      ```
+    explanation: "Relational patterns ('>= 90', '>= 70', ...) are checked from top to bottom, so the first arm whose condition holds wins; the discard pattern '_' at the end catches every remaining case, playing the role of a default branch."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a C# record called Point3D with three properties X, Y and Z of type double, then write a line of code that creates a modified copy of an existing Point3D called p with Z set to 0, using a 'with' expression."
+    answer: |
+      ```csharp
+      public record Point3D(double X, double Y, double Z);
+
+      var flattened = p with { Z = 0 };
+      ```
+    explanation: "The positional record syntax generates X, Y and Z as init-only properties plus value-based equality automatically; 'p with { Z = 0 }' copies every property from p except Z, which is overridden, producing a brand-new, independent Point3D instance without mutating p."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a custom C# exception class called InvalidAgeException that inherits from Exception, includes a public int Age property set via its constructor, and passes a descriptive message to the base Exception constructor."
+    answer: |
+      ```csharp
+      public class InvalidAgeException : Exception
+      {
+          public int Age { get; }
+
+          public InvalidAgeException(int age)
+              : base($"Invalid age: {age}")
+          {
+              Age = age;
+          }
+      }
+      ```
+    explanation: "Calling 'base(message)' forwards a human-readable description up to Exception so str(exception)/.Message still works as expected everywhere exceptions are logged, while the extra Age property lets calling code catch InvalidAgeException specifically and inspect exactly which value was rejected."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a C# operator overload for the '+' operator on a struct Vector2 (with public float X and Y) so that adding two Vector2 values adds their components."
+    answer: |
+      ```csharp
+      public struct Vector2
+      {
+          public float X;
+          public float Y;
+
+          public static Vector2 operator +(Vector2 a, Vector2 b)
+          {
+              return new Vector2 { X = a.X + b.X, Y = a.Y + b.Y };
+          }
+      }
+      ```
+    explanation: "Operator overloads must be public static methods on the type; here the '+' overload takes both operands as parameters (there's no implicit 'this') and returns a brand-new Vector2 whose components are the sums of the inputs' components, leaving both original values unmodified."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a C# indexer for a class WeekSchedule that stores a string[7] of day names internally, so that schedule[0] returns the name for Sunday."
+    answer: |
+      ```csharp
+      public class WeekSchedule
+      {
+          private readonly string[] _days =
+          {
+              "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+          };
+
+          public string this[int index] => _days[index];
+      }
+      ```
+    explanation: "The indexer 'public string this[int index]' lets callers write schedule[0] instead of a more verbose method call; here it's read-only (expression-bodied getter only), simply forwarding into the private backing array."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a LINQ query (method syntax) that groups a List<string> called words by their first character (case-insensitive) and returns the resulting groups."
+    answer: |
+      ```csharp
+      var groups = words.GroupBy(w => char.ToLowerInvariant(w[0]));
+      ```
+    explanation: "GroupBy's key selector extracts the lowercased first character of each word as the grouping key; the result is a sequence of IGrouping<char, string> objects, one per distinct first letter, each enumerable to get the words sharing that letter."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a C# method called TryParseAge that takes a string input and an out int age parameter, returning true and setting age if input parses as a non-negative integer, and false otherwise (mirroring int.TryParse's style but also rejecting negative numbers)."
+    answer: |
+      ```csharp
+      public bool TryParseAge(string input, out int age)
+      {
+          if (int.TryParse(input, out var parsed) && parsed >= 0)
+          {
+              age = parsed;
+              return true;
+          }
+          age = 0;
+          return false;
+      }
+      ```
+    explanation: "The method first delegates the actual numeric parsing to int.TryParse, then adds the extra business rule (non-negative) on top; 'age' is always assigned on every path, satisfying the compiler's definite-assignment rule for 'out' parameters, whether the method returns true or false."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a thread-safe C# Singleton class called Logger using the Lazy<T> pattern, exposing a static Instance property that returns the single shared instance."
+    answer: |
+      ```csharp
+      public sealed class Logger
+      {
+          private static readonly Lazy<Logger> _instance = new(() => new Logger());
+
+          public static Logger Instance => _instance.Value;
+
+          private Logger() { }
+      }
+      ```
+    explanation: "Lazy<T> defers construction until Instance is first accessed and, by default, guarantees only one thread ever actually runs the factory delegate even under concurrent first-access, making this pattern thread-safe without any explicit locking code; the private constructor prevents anyone from bypassing Instance to create additional Logger objects."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a line of C# using a 'using declaration' (not a using block) that opens a StreamReader for \"data.txt\" and reads its entire content into a string, relying on the enclosing scope to dispose the reader automatically when it ends."
+    answer: |
+      ```csharp
+      using var reader = new StreamReader("data.txt");
+      string content = reader.ReadToEnd();
+      ```
+    explanation: "A 'using declaration' (no braces) introduced in C# 8 disposes the variable automatically at the end of the enclosing block (e.g. the containing method), rather than requiring an explicit 'using (...) { }' block scoped tightly around just the read — useful when the resource needs to stay alive for the rest of the method."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a C# class Person implementing IComparable<Person> so that people are ordered by their int Age property in ascending order."
+    answer: |
+      ```csharp
+      public class Person : IComparable<Person>
+      {
+          public string Name { get; set; } = string.Empty;
+          public int Age { get; set; }
+
+          public int CompareTo(Person? other)
+          {
+              if (other is null) return 1;
+              return Age.CompareTo(other.Age);
+          }
+      }
+      ```
+    explanation: "CompareTo must return negative/zero/positive to mean 'this comes before/equal to/after other'; delegating to int's own CompareTo on the Age fields gets that convention for free, and treating a null 'other' as 'this sorts after it' matches the usual convention that any instance is considered greater than null."

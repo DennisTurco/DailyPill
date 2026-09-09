@@ -1,6 +1,5 @@
 using DailyPill.Common.DTOs;
 using DailyPill.Common.Interfaces;
-using DailyPill.Common.Models;
 using DailyPill.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,7 +27,7 @@ public class ProgressService(AppDbContext context) : IProgressService
 
     private async Task<List<TopicProgressDTO>> TopicProgressAsync()
     {
-        var topics = await context.Topics.Where(t => !t.IsDeleted).ToListAsync();
+        var topics = await context.Topics.Where(t => !t.IsDeleted && !t.IsInformational).ToListAsync();
         var result = new List<TopicProgressDTO>();
 
         foreach (var topic in topics)
@@ -40,7 +39,7 @@ public class ProgressService(AppDbContext context) : IProgressService
 
             var graded = answers.Where(a => a.IsCorrect is not null).ToList();
             var total = graded.Count;
-            var correct = graded.Count(a => a.IsCorrect == true);
+            var correct = graded.Count(a => a.IsCorrect is true);
 
             result.Add(new TopicProgressDTO(
                 topic.Id, topic.Name, questionCount, total, correct,

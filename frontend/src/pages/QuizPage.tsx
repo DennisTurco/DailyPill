@@ -269,19 +269,15 @@ function QuizChat({ sessionId }: { sessionId: number }) {
           {error}
         </div>
       )}
-      <div className="row">
-        <input
+
+      <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") send();
-          }}
           placeholder="Ask a question about this quiz..."
         />
         <button disabled={loading || !input.trim()} onClick={send}>
-          Send
+          <i className="fa-solid fa-paper-plane"/> Send
         </button>
-      </div>
     </div>
   );
 }
