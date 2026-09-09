@@ -64,7 +64,7 @@ export default function SettingsPage() {
       <div className="card">
         <h3>About</h3>
         <p style={{ color: "#9aa0b4" }}>
-          DailyPill runs a local FastAPI backend on port 8420 and schedules quiz pop-ups via the Electron
+          DailyPill runs a local ASP.NET Core backend on port 8420 and schedules quiz pop-ups via the Electron
           tray. Auto-launch at OS login is registered automatically in production builds.
         </p>
       </div>

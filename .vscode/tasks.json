@@ -2,11 +2,23 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Backend: start (uvicorn)",
+      "label": "build",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/DailyPill.Api/DailyPill.Api.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Backend: start (dotnet run)",
       "type": "shell",
-      "command": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
-      "args": ["-m", "uvicorn", "app.main:app", "--port", "8420", "--reload"],
-      "options": { "cwd": "${workspaceFolder}/backend" },
+      "command": "dotnet",
+      "args": ["run", "--project", "DailyPill.Api"],
+      "options": { "cwd": "${workspaceFolder}" },
       "isBackground": true,
       "problemMatcher": {
         "pattern": {
@@ -17,8 +29,8 @@
         },
         "background": {
           "activeOnStart": true,
-          "beginsPattern": "^.*Started server process.*$",
-          "endsPattern": "^.*Application startup complete.*$"
+          "beginsPattern": "^.*Building.*$",
+          "endsPattern": "^.*Application started.*$"
         }
       },
       "presentation": {
@@ -53,7 +65,7 @@
     },
     {
       "label": "Run DailyPill (backend + frontend)",
-      "dependsOn": ["Backend: start (uvicorn)", "Frontend: start (vite + electron)"],
+      "dependsOn": ["Backend: start (dotnet run)", "Frontend: start (vite + electron)"],
       "dependsOrder": "parallel",
       "group": {
         "kind": "build",

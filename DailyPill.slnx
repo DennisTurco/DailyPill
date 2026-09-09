@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DailyPill.Api/DailyPill.Api.csproj" />
+  <Project Path="DailyPill.Common/DailyPill.Common.csproj" />
+  <Project Path="DailyPill.Infrastructure/DailyPill.Infrastructure.csproj" />
+  <Project Path="DailyPill.InfrastructureTests/DailyPill.InfrastructureTests.csproj" />
+</Solution>

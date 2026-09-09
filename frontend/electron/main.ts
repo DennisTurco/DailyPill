@@ -142,8 +142,8 @@ function spawnBackend(): void {
     return;
   }
   const backendDir = path.join(process.resourcesPath, "backend");
-  const pythonExe = path.join(backendDir, ".venv", "Scripts", "python.exe");
-  backendProcess = spawn(pythonExe, ["-m", "uvicorn", "app.main:app", "--port", String(API_PORT)], {
+  const apiExe = path.join(backendDir, process.platform === "win32" ? "DailyPill.Api.exe" : "DailyPill.Api");
+  backendProcess = spawn(apiExe, [], {
     cwd: backendDir,
     windowsHide: true,
   });

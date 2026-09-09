@@ -1,0 +1,6 @@
+@DailyPill.Api_HostAddress = http://localhost:5072
+
+GET {{DailyPill.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

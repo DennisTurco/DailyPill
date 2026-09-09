@@ -1,9 +1,9 @@
-# Python
-backend/.venv/
-backend/**/__pycache__/
-*.pyc
-backend/data/*.db
-backend/data/*.sqlite3
+# .NET / backend
+bin/
+obj/
+backend-dist/
+DailyPill.Api/data/*.db
+DailyPill.Api/data/*.sqlite3
 
 # Node / frontend
 frontend/node_modules/
