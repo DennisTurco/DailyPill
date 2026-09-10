@@ -34,5 +34,7 @@ public class Topic
 
     public List<TopicSchedule> Schedules { get; set; } = [];
 
+    public List<TopicContextDocument> Documents { get; set; } = [];
+
     public List<Question> Questions { get; set; } = [];
 }

@@ -14,6 +14,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<QuizSession> QuizSessions => Set<QuizSession>();
     public DbSet<UserAnswer> UserAnswers => Set<UserAnswer>();
     public DbSet<InfoFact> InfoFacts => Set<InfoFact>();
+    public DbSet<TopicContextDocument> TopicContextDocument => Set<TopicContextDocument>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -4,6 +4,8 @@ public record TopicScheduleDTO(int DayOfWeek, TimeSpan TimeOfDay, bool IsActive 
 
 public record TopicScheduleResponseDTO(int Id, int TopicId, int DayOfWeek, TimeSpan TimeOfDay, bool IsActive);
 
+public record TopicContextDocumentResponseDTO(int Id, int TopicId, string Filename);
+
 public record TopicRequestDTO(
     string Name,
     string? Category,
@@ -23,4 +25,5 @@ public record TopicResponseDTO(
     bool IsInformational,
     DateTime CreatedAt,
     bool IsDeleted,
-    List<TopicScheduleResponseDTO> Schedules);
+    List<TopicScheduleResponseDTO> Schedules,
+    List<TopicContextDocumentResponseDTO> Documents);

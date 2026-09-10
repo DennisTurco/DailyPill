@@ -12,6 +12,19 @@ async function getBaseUrl(): Promise<string> {
   return cachedBaseUrl;
 }
 
+async function uploadRequest<T>(path: string, formData: FormData): Promise<T> {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`API error ${response.status}: ${body}`);
+  }
+  return response.json() as Promise<T>;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const baseUrl = await getBaseUrl();
   const response = await fetch(`${baseUrl}${path}`, {
@@ -35,4 +48,5 @@ export const api = {
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
   del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+  upload: <T>(path: string, formData: FormData) => uploadRequest<T>(path, formData),
 };

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { ConfirmModal } from "../components/ConfirmModal";
-import { Topic } from "../lib/types";
+import { Topic, TopicContextDocument } from "../lib/types";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -17,6 +17,7 @@ export default function TopicsPage() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [isInformational, setIsInformational] = useState(false);
+  const [documents, setDocuments] = useState<TopicContextDocument[]>([]);
   const [schedules, setSchedules] = useState<ScheduleDraft[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -24,6 +25,23 @@ export default function TopicsPage() {
   const [page, setPage] = useState(1);
 
   const [deleteTarget, setDeleteTarget] = useState<Topic | null>(null);
+
+  const [contextFile, setContextFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function uploadContext(topicId: number) {
+    if (!contextFile) return;
+    const formData = new FormData();
+    formData.append("file", contextFile);
+    try {
+      const uploaded = await api.upload<TopicContextDocument>(`/context-document/upload/${topicId}`, formData);
+      setDocuments((prev) => [...prev, uploaded]);
+      setContextFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } catch (err) {
+      setError(String(err));
+    }
+  }
 
   function load() {
     api.get<Topic[]>("/topics").then(setTopics).catch((err) => setError(String(err)));
@@ -39,6 +57,19 @@ export default function TopicsPage() {
     setSchedules((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
   }
 
+  function removeDocument(index: number) {
+    setDocuments((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function deleteDocument(id: number, index: number) {
+    try {
+      await api.del(`/context-document/${id}`);
+      removeDocument(index);
+    } catch (err) {
+      setError(String(err));
+    }
+  }
+
   function removeSchedule(index: number) {
     setSchedules((prev) => prev.filter((_, i) => i !== index));
   }
@@ -48,6 +79,7 @@ export default function TopicsPage() {
     setCategory("");
     setDescription("");
     setIsInformational(false);
+    setDocuments([]);
     setSchedules([]);
     setEditingId(null);
   }
@@ -58,6 +90,7 @@ export default function TopicsPage() {
     setCategory(topic.category ?? "");
     setDescription(topic.description ?? "");
     setIsInformational(topic.is_informational);
+    setDocuments(topic.documents ?? []);
     setSchedules(topic.schedules.map((s) => ({ day_of_week: s.day_of_week, time_of_day: s.time_of_day.slice(0, 5) })));
   }
 
@@ -71,11 +104,13 @@ export default function TopicsPage() {
       schedules: schedules.map((s) => ({ ...s, is_active: true })),
     };
     try {
-      if (editingId) {
-        await api.put(`/topics/${editingId}`, payload);
-      } else {
-        await api.post("/topics", payload);
-      }
+        const saved = editingId
+            ? await api.put<Topic>(`/topics/${editingId}`, payload)
+            : await api.post<Topic>("/topics", payload);
+
+        if (contextFile) {
+            await uploadContext(saved.id)
+        }
       resetForm();
       load();
     } catch (err) {
@@ -148,6 +183,47 @@ export default function TopicsPage() {
           + Add schedule slot
         </button>
 
+        <label>Context document (.md)</label>
+        {documents.length > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            {documents.map((d, i) => (
+              <span className="badge" key={d.id} style={{ marginRight: 6 }}>
+                {d.filename}{" "}
+                <button
+                  type="button"
+                  className="danger"
+                  style={{ marginLeft: 4 }}
+                  onClick={() => deleteDocument(d.id, i)}
+                >
+                  Remove
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".md"
+          onChange={(e) => setContextFile(e.target.files?.[0] ?? null)}
+        />
+        {contextFile && (
+          <div className="text-muted text-sm" style={{ marginTop: 4 }}>
+            Selected: {contextFile.name}{" "}
+            <button
+              type="button"
+              className="secondary"
+              style={{ marginLeft: 6 }}
+              onClick={() => {
+                setContextFile(null);
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         <div className="row" style={{ marginTop: 12 }}>
           <button onClick={saveTopic}>{editingId ? "Save changes" : "Create topic"}</button>
           {editingId && (
@@ -166,6 +242,7 @@ export default function TopicsPage() {
                 <th>Name</th>
                 <th>Category</th>
                 <th>Schedule</th>
+                <th>Document</th>
                 <th></th>
               </tr>
             </thead>
@@ -187,6 +264,17 @@ export default function TopicsPage() {
                       topic.schedules.map((s) => (
                         <span className="badge" key={s.id} style={{ marginRight: 6 }}>
                           {DAYS[s.day_of_week]} {s.time_of_day}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-muted text-sm">—</span>
+                    )}
+                  </td>
+                  <td>
+                    {topic.documents?.length ? (
+                      topic.documents.map((d) => (
+                        <span className="badge" key={d.id} style={{ marginRight: 6 }}>
+                          {d.filename}
                         </span>
                       ))
                     ) : (

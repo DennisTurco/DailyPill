@@ -8,6 +8,12 @@ export interface TopicSchedule {
   is_active: boolean;
 }
 
+export interface TopicContextDocument {
+    id: number;
+    topic_id: number;
+    filename: string;
+}
+
 export interface Topic {
   id: number;
   name: string;
@@ -18,6 +24,7 @@ export interface Topic {
   is_informational: boolean;
   created_at: string;
   is_deleted: boolean;
+  documents?: TopicContextDocument[];
   schedules: TopicSchedule[];
 }
 

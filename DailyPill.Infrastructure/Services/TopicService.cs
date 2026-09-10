@@ -11,7 +11,9 @@ public class TopicService(AppDbContext context) : ITopicService
     public async Task<List<TopicResponseDTO>> GetAllAsync()
     {
         var topics = await context.Topics
+            .AsNoTracking()
             .Include(t => t.Schedules)
+            .Include(t => t.Documents)
             .Where(t => !t.IsDeleted)
             .OrderBy(t => t.Name)
             .ToListAsync();
@@ -20,7 +22,10 @@ public class TopicService(AppDbContext context) : ITopicService
 
     public async Task<TopicResponseDTO?> GetByIdAsync(int id)
     {
-        var topic = await context.Topics.Include(t => t.Schedules)
+        var topic = await context.Topics
+            .AsNoTracking()
+            .Include(t => t.Schedules)
+            .Include(t => t.Documents)
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
         return topic is null ? null : MapToDto(topic);
     }
@@ -52,7 +57,9 @@ public class TopicService(AppDbContext context) : ITopicService
 
     public async Task<TopicResponseDTO?> UpdateAsync(int id, TopicRequestDTO dto)
     {
-        var topic = await context.Topics.Include(t => t.Schedules)
+        var topic = await context.Topics
+            .Include(t => t.Schedules)
+            .Include(t => t.Documents)
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
         if (topic is null) return null;
 
@@ -89,5 +96,6 @@ public class TopicService(AppDbContext context) : ITopicService
 
     private static TopicResponseDTO MapToDto(Topic t) => new(
         t.Id, t.Name, t.Category, t.Description, t.Color, t.Icon, t.IsInformational, t.CreatedAt, t.IsDeleted,
-        t.Schedules.Select(s => new TopicScheduleResponseDTO(s.Id, s.TopicId, s.DayOfWeek, s.TimeOfDay, s.IsActive)).ToList());
+        t.Schedules.Select(s => new TopicScheduleResponseDTO(s.Id, s.TopicId, s.DayOfWeek, s.TimeOfDay, s.IsActive)).ToList(),
+        t.Documents.Select(d => new TopicContextDocumentResponseDTO(d.Id, d.TopicId, d.Filename)).ToList());
 }
