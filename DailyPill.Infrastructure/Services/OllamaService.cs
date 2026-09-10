@@ -17,6 +17,13 @@ public class OllamaService : IOllamaService
     private const int OllamaStartRetries = 60;
     private static readonly TimeSpan OllamaStartRetryDelay = TimeSpan.FromSeconds(1);
 
+    // Ollama defaults every request to a 2048-token context window regardless of what the
+    // model itself supports, silently truncating anything longer. We size num_ctx to the
+    // actual prompt (roughly 4 chars/token) plus headroom for the model's response, rounded
+    // up to one of these buckets so we don't allocate more context than we need.
+    private const int OllamaOutputTokenReserve = 1024;
+    private static readonly int[] OllamaNumCtxBuckets = [2048, 4096, 8192, 16384, 32768, 65536];
+
     private readonly HttpClient _http;
     private readonly ILogger<OllamaService> _logger;
     private readonly TimeSpan _generateTimeout;
@@ -56,7 +63,10 @@ public class OllamaService : IOllamaService
             payload["system"] = system;
         }
         if (jsonMode) payload["format"] = "json";
-        if (GpuEnabled) payload["options"] = new Dictionary<string, object?> { ["num_gpu"] = OllamaAllGpuLayers };
+
+        var options = new Dictionary<string, object?> { ["num_ctx"] = ComputeNumCtx(prompt, system) };
+        if (GpuEnabled) options["num_gpu"] = OllamaAllGpuLayers;
+        payload["options"] = options;
 
         HttpResponseMessage response;
         try
@@ -82,6 +92,23 @@ public class OllamaService : IOllamaService
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         return json.TryGetProperty("response", out var resp) ? resp.GetString() ?? "" : "";
+    }
+
+    /// <summary>
+    /// Picks a num_ctx large enough for the given prompt + system text (roughly 4 chars per
+    /// token) plus room for the model's own output, rounded up to the smallest fitting bucket.
+    /// Falls back to Ollama's own 2048 default when the prompt is small enough to fit in it.
+    /// </summary>
+    private static int ComputeNumCtx(string prompt, string? system)
+    {
+        var approxPromptTokens = (prompt.Length + (system?.Length ?? 0)) / 4;
+        var needed = approxPromptTokens + OllamaOutputTokenReserve;
+
+        foreach (var bucket in OllamaNumCtxBuckets)
+        {
+            if (needed <= bucket) return bucket;
+        }
+        return OllamaNumCtxBuckets[^1];
     }
 
     public bool IsAvailable()
