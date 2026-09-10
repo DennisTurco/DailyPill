@@ -69,6 +69,56 @@ On first backend startup, `topics/*.yaml` is imported automatically (idempotent 
 matched by topic name / question text, safe to restart repeatedly) via
 `DailyPill.Infrastructure/Services/SeedLoaderService.cs`. No manual seeding step needed.
 
+## Database migrations (EF Core)
+
+The schema lives in `DailyPill.Infrastructure/Migrations/`. **You don't need to run
+anything manually to apply them** — `Program.cs` calls `Database.Migrate()` on every
+backend startup, which brings a fresh or older database up to the latest schema
+automatically (including creating `DailyPill.Api/data/dailypill.db` from scratch on
+first run).
+
+You only need the EF Core CLI tooling when **changing the schema** (adding/editing an
+entity in `DailyPill.Common/Models/`, or a mapping in
+`DailyPill.Infrastructure/Data/AppDbContext.cs`):
+
+```powershell
+# one-time: install the EF Core CLI tool (skip if you already have it)
+dotnet tool install --global dotnet-ef
+
+# after changing a model or AppDbContext.OnModelCreating:
+dotnet ef migrations add <DescriptiveName> --project DailyPill.Infrastructure --startup-project DailyPill.Api -o Migrations
+```
+
+Both `--project` (where the `DbContext` and migrations live) and `--startup-project`
+(the runnable app EF uses to read configuration, e.g. the connection string) are
+required — always run these commands from the repo root, not from inside a
+project folder.
+
+Other commands you'll occasionally need:
+
+```powershell
+# apply pending migrations immediately without starting the app (handy for scripts/CI)
+dotnet ef database update --project DailyPill.Infrastructure --startup-project DailyPill.Api
+
+# undo the most recently added (not-yet-shared) migration, e.g. after fixing a typo
+dotnet ef migrations remove --project DailyPill.Infrastructure --startup-project DailyPill.Api
+
+# list every migration and which ones are already applied to the local database
+dotnet ef migrations list --project DailyPill.Infrastructure --startup-project DailyPill.Api
+```
+
+A few conventions worth keeping:
+- Never hand-edit a migration file that's already been committed/shared — add a new
+  migration instead, the same way you would with any other database migration tool.
+- `migrations remove` only works on the latest, not-yet-applied-elsewhere migration;
+  if you already applied it (`dotnet ef database update`) and need to revert, migrate
+  back to the previous one first (`dotnet ef database update <PreviousMigrationName>`),
+  then remove it.
+- If you want a completely fresh local database (e.g. to test seeding from scratch),
+  just delete `DailyPill.Api/data/dailypill.db*` — `Database.Migrate()` recreates it
+  from the full migration history on the next backend start, and the YAML seed loader
+  repopulates it.
+
 ## Run in dev
 
 **Option A — two terminals:**
@@ -89,6 +139,12 @@ the Electron main process pointed at `http://localhost:5173`.
 **Ctrl+Shift+B** (or run the "Run DailyPill (backend + frontend)" task). This runs
 both of the above in dedicated terminal panels via `.vscode/tasks.json` — requires
 `npm install` to already exist (steps above), it doesn't create it for you.
+
+**Option C — VS Code, with backend debugging:** open the Run and Debug panel (`Ctrl+Shift+D`),
+pick **"Run DailyPill (backend + desktop)"** from the dropdown, and press `F5`. This
+launches the backend under the C# debugger (breakpoints, step-through, etc. — requires
+the `ms-dotnettools.csharp` extension, recommended automatically via `.vscode/extensions.json`)
+alongside the frontend, both defined in `.vscode/launch.json`.
 
 The Electron window starts **hidden** in the system tray (this is intentional — the
 app is meant to run quietly in the background). Click the tray icon, or use its

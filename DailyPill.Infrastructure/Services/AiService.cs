@@ -6,7 +6,10 @@ using DailyPill.Common.Interfaces;
 
 namespace DailyPill.Infrastructure.Services;
 
-public class AiService(ITopicService topicService, IOllamaService ollamaService) : IAiService
+public class AiService(
+    ITopicService topicService,
+    IOllamaService ollamaService,
+    ITopicContextDocumentService topicContextDocumentService) : IAiService
 {
     public AiStatusResponseDTO GetStatus()
     {
@@ -19,7 +22,8 @@ public class AiService(ITopicService topicService, IOllamaService ollamaService)
     public async Task<AIGenerateQuestionsResponseDTO> GenerateQuestionsAsync(AIGenerateQuestionsRequestDTO dto)
     {
         var topic = await topicService.GetByIdAsync(dto.TopicId) ?? throw new NotFoundException("Topic not found");
-        var raw = await ollamaService.GenerateQuestionsAsync(topic.Name, dto.Prompt, dto.Count, dto.Difficulty);
+        var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(dto.TopicId);
+        var raw = await ollamaService.GenerateQuestionsAsync(topic.Name, dto.Prompt, dto.Count, dto.Difficulty, contextDocuments);
 
         var questions = new List<AIGeneratedQuestionDTO>();
         var dropped = 0;
@@ -71,7 +75,8 @@ public class AiService(ITopicService topicService, IOllamaService ollamaService)
     public async Task<AIGenerateInfoFactsResponseDTO> GenerateInfoFactsAsync(AIGenerateInfoFactsRequestDTO dto)
     {
         var topic = await topicService.GetByIdAsync(dto.TopicId) ?? throw new NotFoundException("Topic not found");
-        var raw = await ollamaService.GenerateInfoFactsAsync(topic.Name, dto.Prompt, dto.Count);
+        var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(dto.TopicId);
+        var raw = await ollamaService.GenerateInfoFactsAsync(topic.Name, dto.Prompt, dto.Count, contextDocuments);
 
         var facts = new List<AIGeneratedInfoFactDTO>();
         var dropped = 0;

@@ -19,9 +19,9 @@ public interface IOllamaService
     /// <summary>Fire-and-forget: ensures Ollama is running and the configured model is present.</summary>
     void Bootstrap();
 
-    Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty);
-    Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count);
-    Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer);
-    Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage);
-    Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results);
+    Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, List<string> contextDocuments);
+    Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, List<string> contextDocuments);
+    Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, List<string> contextDocuments);
+    Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, List<string> contextDocuments);
+    Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results, List<string> contextDocuments);
 }

@@ -41,7 +41,7 @@ public class OllamaService : IOllamaService
         GpuEnabled = gpuService.DetectNvidiaGpu();
     }
 
-    private async Task<string> GenerateAsync(string prompt, string? system, bool jsonMode, CancellationToken ct = default)
+    private async Task<string> GenerateAsync(string prompt, string? system, bool jsonMode, List<string> contextDocuments, CancellationToken ct = default)
     {
         var payload = new Dictionary<string, object?>
         {
@@ -49,7 +49,12 @@ public class OllamaService : IOllamaService
             ["prompt"] = prompt,
             ["stream"] = false,
         };
-        if (system is not null) payload["system"] = system;
+        if (system is not null)
+        {
+            if (contextDocuments.Count > 0)
+                system += $"\n\nCONTEXT DOCUMENT: {BuildContextDocuments(contextDocuments)}";
+            payload["system"] = system;
+        }
         if (jsonMode) payload["format"] = "json";
         if (GpuEnabled) payload["options"] = new Dictionary<string, object?> { ["num_gpu"] = OllamaAllGpuLayers };
 
@@ -260,7 +265,7 @@ public class OllamaService : IOllamaService
         }
     }
 
-    public async Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty)
+    public async Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, List<string> contextDocuments)
     {
         var difficultyHint = difficulty is > 0
             ? $"target difficulty {difficulty} (1=easiest, 5=hardest)"
@@ -274,13 +279,14 @@ public class OllamaService : IOllamaService
             "For multiple_choice, options must contain 4 items and correct_answer must equal one of them exactly. " +
             "For open_answer, correct_answer must contain a concise reference/model answer (a few sentences) " +
             "even though explanation may repeat or expand on it.";
+
         var userPrompt = $"Topic: {topicName}\nInstructions: {prompt}\nGenerate exactly {count} questions, {difficultyHint}.";
 
-        var raw = await GenerateAsync(userPrompt, system, jsonMode: true);
+        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments);
         return ExtractArray(raw, "questions");
     }
 
-    public async Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count)
+    public async Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, List<string> contextDocuments)
     {
         const string system =
             "You are writing short, accurate educational facts for a daily-learning app. Respond ONLY with valid JSON: " +
@@ -288,9 +294,10 @@ public class OllamaService : IOllamaService
             "title is a short headline (max ~10 words). description is 2-4 sentences, self-contained and accurate, " +
             "understandable without any other context. link, if included, must be a real, well-known reference URL " +
             "(e.g. Wikipedia or official docs) directly relevant to the fact; use null if unsure.";
+
         var userPrompt = $"Topic: {topicName}\nInstructions: {prompt}\nGenerate exactly {count} distinct facts.";
 
-        var raw = await GenerateAsync(userPrompt, system, jsonMode: true);
+        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments);
         return ExtractArray(raw, "facts");
     }
 
@@ -313,15 +320,16 @@ public class OllamaService : IOllamaService
         return [];
     }
 
-    public async Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer)
+    public async Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, List<string> contextDocuments)
     {
         const string system =
             "You are grading a quiz answer. Respond ONLY with valid JSON: " +
             "{\"is_correct\": bool, \"feedback\": str}. Feedback should briefly explain why the answer " +
             "is right or wrong, in a friendly tone.";
+
         var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nUser's answer: {givenAnswer}";
 
-        var raw = await GenerateAsync(userPrompt, system, jsonMode: true);
+        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments);
         JsonElement parsed;
         try
         {
@@ -337,11 +345,24 @@ public class OllamaService : IOllamaService
         return (isCorrect, feedback);
     }
 
-    private static string BuildResultLines(List<QuizResultLine> results) => string.Join(
-        "\n",
-        results.Select(r => $"- Q: {r.Text} | given: {r.GivenAnswer} | correct: {r.CorrectAnswer} | was_correct: {(r.IsCorrect is { } b ? (b ? "True" : "False") : "None")}"));
+    private static string BuildResultLines(List<QuizResultLine> results)
+        => string.Join(
+            "\n",
+            results.Select(r => $"- Q: {r.Text} | given: {r.GivenAnswer} | correct: {r.CorrectAnswer} | was_correct: {(r.IsCorrect is { } b ? (b ? "True" : "False") : "None")}"));
 
-    public async Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage)
+    private static string BuildContextDocuments(List<string> contexts)
+    {
+        StringBuilder contextText = new();
+        for (int i = 0; i < contexts.Count; i++)
+        {
+            contextText.Append($"# ------ DOCUMENT {i+1} ------\n");
+            contextText.Append(contexts[i]);
+            contextText.Append("\n\n");
+        }
+        return contextText.ToString();
+    }
+
+    public async Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, List<string> contextDocuments)
     {
         const string system =
             "You are a friendly tutor helping a student review a quiz they just completed. " +
@@ -356,15 +377,16 @@ public class OllamaService : IOllamaService
         }
         parts.AddRange(["", $"Student's new question: {userMessage}"]);
 
-        return await GenerateAsync(string.Join("\n", parts), system, jsonMode: false);
+        return await GenerateAsync(string.Join("\n", parts), system, jsonMode: false, contextDocuments);
     }
 
-    public async Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results)
+    public async Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results, List<string> contextDocuments)
     {
         const string system =
             "You are a friendly tutor writing a short end-of-quiz recap (3-6 sentences). " +
             "Summarize performance and explain the mistakes in plain language.";
+
         var userPrompt = $"Topic: {topicName}\nResults:\n{BuildResultLines(results)}";
-        return await GenerateAsync(userPrompt, system, jsonMode: false);
+        return await GenerateAsync(userPrompt, system, jsonMode: false, contextDocuments);
     }
 }

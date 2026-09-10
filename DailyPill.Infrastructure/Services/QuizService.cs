@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DailyPill.Infrastructure.Services;
 
-public class QuizService(AppDbContext context, IOllamaService ollamaService) : IQuizService
+public class QuizService(AppDbContext context, IOllamaService ollamaService, ITopicContextDocumentService topicContextDocumentService) : IQuizService
 {
     private static string Normalize(string text) => string.Join(" ", text.Trim().ToLowerInvariant().Split(
         (char[]?)null, StringSplitOptions.RemoveEmptyEntries));
@@ -84,13 +84,18 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService) : I
 
     public async Task<QuizFinishResponseDTO> FinishAsync(int sessionId)
     {
-        var session = await context.QuizSessions.Include(s => s.Topic)
+        var session = await context.QuizSessions
+            .Include(s => s.Topic)
             .FirstOrDefaultAsync(s => s.Id == sessionId)
             ?? throw new NotFoundException("Quiz session not found");
 
-        var answers = await context.UserAnswers.Include(a => a.Question)
+        var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(session.TopicId);
+
+        var answers = await context.UserAnswers
+            .Include(a => a.Question)
             .Where(a => a.QuizSessionId == sessionId)
             .ToListAsync();
+
         var topicName = session.Topic?.Name ?? "Unknown";
 
         foreach (var answer in answers)
@@ -108,7 +113,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService) : I
 
             try
             {
-                var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer);
+                var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, contextDocuments);
                 answer.IsCorrect = review.IsCorrect;
                 answer.ScoreAwarded = review.IsCorrect ? 1.0 : 0.0;
                 answer.AiFeedback = review.Feedback;
@@ -124,7 +129,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService) : I
         string recap;
         try
         {
-            recap = await ollamaService.GenerateQuizRecapAsync(topicName, results);
+            recap = await ollamaService.GenerateQuizRecapAsync(topicName, results, contextDocuments);
         }
         catch (OllamaUnavailableException)
         {
@@ -145,23 +150,33 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService) : I
 
     public async Task<QuizChatResponseDTO> ChatAsync(int sessionId, QuizChatRequestDTO dto)
     {
-        var session = await context.QuizSessions.Include(s => s.Topic)
+        var session = await context.QuizSessions
+            .AsNoTracking()
+            .Include(s => s.Topic)
             .FirstOrDefaultAsync(s => s.Id == sessionId)
             ?? throw new NotFoundException("Quiz session not found");
 
-        var answers = await context.UserAnswers.Include(a => a.Question)
+        var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(session.TopicId);
+
+        var answers = await context.UserAnswers
+            .AsNoTracking()
+            .Include(a => a.Question)
             .Where(a => a.QuizSessionId == sessionId)
             .ToListAsync();
         var topicName = session.Topic?.Name ?? "Unknown";
         var results = BuildResults(answers);
 
-        var reply = await ollamaService.ChatAboutQuizAsync(topicName, results, dto.History ?? [], dto.Message);
+        var reply = await ollamaService.ChatAboutQuizAsync(topicName, results, dto.History ?? [], dto.Message, contextDocuments);
         return new QuizChatResponseDTO(reply);
     }
 
     public async Task<List<QuizSessionResponseDTO>> GetHistoryAsync(int? topicId)
     {
-        var query = context.QuizSessions.Include(s => s.Answers).AsQueryable();
+        var query = context.QuizSessions
+            .AsNoTracking()
+            .Include(s => s.Answers)
+            .AsQueryable();
+
         if (topicId.HasValue) query = query.Where(s => s.TopicId == topicId.Value);
         var sessions = await query.OrderByDescending(s => s.StartedAt).ToListAsync();
         return sessions.Select(MapToDto).ToList();
@@ -180,9 +195,9 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService) : I
     private static List<Question> GetRandomQuestionsWithMixedDifficulty(List<Question> questions, int count)
     {
         List<Question> selected = new List<Question>();
-        while(selected.Count < 5)
+        while (selected.Count < count)
         {
-            for (int d = 1; d <= 5; d++)
+            for (int d = 1; d <= 5 && selected.Count < count; d++)
             {
                 var random = GetPreferredQuestionDifficulty(questions, d);
                 if (random != null)

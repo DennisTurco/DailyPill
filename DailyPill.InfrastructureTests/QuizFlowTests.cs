@@ -23,7 +23,8 @@ public class QuizFlowTests
     {
         await using var context = TestDbContextFactory.Create();
         var (topicId, questionId) = await MakeTopicWithQuestionAsync(context);
-        var quizService = new QuizService(context, new FakeOllamaService());
+        var topicContextDocumentService = new TopicContextDocumentService(context);
+        var quizService = new QuizService(context, new FakeOllamaService(), topicContextDocumentService);
 
         var start = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5));
         Assert.Single(start.Questions);
@@ -42,7 +43,8 @@ public class QuizFlowTests
     {
         await using var context = TestDbContextFactory.Create();
         var (topicId, questionId) = await MakeTopicWithQuestionAsync(context);
-        var quizService = new QuizService(context, new FakeOllamaService());
+        var topicContextDocumentService = new TopicContextDocumentService(context);
+        var quizService = new QuizService(context, new FakeOllamaService(), topicContextDocumentService);
         var progressService = new ProgressService(context);
 
         var start = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5));

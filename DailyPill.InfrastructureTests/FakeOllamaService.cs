@@ -17,18 +17,18 @@ public class FakeOllamaService : IOllamaService
     public PullState GetPullState() => new(false, null, null, null);
     public void Bootstrap() { }
 
-    public Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty) =>
+    public Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, List<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count) =>
+    public Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, List<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer) =>
+    public Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, List<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage) =>
+    public Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, List<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results) =>
+    public Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results, List<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 }
