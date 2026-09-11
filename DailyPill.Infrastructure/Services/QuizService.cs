@@ -28,8 +28,11 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
         var aiAvailable = ollamaService.IsAvailable();
 
         var candidates = await context.Questions
+            .AsNoTracking()
             .Where(q => q.TopicId == dto.TopicId && !q.IsDeleted)
+            .Include(q => q.Answers)
             .ToListAsync();
+
         if (!aiAvailable)
         {
             candidates = candidates.Where(q => q.Type != QuestionType.OpenAnswer).ToList();
@@ -56,7 +59,8 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
     public async Task<QuizSessionResponseDTO> SubmitAsync(int sessionId, QuizSubmitRequestDTO dto)
     {
-        var session = await context.QuizSessions.FirstOrDefaultAsync(s => s.Id == sessionId)
+        var session = await context.QuizSessions
+            .FirstOrDefaultAsync(s => s.Id == sessionId)
             ?? throw new NotFoundException("Quiz session not found");
 
         foreach (var answer in dto.Answers)
@@ -199,7 +203,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
         {
             for (int d = 1; d <= 5 && selected.Count < count; d++)
             {
-                var random = GetPreferredQuestionDifficulty(questions, d);
+                var random = GetRandomQuestionWithFewestAnswers(questions, d);
                 if (random != null)
                 {
                     selected.Add(random);
@@ -210,8 +214,19 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     }
 
     // returns a random question with the selected difficulty, null otherwise
-    private static Question? GetPreferredQuestionDifficulty(List<Question> questions, int difficulty)
-        => questions.Where(q => q.Difficulty == difficulty).OrderBy(_ => Random.Shared.Next()).FirstOrDefault();
+    private static Question? GetRandomQuestionWithFewestAnswers(List<Question> questions, int difficulty)
+    {
+        var questionsBasedDifficulty = questions
+            .Where(q => q.Difficulty == difficulty)
+            .ToList();
+
+        var answersCount = questionsBasedDifficulty.Min(a => a.Answers.Count);
+
+        return questionsBasedDifficulty
+            .Where(q => q.Answers.Count == answersCount)
+            .OrderBy(_ => Random.Shared.Next())
+            .FirstOrDefault();
+    }
 
     private static QuizSessionResponseDTO MapToDto(QuizSession s) => new(
         s.Id, s.TopicId, s.StartedAt, s.CompletedAt, s.AiReviewSummary,
