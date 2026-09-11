@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { CSSProperties, useEffect } from "react";
 
 export interface ToastMessage {
   text: string;
@@ -22,22 +22,11 @@ export function Toast({ toast, onDismiss }: { toast: ToastMessage | null; onDism
 
   return (
     <div
-      style={{
-        position: "fixed",
-        top: 16,
-        right: 16,
-        maxWidth: 360,
-        background: "#1a1d29",
-        border: `1px solid ${KIND_COLORS[toast.kind]}`,
-        borderLeft: `4px solid ${KIND_COLORS[toast.kind]}`,
-        borderRadius: 8,
-        padding: "12px 14px",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-        zIndex: 1000,
-      }}
+      className="toast"
+      style={{ "--toast-color": KIND_COLORS[toast.kind] } as CSSProperties}
     >
       <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-        <span style={{ fontSize: 13, color: "#e6e6e6" }}>{toast.text}</span>
+        <span style={{ fontSize: 13, color: "var(--text-primary)" }}>{toast.text}</span>
         <button
           className="secondary"
           onClick={onDismiss}

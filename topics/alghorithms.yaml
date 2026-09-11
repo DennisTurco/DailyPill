@@ -157,9 +157,768 @@ manual_questions:
     text: "What is the common abbreviation for the graph traversal that explores as deep as possible before backtracking?"
     answer: "DFS"
     explanation: "Depth-First Search follows a branch as far as possible before backtracking, typically implemented recursively or with an explicit stack, as opposed to BFS which explores level by level."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does Big-O notation describe about an algorithm?"
+    options:
+      - "An upper bound on how its running time (or space usage) grows as input size increases"
+      - "The exact number of seconds an algorithm will take to run"
+      - "The amount of RAM installed on the machine running it"
+      - "The programming language the algorithm must be written in"
+    answer: 0
+    explanation: "Big-O describes asymptotic growth rate as input size approaches infinity, abstracting away constant factors and lower-order terms, machine-specific speed, and implementation details — it answers 'how does cost scale', not 'how many milliseconds exactly'."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the time complexity of accessing an element by index in an array?"
+    options:
+      - "O(1)"
+      - "O(n)"
+      - "O(log n)"
+      - "O(n^2)"
+    answer: 0
+    explanation: "Because array elements are stored contiguously in memory, the address of any index can be computed directly (base address plus index times element size) without needing to traverse anything, giving constant-time access."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the time complexity of accessing the k-th element of a singly linked list?"
+    options:
+      - "O(n)"
+      - "O(1)"
+      - "O(log n)"
+      - "O(n log n)"
+    answer: 0
+    explanation: "A linked list has no direct indexing — reaching the k-th node requires following 'next' pointers one at a time starting from the head, taking time proportional to k (and up to n in the worst case)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a key advantage of a linked list over an array for frequent insertions/removals in the middle of the collection?"
+    options:
+      - "Once you have a reference to the relevant node, insertion/removal is O(1), without needing to shift other elements"
+      - "Linked lists always use less total memory than arrays"
+      - "Linked lists support O(1) random access by index, arrays do not"
+      - "There is no advantage; arrays are always faster for every operation"
+    answer: 0
+    explanation: "Inserting into or removing from the middle of an array requires shifting every subsequent element to keep the array contiguous (O(n)); a linked list only needs to update a couple of pointers around the insertion/removal point, once you've located it, which is O(1) — though locating that point in the first place still takes O(n) for a singly linked list."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'amortized' time complexity, using a dynamic array's (e.g. Python list, Java ArrayList) append operation as an example?"
+    options:
+      - "The average cost per operation over a sequence of operations, even though some individual operations (like a resize) are more expensive than others"
+      - "The guaranteed worst-case time for every single individual operation, with no exceptions"
+      - "A synonym for best-case time complexity"
+      - "The time complexity measured only when the array is completely empty"
+    answer: 0
+    explanation: "Most appends to a dynamic array are O(1), but occasionally the underlying array is full and must be resized (typically doubled) and every existing element copied over, an O(n) operation; because these expensive resizes happen increasingly rarely as the array grows, the average cost per append across a long sequence of appends still works out to O(1) amortized, even though a few individual appends are more expensive."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the worst-case time complexity of bubble sort?"
+    options:
+      - "O(n^2)"
+      - "O(n log n)"
+      - "O(n)"
+      - "O(log n)"
+    answer: 0
+    explanation: "Bubble sort repeatedly steps through the list, swapping adjacent out-of-order elements; in the worst case (reverse-sorted input) this requires roughly n passes each doing up to n comparisons, giving O(n^2)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the worst-case time complexity of insertion sort?"
+    options:
+      - "O(n^2)"
+      - "O(n log n)"
+      - "O(log n)"
+      - "O(1)"
+    answer: 0
+    explanation: "Insertion sort builds the sorted portion one element at a time, shifting elements to make room; in the worst case (reverse-sorted input) each new element must shift past all previously sorted elements, giving O(n^2) overall, though it performs close to O(n) on already nearly-sorted input."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why is insertion sort sometimes preferred over more asymptotically efficient algorithms (like quicksort) for very small or nearly-sorted arrays?"
+    options:
+      - "Its low overhead per element and near-linear performance on nearly-sorted data can make it faster in practice for small inputs, despite worse asymptotic complexity"
+      - "Insertion sort has a better worst-case complexity than quicksort for every input size"
+      - "Insertion sort is the only sorting algorithm capable of handling duplicate values"
+      - "Insertion sort cannot be implemented for arrays, only linked lists"
+    answer: 0
+    explanation: "Asymptotic complexity describes behavior as n grows large; for small n, the constant factors and low overhead of a simple algorithm like insertion sort can outperform an asymptotically superior but more complex algorithm — this is why many real-world sorting implementations (like Timsort) fall back to insertion sort for small sub-arrays."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the time complexity of building a max-heap from an unsorted array of n elements using the standard bottom-up heapify approach?"
+    options:
+      - "O(n)"
+      - "O(n log n)"
+      - "O(n^2)"
+      - "O(log n)"
+    answer: 0
+    explanation: "Although a single 'sift-down' operation is O(log n), and there are O(n) nodes, a more careful analysis (accounting for the fact that most nodes are near the bottom of the tree and need very few sift-down steps) shows the total cost sums to O(n), not the looser O(n log n) bound a naive analysis might suggest."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the time complexity of heapsort?"
+    options:
+      - "O(n log n) in all cases (best, average, and worst)"
+      - "O(n) in all cases"
+      - "O(n^2) in the worst case only"
+      - "O(log n) in all cases"
+    answer: 0
+    explanation: "Heapsort builds a heap in O(n) and then repeatedly extracts the max/min (each extraction being O(log n)) n times, giving O(n log n) — unlike quicksort, this bound holds even in the worst case, at the cost of heapsort typically having worse real-world constant factors and being non-stable."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What distinguishes counting sort and radix sort from comparison-based sorts like quicksort or merge sort?"
+    options:
+      - "They don't compare elements directly against each other, instead exploiting known structure (like a limited range of integer values) to achieve better than O(n log n) time in specific cases"
+      - "They can only ever sort already-sorted input"
+      - "They require significantly more comparisons than any comparison-based sort"
+      - "They cannot be used on integers, only strings"
+    answer: 0
+    explanation: "Comparison sorts are proven to require at least O(n log n) comparisons in the worst case; counting sort and radix sort sidestep this lower bound entirely by not comparing elements pairwise, instead using the values' structure (e.g. counting occurrences of each possible value) to achieve O(n + k) or similar, but only work well under specific conditions (like a bounded range of integer keys)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary difference between Breadth-First Search (BFS) and Depth-First Search (DFS) on a graph?"
+    options:
+      - "BFS explores all neighbors at the current depth before moving deeper; DFS explores as far as possible along one branch before backtracking"
+      - "BFS can only be used on trees, DFS only on general graphs"
+      - "DFS always finds the shortest path, BFS does not"
+      - "They are two names for the exact same algorithm"
+    answer: 0
+    explanation: "BFS uses a queue and expands level by level, which is why it finds the shortest path in an unweighted graph; DFS uses a stack (or recursion) and dives deep along one path before backtracking to explore alternatives, which uses less memory for wide graphs but doesn't guarantee the shortest path."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why does BFS find the shortest path (in terms of number of edges) in an unweighted graph, while DFS does not guarantee this?"
+    options:
+      - "BFS explores nodes in increasing order of distance from the start, so the first time it reaches a node is guaranteed to be via a shortest path; DFS can reach a node via a long, roundabout path before a shorter one is explored"
+      - "DFS is simply a slower version of BFS with no other difference"
+      - "BFS only works on graphs with fewer than 100 nodes"
+      - "Neither algorithm can be used to find shortest paths under any circumstances"
+    answer: 0
+    explanation: "Because BFS visits all nodes at distance 1 before any node at distance 2, and so on, the level at which a node is first discovered exactly equals its shortest distance (in edge count) from the start; DFS's exploration order has no such guarantee, since it commits to going deep along one path regardless of whether a shorter path to the same node exists elsewhere."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What problem does Dijkstra's algorithm solve, and what limitation does it have regarding edge weights?"
+    options:
+      - "It finds the shortest path from a source to all other nodes in a weighted graph, but only works correctly if all edge weights are non-negative"
+      - "It finds the shortest path in an unweighted graph only"
+      - "It works correctly with negative edge weights but not with positive ones"
+      - "It only works on graphs with exactly one possible path between any two nodes"
+    answer: 0
+    explanation: "Dijkstra's greedy approach (always expanding the currently-closest unvisited node) relies on the assumption that once a node's shortest distance is finalized, no later path through a negative-weight edge could ever make a shorter path appear — that assumption breaks with negative weights, which is why Bellman-Ford (slower, but tolerant of negative weights, as long as there's no negative cycle) is used instead when negative weights are possible."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why does the Bellman-Ford algorithm work correctly with negative edge weights, unlike Dijkstra's algorithm, despite being asymptotically slower?"
+    options:
+      - "Instead of greedily finalizing a node's distance once visited, it relaxes every edge repeatedly (V-1 times), allowing earlier distance estimates to still be improved later by paths through negative-weight edges"
+      - "Bellman-Ford does not actually compute shortest paths at all, only approximate ones"
+      - "Bellman-Ford ignores negative edges entirely rather than processing them"
+      - "It works only on graphs with fewer than 10 vertices"
+    answer: 0
+    explanation: "Dijkstra assumes a node's shortest distance is final once discovered (safe only with non-negative weights); Bellman-Ford instead repeatedly relaxes all edges across the whole graph for V-1 iterations, guaranteeing that even paths made shorter later on by a negative-weight edge are eventually accounted for, at the cost of O(V*E) time instead of Dijkstra's faster O((V+E) log V) with a good priority queue."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What do Kruskal's and Prim's algorithms both compute for a weighted, connected, undirected graph?"
+    options:
+      - "A Minimum Spanning Tree (MST) — a subset of edges connecting all vertices with the minimum possible total edge weight, and no cycles"
+      - "The shortest path between two specific vertices"
+      - "Whether the graph contains a cycle, with no regard to edge weights"
+      - "The maximum flow between a source and a sink"
+    answer: 0
+    explanation: "Both are classic greedy MST algorithms, differing in strategy: Kruskal's sorts all edges by weight and greedily adds the smallest edge that doesn't create a cycle (commonly using a Union-Find structure to detect cycles efficiently); Prim's grows a single tree outward, greedily adding the cheapest edge connecting the current tree to a new vertex."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'topological sort', and under what condition on a directed graph is it possible to compute one?"
+    options:
+      - "A linear ordering of vertices such that for every directed edge u -> v, u comes before v in the ordering; it's only possible if the graph is a Directed Acyclic Graph (DAG), i.e. has no cycles"
+      - "A sort that arranges vertices purely alphabetically by their labels"
+      - "It is possible for any directed graph, including ones containing cycles"
+      - "It requires the graph to be undirected"
+    answer: 0
+    explanation: "A cycle would make a consistent linear ordering impossible (u must come before v, but also after it, if there's a cycle involving both), so topological sort is defined only for DAGs — common applications include scheduling tasks with dependencies, or determining a valid build/compile order for modules."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the purpose of a Union-Find (Disjoint Set Union) data structure?"
+    options:
+      - "Efficiently track a partition of elements into disjoint sets, supporting fast 'union' (merge two sets) and 'find' (which set does this element belong to) operations"
+      - "Efficiently find the shortest path between two nodes in a graph"
+      - "Efficiently sort a large array of integers"
+      - "Efficiently compute the height of a binary tree"
+    answer: 0
+    explanation: "Union-Find is the standard structure behind cycle detection in Kruskal's MST algorithm (two endpoints of an edge are in the same set if and only if they're already connected) and behind connected-component tracking generally; with optimizations like union-by-rank and path compression, both operations run in near-constant (technically inverse-Ackermann) amortized time."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a trie (prefix tree) particularly well-suited for?"
+    options:
+      - "Efficiently storing and searching a set of strings, especially for prefix-based operations like autocomplete"
+      - "Storing key-value pairs with average O(1) lookup, like a hash map"
+      - "Representing a graph's edges compactly"
+      - "Sorting a large array of numbers"
+    answer: 0
+    explanation: "Each path from the root of a trie down to a marked node represents a stored string, sharing common prefixes across branches — this makes operations like 'find all words starting with this prefix' (autocomplete) very efficient, something a hash map or balanced BST doesn't support as naturally."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What property must a red-black tree maintain that guarantees its height stays O(log n)?"
+    options:
+      - "A set of coloring and structural rules (e.g. no two adjacent red nodes, every root-to-leaf path has the same number of black nodes) that bound how unbalanced the tree can become"
+      - "Every node must have exactly two children, with no exceptions"
+      - "All values must be inserted in strictly increasing order"
+      - "The tree must be rebuilt entirely from scratch after every single insertion"
+    answer: 0
+    explanation: "Red-black trees are self-balancing BSTs that maintain a set of invariants (via node coloring and rotations during insertion/deletion) ensuring the longest root-to-leaf path is never more than twice the shortest, which guarantees O(log n) height and therefore O(log n) search/insert/delete — they're the underlying structure behind many standard library ordered map/set implementations."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does it mean for a binary search tree to become 'unbalanced', and what is the consequence for search performance?"
+    options:
+      - "Its height grows closer to O(n) (e.g. degenerating into a linked-list-like chain) instead of staying O(log n), degrading search/insert/delete to O(n) in the worst case"
+      - "It means the tree contains duplicate values, which is otherwise unrelated to balance"
+      - "It means the tree has more left children than right children, with no effect on performance"
+      - "Balance has no effect on any BST operation's performance"
+    answer: 0
+    explanation: "If elements are inserted in already-sorted order into a naive (non-self-balancing) BST, each new node becomes the only child of the previous one, producing a degenerate, linked-list-shaped tree with height O(n) instead of O(log n) — which is exactly why self-balancing variants (AVL, red-black trees) exist, to guarantee O(log n) height regardless of insertion order."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is 'memoization', in the context of dynamic programming?"
+    options:
+      - "Caching the results of expensive function calls (typically recursive ones) so repeated calls with the same inputs can be answered instantly instead of recomputed"
+      - "A technique for sorting an array using minimal memory"
+      - "A synonym for garbage collection"
+      - "A way to permanently delete unused variables from memory"
+    answer: 0
+    explanation: "Memoization is the 'top-down' style of dynamic programming: a naive recursive solution is kept mostly as-is, but a cache (often a dictionary/array) stores each subproblem's result the first time it's computed, so overlapping recursive calls with identical arguments are answered from the cache instead of being recomputed from scratch."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key difference between the 'top-down' (memoization) and 'bottom-up' (tabulation) approaches to dynamic programming?"
+    options:
+      - "Top-down starts from the original problem and recursively breaks it down, caching results as they're computed; bottom-up starts from the smallest subproblems and iteratively builds up to the final answer"
+      - "Bottom-up cannot be used for any problem that top-down can solve"
+      - "Top-down never uses any extra memory beyond the input itself"
+      - "They are exact synonyms describing the same technique"
+    answer: 0
+    explanation: "Both avoid redundant recomputation of overlapping subproblems, but via opposite control flow: memoization follows the natural recursive structure of the problem (computing subproblems on demand as needed), while tabulation explicitly computes subproblems in a fixed order (usually via a loop filling in a table) from the smallest up to the final answer, often avoiding recursion's call-stack overhead entirely."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why does naive recursive computation of Fibonacci numbers (fib(n) = fib(n-1) + fib(n-2)) run in exponential time, and how does dynamic programming fix this?"
+    options:
+      - "The naive recursion recomputes the same fib(k) values repeatedly across many different call branches; DP stores each fib(k) result once it's computed, so it's never recomputed, reducing the total work to linear time"
+      - "Naive recursion is actually already O(n), and DP provides no improvement"
+      - "The exponential slowdown is caused by integer overflow, not redundant computation"
+      - "DP fixes this only by using a faster programming language, not by changing the algorithm"
+    answer: 0
+    explanation: "Computing fib(n) naively re-derives fib(n-2) both directly and as part of computing fib(n-1), and this redundancy compounds at every level, leading to roughly 2^n total calls; storing (memoizing) each fib(k) the first time it's computed means each distinct subproblem is solved exactly once, collapsing the total work down to O(n)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the general strategy behind a 'divide and conquer' algorithm?"
+    options:
+      - "Break a problem into smaller, independent subproblems of the same type, solve each recursively, and combine their solutions into a solution for the original problem"
+      - "Always try every possible solution exhaustively, one at a time"
+      - "Make the locally best choice at each step, never reconsidering it"
+      - "Store previously computed results to avoid recomputing them"
+    answer: 0
+    explanation: "Merge sort and quicksort are classic divide-and-conquer algorithms: each splits the problem into smaller sub-arrays, recursively sorts each independently, and (for merge sort specifically) combines the sorted results — this differs from dynamic programming, which is specifically for problems where subproblems overlap and their results can be reused, rather than being fully independent."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'backtracking', as an algorithmic technique?"
+    options:
+      - "Incrementally building candidate solutions and abandoning ('backtracking' from) a partial solution as soon as it's determined it cannot possibly lead to a valid complete solution"
+      - "A technique that only ever considers the very first solution found, without checking any alternatives"
+      - "A synonym for dynamic programming with no distinction"
+      - "A technique that requires sorting the input first, in every case"
+    answer: 0
+    explanation: "Backtracking explores a solution space depth-first, but prunes branches early the moment they're known to be invalid or unable to lead anywhere useful (e.g. in the N-Queens problem, abandoning a partial placement as soon as two queens attack each other), avoiding wasted work exploring the rest of a doomed branch."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the 'two-pointer' technique commonly used for?"
+    options:
+      - "Solving problems on sorted arrays or sequences by maintaining two indices that move toward each other (or in tandem) to avoid nested loops"
+      - "Storing two separate copies of the same array for redundancy"
+      - "Pointing to two completely unrelated arrays simultaneously with no coordination between them"
+      - "A technique used only for linked lists, never arrays"
+    answer: 0
+    explanation: "A classic example: finding a pair in a sorted array that sums to a target value using one pointer starting at the beginning and one at the end, moving them inward based on whether the current sum is too high or too low — this solves the problem in O(n) instead of the O(n^2) a naive nested-loop approach would require."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the 'sliding window' technique typically used for?"
+    options:
+      - "Efficiently processing a contiguous subarray/substring of fixed or variable size by incrementally adjusting its boundaries, instead of recomputing from scratch for every possible window"
+      - "Rendering a graphical window that can be resized by the user"
+      - "A technique exclusively for searching unsorted arrays"
+      - "A synonym for binary search"
+    answer: 0
+    explanation: "For a problem like 'find the maximum sum of any contiguous subarray of size k', a sliding window updates the running sum by subtracting the element leaving the window and adding the one entering it, achieving O(n) total work instead of recomputing each window's sum from scratch (which would be O(n*k))."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the classic technique (Floyd's Tortoise and Hare) used to detect a cycle in a linked list?"
+    options:
+      - "Use two pointers moving at different speeds (e.g. one step and two steps per iteration); if they ever meet, a cycle exists"
+      - "Reverse the entire list and check if it looks identical to the original"
+      - "Sort the list's values and check for duplicates"
+      - "Count the list's nodes and check if the count is an even number"
+    answer: 0
+    explanation: "If there's no cycle, the faster pointer reaches the end (null) first, with no meeting; if there is a cycle, the faster pointer eventually laps the slower one within the cycle and they meet at some node, definitively proving a cycle exists in O(n) time and O(1) extra space, without needing to mark or store visited nodes."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key structural difference between a singly linked list and a doubly linked list?"
+    options:
+      - "A doubly linked list's nodes store a reference to both the next AND the previous node, allowing traversal in either direction; a singly linked list's nodes only reference the next node"
+      - "A doubly linked list can only store numeric values, a singly linked list can store any type"
+      - "A singly linked list allows backward traversal, a doubly linked list does not"
+      - "There is no structural difference between the two"
+    answer: 0
+    explanation: "The extra 'previous' pointer in a doubly linked list makes backward traversal and certain deletions (given only a reference to the node itself, without needing to find its predecessor separately) more efficient, at the cost of extra memory per node and more pointer updates to maintain during insertion/deletion."
+  - type: multiple_choice
+    difficulty: 2
+    text: "How can a queue be implemented using two stacks?"
+    options:
+      - "Push new elements onto one stack; when dequeuing, if a second stack is empty, pour all elements from the first stack into it (reversing their order), then pop from the second stack"
+      - "By simply renaming a stack's push/pop methods to enqueue/dequeue, with no other change"
+      - "It is mathematically impossible to implement a FIFO queue using only LIFO stacks"
+      - "By sorting the stack's elements before every single operation"
+    answer: 0
+    explanation: "Since a stack reverses order, pouring everything from an 'incoming' stack into an 'outgoing' stack reverses it back to the original insertion order, so popping from the outgoing stack yields elements in FIFO order; elements are only moved between stacks when the outgoing stack is empty, giving amortized O(1) per operation overall."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the defining property of a binary search tree (BST), beyond simply being a binary tree?"
+    options:
+      - "For every node, all values in its left subtree are smaller, and all values in its right subtree are larger (assuming no duplicates)"
+      - "Every node must have exactly two children"
+      - "All values must be inserted in a single sorted pass before the tree can be used"
+      - "A BST cannot contain more than 100 nodes"
+    answer: 0
+    explanation: "This ordering property is what makes search efficient: at each node, comparing the target value against the current node's value tells you unambiguously which subtree (if any) to continue searching, discarding the other subtree entirely at each step."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does it mean for a graph to be 'connected'?"
+    options:
+      - "There is a path between every pair of vertices in the graph"
+      - "Every vertex has exactly the same number of edges"
+      - "The graph contains no cycles at all"
+      - "Every edge in the graph has the same weight"
+    answer: 0
+    explanation: "A connected graph has no isolated 'islands' of vertices unreachable from the rest; for directed graphs, a stronger notion ('strongly connected') additionally requires that every vertex can reach every other vertex following the direction of the edges."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does the Master Theorem provide a general method for?"
+    options:
+      - "Directly deriving the asymptotic time complexity of many divide-and-conquer recurrence relations, without solving them from scratch each time"
+      - "Automatically generating test cases for a given algorithm"
+      - "Proving whether a given problem belongs to the complexity class NP"
+      - "Converting any recursive algorithm into an iterative one automatically"
+    answer: 0
+    explanation: "For recurrences of the form T(n) = a*T(n/b) + f(n) (a subproblems of size n/b, plus f(n) work to combine them), the Master Theorem gives a direct formula for the overall complexity based on how a, b, and f(n) relate, avoiding the need to expand and sum a recursion tree by hand every single time — e.g. it's how merge sort's T(n) = 2T(n/2) + O(n) is quickly shown to be O(n log n)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the general idea behind bit manipulation techniques like using '&', '|', '^', and bit shifts for algorithmic problems?"
+    options:
+      - "Operating directly on a number's binary representation to perform certain operations (like checking/setting individual bits, or multiplying/dividing by powers of two) extremely efficiently at the hardware level"
+      - "A technique that only works on floating-point numbers, never integers"
+      - "A way to convert any algorithm into a recursive one"
+      - "A synonym for hashing"
+    answer: 0
+    explanation: "Bitwise operations map almost directly onto single CPU instructions, making them extremely fast; common tricks include using XOR to swap values without a temporary variable, using AND with a mask to check if a specific bit is set, and using left/right shifts as fast multiplication/division by powers of two."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the general distinction between complexity classes P and NP?"
+    options:
+      - "P is the set of problems solvable in polynomial time; NP is the set of problems whose proposed solution can be verified in polynomial time, even if finding that solution isn't known to be doable in polynomial time"
+      - "P problems can never be solved by a computer at all; NP problems always can"
+      - "NP is a strict subset of problems that run faster than any P problem"
+      - "P and NP are exact synonyms describing the same set of problems"
+    answer: 0
+    explanation: "Every problem in P is also in NP (if you can solve it quickly, you can certainly verify a solution quickly too), but whether every problem in NP can also be solved (not just verified) in polynomial time — the famous 'P vs NP' question — remains one of the most important unsolved problems in computer science."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'greedy algorithm' guaranteed (and not guaranteed) to produce?"
+    options:
+      - "A locally optimal choice at each step; this happens to produce a globally optimal solution for some problems (like Kruskal's MST), but not for all problems in general"
+      - "A guaranteed globally optimal solution for absolutely every problem it's applied to"
+      - "The same result as brute-force search, but always dramatically faster"
+      - "A solution that is always incorrect, by definition"
+    answer: 0
+    explanation: "Greedy algorithms are fast and simple, but their locally-optimal-at-each-step strategy doesn't always lead to a globally optimal answer for every problem — proving that a greedy strategy is correct for a specific problem (as can be done for MST algorithms, or Huffman coding) generally requires a specific mathematical argument (like an exchange argument) tailored to that problem."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a practical drawback of naive (non-tail-call-optimized) recursion for problems with very deep recursion depth?"
+    options:
+      - "It can exhaust the call stack, causing a stack overflow, since each recursive call typically consumes additional stack memory until the base case is reached"
+      - "Recursive functions always run slower than any iterative equivalent, with no exceptions"
+      - "Recursion cannot be used to implement any divide-and-conquer algorithm"
+      - "Recursive functions cannot return any value to their caller"
+    answer: 0
+    explanation: "Each active recursive call typically needs its own stack frame to store local variables and the return address; for very deep recursion (e.g. processing a huge linked list recursively, one call per node), this can exceed the available call stack size and crash with a stack overflow, which is why an iterative approach (or, in languages that support it, tail-call optimization) is sometimes necessary for deep recursive structures."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'tail-call optimization', and why doesn't it help in most mainstream languages that don't implement it (like standard Python or Java)?"
+    options:
+      - "It's a compiler/runtime optimization that reuses the current stack frame for a recursive call that is the very last operation in a function, avoiding stack growth; languages without this optimization still accumulate a new stack frame per call regardless of how the recursion is structured"
+      - "It automatically converts any recursive function into an iterative loop at compile time in every language"
+      - "It only applies to non-recursive functions"
+      - "It eliminates the need for a base case in recursive functions"
+    answer: 0
+    explanation: "Even a 'tail-recursive' function (where the recursive call is the last thing the function does, with no pending work afterward) will still overflow the stack in a language without tail-call optimization, since each call still gets its own stack frame regardless of the structure of the recursion; languages/runtimes that do implement this optimization (some Scheme implementations, for example) can run such recursion in genuinely constant stack space."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary space-time tradeoff illustrated by memoization in dynamic programming?"
+    options:
+      - "Extra memory is spent storing previously computed results, in exchange for avoiding the time cost of recomputing them"
+      - "Memoization always reduces both time and memory usage simultaneously, with no tradeoff at all"
+      - "Memoization increases time complexity in exchange for reduced memory usage"
+      - "There is no tradeoff; memoization has no measurable cost of any kind"
+    answer: 0
+    explanation: "This is a very common pattern in algorithm design generally: caching (memoization), precomputed lookup tables, and denser data structures often trade increased memory usage for reduced computation time, and the right choice depends on which resource (time or memory) is more constrained for a given use case."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the primary purpose of a segment tree data structure?"
+    options:
+      - "Efficiently answer range queries (like sum, minimum, or maximum over a subrange) and support updates to individual elements, both in O(log n)"
+      - "Efficiently sort an array in O(n) time"
+      - "Store key-value pairs with O(1) average lookup"
+      - "Represent a graph's adjacency relationships compactly"
+    answer: 0
+    explanation: "A segment tree precomputes and organizes range information hierarchically, so a query like 'what is the minimum value between index 3 and index 87' can be answered in O(log n) by combining a small number of precomputed subrange results, rather than scanning the whole range in O(n) every time; updates to a single element only need to update O(log n) affected nodes up the tree."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a hash collision?"
+    options:
+      - "When two different keys are mapped by a hash function to the same bucket/index"
+      - "When a hash function returns a different result each time it's called with the same input"
+      - "When a hash table runs out of available memory entirely"
+      - "A synonym for a stack overflow"
+    answer: 0
+    explanation: "Since a hash function maps a potentially unlimited set of possible keys down to a fixed, finite number of buckets, collisions (two different keys landing in the same bucket) are mathematically inevitable for a sufficiently large set of keys, which is why hash tables need a collision resolution strategy (chaining, or open addressing) to handle them correctly."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between 'chaining' and 'open addressing' as hash collision resolution strategies?"
+    options:
+      - "Chaining stores multiple colliding entries in a small secondary structure (like a linked list) per bucket; open addressing instead finds a different empty slot elsewhere in the same underlying array when a collision occurs"
+      - "Chaining can only be used with string keys, open addressing only with numeric keys"
+      - "Open addressing requires significantly more total memory than chaining in every case"
+      - "They are two names for the exact same technique"
+    answer: 0
+    explanation: "With chaining, each bucket effectively becomes a small list of all entries that hashed to it; with open addressing, a collision triggers a probing sequence (linear probing, quadratic probing, double hashing) to find another open slot in the same array, keeping everything within one contiguous block of memory rather than using auxiliary per-bucket structures."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the 'load factor' of a hash table?"
+    options:
+      - "The ratio of the number of stored entries to the number of available buckets/slots"
+      - "The total number of hash collisions that have ever occurred"
+      - "The exact memory address where the hash table is stored"
+      - "The number of distinct hash functions the table uses simultaneously"
+    answer: 0
+    explanation: "As load factor increases (more entries relative to available buckets), collisions become more frequent and performance degrades toward O(n); most hash table implementations automatically resize (grow the underlying array and rehash all entries) once the load factor crosses a certain threshold, to keep average-case operations close to O(1)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is choosing a good hash function important for a hash table's performance?"
+    options:
+      - "A poor hash function that clusters many different keys into the same few buckets causes excessive collisions, degrading average-case O(1) operations toward O(n)"
+      - "The hash function only affects how the keys are displayed, not actual performance"
+      - "Any hash function, no matter how poorly designed, guarantees O(1) performance regardless"
+      - "Hash function quality only matters for string keys, never for numeric keys"
+    answer: 0
+    explanation: "A good hash function distributes keys roughly uniformly across all available buckets, keeping the expected number of collisions low and each bucket's chain short; a bad hash function (e.g. one that maps most keys to the same handful of buckets) effectively degrades the hash table into something close to a single long linked list for those overloaded buckets."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the time complexity of checking whether an element exists in an unsorted array using linear search?"
+    options:
+      - "O(n)"
+      - "O(log n)"
+      - "O(1)"
+      - "O(n^2)"
+    answer: 0
+    explanation: "Without any ordering to exploit, linear search must check elements one by one until it finds a match or exhausts the array, giving O(n) in the worst case (and on average, if the element is equally likely to be anywhere, or absent)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why can't binary search be applied directly to an unsorted array?"
+    options:
+      - "Binary search relies on comparing the target against a middle element to decide which half to discard, which only correctly eliminates the other half if the array is ordered"
+      - "Binary search technically works on unsorted arrays too, just slightly slower"
+      - "Binary search requires the array to contain only unique values, unrelated to ordering"
+      - "Binary search can only be used on linked lists, not arrays"
+    answer: 0
+    explanation: "The entire logic of binary search depends on knowing that everything to one side of the middle element is smaller (or larger) than the target, which is only guaranteed if the array is sorted — on unsorted data, discarding half the array based on a single comparison could just as easily discard the element you were looking for."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the general concept behind 'string matching' algorithms like Knuth-Morris-Pratt (KMP), compared to naive substring search?"
+    options:
+      - "They precompute information about the pattern itself to avoid redundantly re-checking characters already known to match, achieving linear O(n+m) time instead of naive search's worst-case O(n*m)"
+      - "They work by first sorting both the text and the pattern"
+      - "They only work on patterns of length 1"
+      - "They require converting all characters to numeric values before searching"
+    answer: 0
+    explanation: "Naive substring search can, in the worst case, re-compare many of the same characters repeatedly after a partial match fails; KMP precomputes a 'failure function' from the pattern that tells it exactly how far it can safely skip ahead after a mismatch, without ever needing to backtrack within the text itself, achieving a guaranteed linear time bound."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the time complexity of merging two already-sorted arrays of sizes n and m into one sorted array?"
+    options:
+      - "O(n + m)"
+      - "O(n * m)"
+      - "O((n + m) log(n + m))"
+      - "O(1)"
+    answer: 0
+    explanation: "Since both input arrays are already sorted, a single pass comparing the current front elements of each and appending the smaller one (advancing that array's pointer) processes every element exactly once across both arrays, giving linear O(n + m) — this merge step is exactly what makes merge sort's overall O(n log n) possible."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In the average case, why is quicksort often faster in practice than merge sort, despite both having O(n log n) average-case time complexity?"
+    options:
+      - "Quicksort typically has better cache locality and lower constant-factor overhead (e.g. it can sort in-place, without needing a separate auxiliary array like merge sort does)"
+      - "Quicksort's average case is actually asymptotically faster than O(n log n), unlike merge sort"
+      - "Merge sort cannot be implemented for arrays of numbers"
+      - "There is no real practical difference; this is a common misconception"
+    answer: 0
+    explanation: "Both share the same asymptotic average-case bound, but quicksort's typical implementation partitions in-place with good cache behavior (working on contiguous, nearby memory), while a standard merge sort implementation needs additional O(n) auxiliary memory for merging, and the extra memory allocation/copying adds real, measurable constant-factor overhead in practice, even though it doesn't change the asymptotic classification."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a common strategy to avoid quicksort's O(n^2) worst case on already-sorted or adversarially-crafted input?"
+    options:
+      - "Choosing the pivot randomly (or via a 'median of three' heuristic) instead of always picking a fixed position like the first or last element"
+      - "Always choosing the very first element as the pivot, regardless of the input's characteristics"
+      - "Sorting the array first using a different algorithm before running quicksort"
+      - "Only ever running quicksort on arrays smaller than 10 elements"
+    answer: 0
+    explanation: "Quicksort's worst case occurs when the chosen pivot consistently produces maximally unbalanced partitions (e.g. always picking the smallest or largest remaining element); randomizing pivot choice (or using a heuristic like median-of-three) makes it extremely unlikely to consistently hit this worst case, giving expected O(n log n) performance even on adversarial or already-sorted input."
+  - type: completion
+    difficulty: 2
+    text: "The asymptotic notation that describes an upper bound on an algorithm's growth rate is called Big-____."
+    answer: "O"
+    explanation: "Big-O gives an upper bound on growth (worst case, typically); Big-Omega gives a lower bound, and Big-Theta gives a tight bound when the upper and lower bounds match."
+  - type: completion
+    difficulty: 3
+    text: "The technique of using two pointers moving at different speeds through a linked list to detect a cycle is commonly called the 'Tortoise and ____' algorithm."
+    answer: "Hare"
+    explanation: "Named after Floyd's Tortoise and Hare algorithm, the slow pointer ('tortoise') moves one step at a time while the fast pointer ('hare') moves two; if there's a cycle, the hare eventually laps the tortoise and they meet."
+  - type: completion
+    difficulty: 3
+    text: "A data structure that supports fast union and find operations for tracking disjoint sets is called a Union-____ (or Disjoint Set Union) structure."
+    answer: "Find"
+    explanation: "Union-Find (Disjoint Set Union) supports merging two sets (union) and querying which set an element belongs to (find), commonly used for cycle detection in Kruskal's MST algorithm and for tracking connected components."
+  - type: completion
+    difficulty: 2
+    text: "The prefix-tree data structure specialized for efficiently storing and searching strings is called a '____'."
+    answer: "trie"
+    explanation: "A trie organizes strings by shared prefixes along paths from the root, making prefix-based queries (like autocomplete) especially efficient compared to a general-purpose hash map or BST of strings."
+  - type: completion
+    difficulty: 4
+    text: "The graph algorithm that finds shortest paths from a single source even in the presence of negative edge weights (as long as there's no negative cycle) is called the ____-Ford algorithm."
+    answer: "Bellman"
+    explanation: "Unlike Dijkstra's algorithm, Bellman-Ford tolerates negative edge weights by repeatedly relaxing all edges rather than greedily finalizing distances, at the cost of a slower O(V*E) running time."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word term describes an algorithm that makes the locally best choice at each step without reconsidering previous choices?"
+    answer: "greedy"
+    explanation: "Greedy algorithms are simple and fast, and produce a globally optimal result for some problems (like MST construction), but not for every problem in general."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word term describes a graph traversal algorithm that explores all neighbors at the current depth before moving to the next depth level?"
+    answer: "BFS"
+    explanation: "Breadth-First Search uses a queue to explore level by level, which is why it's guaranteed to find the shortest path (in edge count) in an unweighted graph."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word term names the self-balancing binary search tree that uses node coloring rules to guarantee O(log n) height?"
+    answer: "red-black"
+    explanation: "Red-black trees maintain balance through coloring and rotation rules rather than tracking exact subtree heights the way AVL trees do, offering a different balance/performance tradeoff (generally faster insertions/deletions, slightly less strictly balanced) commonly used in standard library ordered map/set implementations."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word term describes when two different keys are mapped by a hash function to the same bucket in a hash table?"
+    answer: "collision"
+    explanation: "Collisions are mathematically inevitable once enough keys are stored relative to the number of buckets, which is why hash tables need a defined strategy (chaining or open addressing) to handle them correctly."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between best-case, average-case, and worst-case time complexity, using linear search as an example for each."
+    answer: "Best-case describes the most favorable possible input: for linear search, this is when the target element happens to be the very first one checked, giving O(1). Worst-case describes the least favorable possible input: for linear search, this is when the target is the last element checked, or isn't present in the array at all, requiring every element to be checked, giving O(n). Average-case describes the expected performance over a typical/random distribution of inputs: for linear search over an array where the target is equally likely to be at any position, this works out to roughly n/2 comparisons on average, which is still O(n) asymptotically, just with a different constant factor than the worst case."
+    explanation: "Big-O notation is most commonly quoted for worst-case complexity (since it provides a guarantee that performance will never be worse than that bound), but average-case analysis matters too, especially for algorithms like quicksort whose worst case is much worse than its typical, average-case behavior."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why a dynamic array's (e.g. Python list, Java ArrayList) append operation is described as O(1) amortized, even though some individual append calls actually take O(n) time."
+    answer: "Most appends simply place the new element in the next available slot of the underlying pre-allocated array, which is O(1). Occasionally, the array is completely full, and appending requires allocating a new, larger underlying array (commonly double the previous size) and copying every existing element over to it, which is an O(n) operation for that specific append. However, because the array's capacity doubles each time this happens, these expensive resize operations become exponentially rarer as the array grows — summing the total cost of all the cheap O(1) appends plus the occasional expensive O(n) resizes across a long sequence of n appends works out to O(n) total cost, which averages to O(1) per append when amortized (spread evenly) across the whole sequence."
+    explanation: "This is a classic example of amortized analysis: even though the worst-case cost of any single operation can be O(n), the total cost over many operations, divided by the number of operations, still comes out to a small constant — which is a meaningfully different (and often more useful) guarantee than a naive worst-case-per-operation bound would suggest."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why an unbalanced binary search tree can degrade to O(n) search time, and describe what self-balancing trees like AVL or red-black trees do to prevent this."
+    answer: "If elements are inserted into a plain (non-self-balancing) BST in an already-sorted order, each new node ends up as the only child of the previously-inserted node, producing a tree that's really just a disguised linked list, with height equal to the number of nodes, n. Since BST search time is proportional to the tree's height, this degenerate shape gives O(n) search instead of the O(log n) a properly balanced tree would provide for the same number of elements. Self-balancing trees like AVL and red-black trees actively maintain balance during insertion and deletion (via rotations, triggered whenever a balance-violating condition is detected), guaranteeing the tree's height stays O(log n) regardless of the order elements are inserted in, which in turn guarantees O(log n) search, insert, and delete."
+    explanation: "This is precisely why production-quality ordered map/set implementations in most standard libraries use a self-balancing tree variant rather than a plain BST — without rebalancing, an adversarial or simply unlucky insertion order can silently degrade performance from logarithmic to linear."
   - type: open_answer
     difficulty: 4
-    text: "Explain the difference between a stable and an unstable sorting algorithm, and give an example of each."
+    text: "Explain the difference between Dijkstra's algorithm and Bellman-Ford for finding shortest paths, and describe a specific situation where you would need to use Bellman-Ford instead of Dijkstra."
+    answer: "Dijkstra's algorithm greedily finalizes each node's shortest distance as soon as it's reached, based on the assumption that no later-discovered path could ever make an already-finalized distance shorter — an assumption that only holds if all edge weights are non-negative. Bellman-Ford instead repeatedly relaxes every edge in the graph across V-1 iterations, never assuming any distance is truly final until all iterations complete, which correctly handles negative edge weights (as long as there's no negative-weight cycle reachable from the source, which would make 'shortest path' undefined/infinitely negative). You would need Bellman-Ford instead of Dijkstra specifically when the graph can contain negative edge weights — for example, a graph modeling currency exchange rates as edge weights (where some conversions might represent an actual 'gain', modeled as a negative cost) could not be safely solved with Dijkstra, since a later-discovered negative-weight path could invalidate an already-finalized 'shortest' distance."
+    explanation: "Bellman-Ford's extra robustness comes at the cost of being asymptotically slower (O(V*E) versus Dijkstra's O((V+E) log V) with an efficient priority queue), which is why Dijkstra is preferred whenever it's known in advance that all edge weights are non-negative."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between memoization (top-down dynamic programming) and tabulation (bottom-up dynamic programming), using the Fibonacci sequence as an example for each."
+    answer: "Memoization keeps the natural recursive structure of the problem: a function fib(n) still calls fib(n-1) and fib(n-2) recursively as it normally would, but before returning, it stores its result in a cache keyed by n; on any future call (including from a different branch of the recursion) with the same n, the cached value is returned immediately instead of recomputing it. Tabulation instead builds an iterative table from the bottom up: starting with the known base cases fib(0)=0 and fib(1)=1, a loop computes fib(2), then fib(3), and so on up to fib(n), each time using only the two previously computed table entries, with no recursion involved at all."
+    explanation: "Both approaches achieve the same O(n) time complexity for Fibonacci by eliminating redundant recomputation, but tabulation avoids recursive call-stack overhead entirely (and can sometimes be optimized to use only O(1) extra space, by keeping just the last two values instead of a full table), while memoization more directly mirrors the problem's natural recursive definition, which can make it easier to derive from a naive recursive solution."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what the two-pointer technique is and how it can solve the problem of finding whether a sorted array contains two numbers that sum to a given target, in O(n) time instead of O(n^2)."
+    answer: "A naive approach checks every possible pair of numbers (nested loops), taking O(n^2) time. The two-pointer technique instead uses one pointer starting at the beginning of the sorted array (the smallest value) and another starting at the end (the largest value). At each step, it checks the sum of the two pointed-to values: if the sum equals the target, a matching pair has been found; if the sum is too small, the left pointer moves right (increasing the sum, since the array is sorted); if the sum is too large, the right pointer moves left (decreasing the sum). Because each step moves one of the two pointers strictly inward, and they can only move toward each other a total of n times combined before meeting, this process examines at most O(n) pairs total, rather than every possible O(n^2) pair."
+    explanation: "This technique specifically relies on the array being sorted — the direction to move a pointer (which pointer to adjust, and which way) is only a valid, correct decision because sortedness guarantees moving a pointer inward predictably increases or decreases the current sum in the expected direction."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain why choosing the pivot randomly in quicksort (rather than always picking, say, the first element) helps avoid its worst-case O(n^2) behavior in practice."
+    answer: "Quicksort's O(n^2) worst case happens when the chosen pivot repeatedly produces maximally unbalanced partitions — for example, if the pivot is always the smallest (or largest) remaining element, one partition ends up empty and the other contains everything else, giving no real reduction in problem size per recursive call. If the pivot is always chosen as a fixed position (like the first element), an adversary (or simply already-sorted input) can reliably trigger this worst case every single time, since the pivot choice is entirely predictable. Choosing the pivot randomly makes it extremely unlikely that a long, unbalanced-partition sequence would occur by chance across many recursive calls, so in practice (and in expectation, mathematically), random pivot selection makes quicksort's expected running time O(n log n) regardless of the specific input's initial ordering."
+    explanation: "This doesn't change quicksort's theoretical worst-case complexity (a pathologically unlucky sequence of random choices could still, in principle, hit the bad case) — it changes the practical likelihood of hitting that worst case, converting an input-dependent guaranteed worst case into an input-independent, vanishingly unlikely one."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why a naive recursive Fibonacci implementation runs in exponential time, describing specifically what redundant work occurs."
+    answer: "Computing fib(n) naively calls fib(n-1) and fib(n-2). But fib(n-1) itself calls fib(n-2) and fib(n-3) — meaning fib(n-2) gets computed independently, from scratch, in two completely separate branches of the recursion tree (once directly from fib(n), and once as part of computing fib(n-1)). This duplication compounds at every level: fib(n-3) is recomputed even more times, and so on down to the base cases, which end up being recomputed an exponentially growing number of times as n increases. The total number of function calls made grows roughly proportional to the golden-ratio-based growth rate of the Fibonacci sequence itself (approximately 1.618^n), which is exponential in n."
+    explanation: "This redundant recomputation is exactly the 'overlapping subproblems' property that dynamic programming (via memoization or tabulation) is designed to eliminate — storing each fib(k) result the first time it's computed reduces the total distinct subproblems solved from exponentially many down to just n+1 (fib(0) through fib(n)), each solved exactly once."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a Union-Find (Disjoint Set Union) structure is used for in Kruskal's Minimum Spanning Tree algorithm, and why it's needed."
+    answer: "Kruskal's algorithm processes all of a graph's edges in increasing order of weight, greedily adding each edge to the growing minimum spanning tree unless doing so would create a cycle (since a spanning tree, by definition, must have no cycles). To efficiently check 'would adding this edge create a cycle', the algorithm needs to quickly determine whether the edge's two endpoints are already connected to each other through previously-added edges. A Union-Find structure tracks exactly this: each vertex starts in its own singleton set, and whenever an edge is added to the MST, the sets containing its two endpoints are unioned together; checking whether an edge would create a cycle is then just checking whether its two endpoints are already in the same set (via 'find') — if they are, adding that edge would connect two already-connected vertices, necessarily forming a cycle, so the edge is skipped."
+    explanation: "Without Union-Find (or an equivalent efficient connectivity check), determining whether adding an edge creates a cycle would require a much more expensive traversal (like a full BFS/DFS) of the current partial tree for every single candidate edge; Union-Find with its optimizations (union-by-rank, path compression) makes each check nearly constant time, which is essential for Kruskal's overall efficiency."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function (in any language) that performs binary search on a sorted array of integers, returning the index of a target value or -1 if not found."
+    answer: |
+      ```python
+      def binary_search(arr, target):
+          low, high = 0, len(arr) - 1
+          while low <= high:
+              mid = (low + high) // 2
+              if arr[mid] == target:
+                  return mid
+              elif arr[mid] < target:
+                  low = mid + 1
+              else:
+                  high = mid - 1
+          return -1
+      ```
+    explanation: "Each iteration halves the remaining search space by comparing the target against the middle element and discarding the half that cannot contain it, giving O(log n) time; the loop terminates either by finding the target or by low exceeding high, meaning the remaining search space is empty."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a function (in any language) that performs an iterative (non-recursive) Breadth-First Search (BFS) on a graph represented as an adjacency list, starting from a given node, and returns the list of visited nodes in visitation order."
+    answer: |
+      ```python
+      from collections import deque
+
+      def bfs(graph, start):
+          visited = {start}
+          order = []
+          queue = deque([start])
+          while queue:
+              node = queue.popleft()
+              order.append(node)
+              for neighbor in graph[node]:
+                  if neighbor not in visited:
+                      visited.add(neighbor)
+                      queue.append(neighbor)
+          return order
+      ```
+    explanation: "A queue (FIFO) is what gives BFS its level-by-level exploration order: nodes are processed in the exact order they were first discovered, and marking a node as visited as soon as it's added to the queue (rather than when it's dequeued) prevents the same node from being enqueued multiple times through different paths before it's ever processed."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function (in any language) that checks whether a given string is a palindrome, ignoring case, using the two-pointer technique."
+    answer: |
+      ```python
+      def is_palindrome(s):
+          s = s.lower()
+          left, right = 0, len(s) - 1
+          while left < right:
+              if s[left] != s[right]:
+                  return False
+              left += 1
+              right -= 1
+          return True
+      ```
+    explanation: "Two pointers start at opposite ends and move toward the center, comparing characters pairwise; returning False as soon as any pair doesn't match avoids unnecessary further comparisons, and reaching the middle without any mismatch confirms the string reads the same forwards and backwards."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function (in any language) that reverses a singly linked list in place, returning the new head."
+    answer: |
+      ```python
+      class Node:
+          def __init__(self, value, next=None):
+              self.value = value
+              self.next = next
+
+      def reverse_list(head):
+          prev = None
+          current = head
+          while current is not None:
+              next_node = current.next
+              current.next = prev
+              prev = current
+              current = next_node
+          return prev
+      ```
+    explanation: "Reversing in place only requires tracking three pointers at a time (previous, current, and the next node before it's overwritten) and redirecting each node's 'next' pointer to point backward instead of forward, achieving O(n) time and O(1) extra space, without allocating any new nodes."
+  - type: open_answer
+    difficulty: 2
+    text: "Write a function (in any language) that implements bubble sort on an array of integers."
+    answer: |
+      ```python
+      def bubble_sort(arr):
+          n = len(arr)
+          for i in range(n):
+              swapped = False
+              for j in range(n - i - 1):
+                  if arr[j] > arr[j + 1]:
+                      arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                      swapped = True
+              if not swapped:
+                  break
+          return arr
+      ```
+    explanation: "Each outer pass 'bubbles' the largest remaining unsorted element to its correct position at the end of the array via repeated adjacent swaps; tracking whether any swap occurred lets the function exit early once the array is already sorted, improving the best case to O(n) instead of always running the full O(n^2)."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a function (in any language) that solves the classic 'two sum' problem: given an array of integers and a target value, return the indices of the two numbers that add up to the target, in better than O(n^2) time."
+    answer: |
+      ```python
+      def two_sum(nums, target):
+          seen = {}
+          for i, num in enumerate(nums):
+              complement = target - num
+              if complement in seen:
+                  return [seen[complement], i]
+              seen[num] = i
+          return None
+      ```
+    explanation: "Instead of checking every pair (O(n^2)), a hash map records each number's index as it's scanned; before inserting the current number, the function checks whether its complement (target minus the current number) was already seen earlier in the array, giving O(1) average-case lookups and O(n) overall time, at the cost of O(n) extra space for the hash map."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function (in any language) that performs an in-order traversal of a binary tree and returns the visited values as a list."
+    answer: |
+      ```python
+      class TreeNode:
+          def __init__(self, value, left=None, right=None):
+              self.value = value
+              self.left = left
+              self.right = right
+
+      def inorder_traversal(node, result=None):
+          if result is None:
+              result = []
+          if node is not None:
+              inorder_traversal(node.left, result)
+              result.append(node.value)
+              inorder_traversal(node.right, result)
+          return result
+      ```
+    explanation: "In-order traversal visits the left subtree, then the current node, then the right subtree; for a binary search tree specifically, this visitation order always produces the values in sorted ascending order, which is why it's the traversal most commonly used when a sorted sequence is needed from a BST."
+  - type: open_answer
+    difficulty: 3
+    text: "Write a function (in any language) that checks whether a string of brackets/parentheses (e.g. '(){}[]') is balanced, using a stack."
+    answer: |
+      ```python
+      def is_balanced(s):
+          pairs = {')': '(', ']': '[', '}': '{'}
+          stack = []
+          for char in s:
+              if char in '([{':
+                  stack.append(char)
+              elif char in ')]}':
+                  if not stack or stack.pop() != pairs[char]:
+                      return False
+          return not stack
+      ```
+    explanation: "A stack naturally models nested structure: every opening bracket is pushed, and every closing bracket must match the most recently pushed (and not-yet-matched) opening bracket, which is exactly what popping from a stack checks; if the stack is empty when a closing bracket needs a match, or anything is left unmatched on the stack at the end, the string isn't balanced."
+  - type: open_answer
+    difficulty: 4
+    text: "Write a function (in any language) that returns the n-th Fibonacci number using tabulation (bottom-up dynamic programming), running in O(n) time and O(1) extra space."
+    answer: |
+      ```python
+      def fibonacci(n):
+          if n <= 1:
+              return n
+          prev, curr = 0, 1
+          for _ in range(2, n + 1):
+              prev, curr = curr, prev + curr
+          return curr
+      ```
+    explanation: "Since computing fib(n) only ever needs the two immediately preceding values, there's no need to store the entire table of all previous Fibonacci numbers — just the last two — reducing the naive tabulation approach's O(n) space down to O(1), while keeping the O(n) time of a single iterative pass."
+
     answer: "A stable sort preserves the relative order of equal elements, for example merge sort, while an unstable sort does not guarantee this, for example quicksort."
     explanation: "Stability matters when sorting by one key while wanting to preserve the prior order of equal keys; merge sort's merging step naturally keeps original order for ties, while quicksort's swaps can reorder equal elements."
   - type: open_answer

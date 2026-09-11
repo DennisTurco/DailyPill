@@ -39,6 +39,7 @@ builder.Services.AddScoped<IInfoFactService, InfoFactService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<ITopicContextDocumentService, TopicContextDocumentService>();
+builder.Services.AddScoped<ISettingsService, SettingsService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

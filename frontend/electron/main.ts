@@ -8,6 +8,8 @@ const API_PORT = 8420;
 
 let mainWindow: BrowserWindow | null = null;
 let infoFactWindow: BrowserWindow | null = null;
+let quizStartWindow: BrowserWindow | null = null;
+let quizWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let backendProcess: ChildProcess | null = null;
 let lastFiredKey: string | null = null;
@@ -97,6 +99,68 @@ function openInfoFactPopup(): void {
   });
 }
 
+function openQuizStartPopup(topicId: number, topicName: string): void {
+  const hash = `/popup/quiz-start?topicId=${topicId}&topicName=${encodeURIComponent(topicName)}`;
+
+  if (quizStartWindow) {
+    loadRoute(quizStartWindow, hash);
+    quizStartWindow.show();
+    quizStartWindow.focus();
+    return;
+  }
+
+  quizStartWindow = new BrowserWindow({
+    width: 440,
+    height: 300,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    alwaysOnTop: true,
+    title: "DailyPill",
+    icon: path.join(__dirname, "assets", "app-icon.png"),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  attachExternalLinkHandler(quizStartWindow);
+  loadRoute(quizStartWindow, hash);
+
+  quizStartWindow.on("closed", () => {
+    quizStartWindow = null;
+  });
+}
+
+function openQuizWindow(topicId: number): void {
+  if (quizWindow) {
+    quizWindow.show();
+    quizWindow.focus();
+    quizWindow.webContents.send("navigate", `/popup/quiz?topicId=${topicId}`);
+    return;
+  }
+
+  quizWindow = new BrowserWindow({
+    width: 720,
+    height: 800,
+    title: "DailyPill",
+    icon: path.join(__dirname, "assets", "app-icon.png"),
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+
+  attachExternalLinkHandler(quizWindow);
+  loadRoute(quizWindow, `/popup/quiz?topicId=${topicId}`);
+
+  quizWindow.on("closed", () => {
+    quizWindow = null;
+  });
+}
+
 function createTray(): void {
   const trayIconPath = path.join(
     __dirname,
@@ -168,7 +232,7 @@ async function checkSchedules(): Promise<void> {
         const key = `${schedule.topic_id}-${schedule.day_of_week}-${schedule.time_of_day}-${now.toDateString()}`;
         if (lastFiredKey === key) continue;
         lastFiredKey = key;
-        showAndNavigate(`/quiz?topicId=${schedule.topic_id}`);
+        openQuizStartPopup(schedule.topic_id, schedule.topic_name);
       }
     }
   } catch {
@@ -215,6 +279,11 @@ ipcMain.handle("get-api-base-url", () => `http://localhost:${API_PORT}`);
 
 ipcMain.on("close-current-window", (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
+ipcMain.on("quiz-popup:start", (event, topicId: number) => {
+  BrowserWindow.fromWebContents(event.sender)?.close();
+  openQuizWindow(topicId);
 });
 
 app.on("window-all-closed", () => {

@@ -1,0 +1,836 @@
+name: Design Patterns (GoF)
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  The classic Gang of Four design patterns: creational patterns (Singleton,
+  Factory Method, Abstract Factory, Builder, Prototype), structural patterns
+  (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy), and
+  behavioral patterns (Strategy, Observer, Command, Template Method, State,
+  Iterator, Chain of Responsibility, Mediator, Memento, Visitor), plus the
+  design principles behind when and why to use them.
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the primary intent of the Singleton pattern?"
+    options:
+      - "Ensure a class has only one instance and provide a single global point of access to it"
+      - "Allow a class to have multiple incompatible interfaces"
+      - "Create families of related objects without specifying their concrete classes"
+      - "Attach additional responsibilities to an object dynamically"
+    answer: 0
+    explanation: "Singleton restricts instantiation of a class to exactly one object, typically via a private constructor plus a static accessor method/property that creates the instance on first access and returns the same one thereafter."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a commonly cited downside of overusing the Singleton pattern?"
+    options:
+      - "It introduces global state, making code harder to test in isolation and creating hidden dependencies between unrelated parts of a program"
+      - "It requires every class in the program to implement the same interface"
+      - "It prevents a program from ever having more than one thread"
+      - "It makes object creation slower than any other creational pattern"
+    answer: 0
+    explanation: "Because a singleton is globally accessible and shared, code that depends on it implicitly (rather than through an injected dependency) becomes hard to unit test — you can't easily substitute a fake/mock instance — and singletons can hide coupling between components that appear unrelated on the surface."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the intent of the Factory Method pattern?"
+    options:
+      - "Define an interface for creating an object, but let subclasses decide which concrete class to instantiate"
+      - "Ensure only one instance of a class ever exists"
+      - "Provide a simplified interface to a complex subsystem"
+      - "Allow incompatible interfaces to work together"
+    answer: 0
+    explanation: "Factory Method defines a creation method in a base class (often abstract or virtual), letting each subclass override it to decide which concrete product class gets instantiated, without the calling code needing to know the concrete type."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key difference between Factory Method and Abstract Factory?"
+    options:
+      - "Factory Method creates one kind of product via subclassing a creator; Abstract Factory creates families of related products through a single interface, typically via composition"
+      - "Abstract Factory can only be used with Singletons"
+      - "Factory Method is a structural pattern, Abstract Factory is a creational pattern"
+      - "There is no meaningful difference; they are the same pattern with two names"
+    answer: 0
+    explanation: "Factory Method is about overriding a single creation method in a subclass; Abstract Factory provides an interface with multiple creation methods for a whole family of related objects (e.g. a UI toolkit factory that creates matching buttons, checkboxes, and windows for one platform), usually composed of several Factory Methods internally."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What problem does the Builder pattern solve?"
+    options:
+      - "Constructing a complex object step by step, separating the construction process from its final representation"
+      - "Guaranteeing a class only ever has one instance"
+      - "Converting one interface into another that clients expect"
+      - "Reducing memory usage by sharing common object state"
+    answer: 0
+    explanation: "Builder is useful when an object has many optional parts or configuration steps (avoiding a constructor with a dozen parameters); a builder object accumulates configuration via chained method calls and produces the final object only when explicitly asked to 'build' it."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the intent of the Prototype pattern?"
+    options:
+      - "Create new objects by copying an existing object (a 'prototype') rather than instantiating a class directly"
+      - "Provide a way to access elements of a collection sequentially"
+      - "Restore an object to a previous state"
+      - "Decouple an abstraction from its implementation so the two can vary independently"
+    answer: 0
+    explanation: "Prototype lets you clone an existing, fully configured object instead of creating a new one from scratch and re-configuring it, which is useful when object creation is expensive or when you want a copy that starts identical to an existing instance."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary intent of the Adapter pattern?"
+    options:
+      - "Convert the interface of a class into another interface that clients expect, letting otherwise-incompatible classes work together"
+      - "Ensure a class has only one instance"
+      - "Add new behavior to an object dynamically without subclassing"
+      - "Provide a surrogate for another object to control access to it"
+    answer: 0
+    explanation: "Adapter wraps an existing class with an interface incompatible with what a client needs, translating calls between the two — a classic real-world analogy is a power plug adapter that lets a device with one plug shape work with a socket of a different shape."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key difference between the Adapter and Facade patterns?"
+    options:
+      - "Adapter makes one existing interface compatible with what a client expects; Facade provides a new, simplified interface over a complex subsystem, without necessarily matching any specific existing interface"
+      - "Facade is used only for legacy code, Adapter is used only for new code"
+      - "Adapter always wraps exactly one class, while Facade can never wrap more than one class"
+      - "They are two names for the same pattern"
+    answer: 0
+    explanation: "Adapter is about interface translation/compatibility for a specific mismatch; Facade is about simplification, hiding the complexity of an entire subsystem (potentially many classes) behind one easy-to-use entry point, regardless of whether any single existing interface needs to be matched."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the intent of the Bridge pattern?"
+    options:
+      - "Decouple an abstraction from its implementation so the two can vary and evolve independently"
+      - "Give a collection object a way to expose its elements without exposing its internal structure"
+      - "Attach additional responsibilities to an object dynamically as an alternative to subclassing"
+      - "Compose objects into tree structures to represent part-whole hierarchies"
+    answer: 0
+    explanation: "Bridge splits a class hierarchy in two: an abstraction hierarchy and a separate implementation hierarchy, connected by composition rather than inheritance, so new abstractions and new implementations can each be added independently without a combinatorial explosion of subclasses."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary intent of the Composite pattern?"
+    options:
+      - "Compose objects into tree structures to represent part-whole hierarchies, letting clients treat individual objects and compositions of objects uniformly"
+      - "Provide a simplified interface to a complex subsystem"
+      - "Add responsibilities to objects dynamically"
+      - "Encapsulate a request as an object"
+    answer: 0
+    explanation: "Composite is the classic pattern behind things like a file system (files and folders) or a UI widget tree: both a single 'leaf' object and a 'composite' of many objects implement the same interface, so client code can call the same operations on either without needing to distinguish them."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the intent of the Decorator pattern?"
+    options:
+      - "Attach additional responsibilities to an object dynamically, providing a flexible alternative to subclassing for extending behavior"
+      - "Ensure a class has only one instance"
+      - "Provide a placeholder for another object to control access to it"
+      - "Convert one class's interface into another expected by clients"
+    answer: 0
+    explanation: "Decorators wrap an object with the same interface, adding behavior before/after delegating to the wrapped object; multiple decorators can be stacked, letting you mix and match extensions at runtime instead of needing a subclass for every combination of features."
+  - type: multiple_choice
+    difficulty: 3
+    text: "How does the Decorator pattern typically achieve extending behavior without subclassing?"
+    options:
+      - "By wrapping an object in another object that implements the same interface and delegates to the wrapped object, adding behavior around the delegated call"
+      - "By modifying the original class's source code directly at compile time"
+      - "By duplicating the entire class and manually copying over all its fields"
+      - "By using reflection to inject new methods into an existing compiled class"
+    answer: 0
+    explanation: "Because the decorator implements the same interface as the object it wraps, it's interchangeable with the original from the client's perspective, while internally forwarding calls to the wrapped instance and layering extra behavior around that call — this composability is what lets decorators be freely combined."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary intent of the Facade pattern?"
+    options:
+      - "Provide a single, simplified interface to a larger, more complex subsystem of classes"
+      - "Allow an object to alter its behavior when its internal state changes"
+      - "Ensure a class has only one instance"
+      - "Define a family of interchangeable algorithms"
+    answer: 0
+    explanation: "A Facade sits in front of a complex subsystem (many classes with many interdependencies) and exposes a small, easy-to-use set of methods for the most common use cases, hiding the subsystem's internal complexity from client code that doesn't need to know about it."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What problem does the Flyweight pattern solve?"
+    options:
+      - "Reduce memory usage by sharing as much data as possible between many similar objects, instead of duplicating it in each one"
+      - "Convert an interface into one a client expects"
+      - "Provide a surrogate to control access to another object"
+      - "Compose a request into an object so it can be queued, logged, or undone"
+    answer: 0
+    explanation: "Flyweight separates an object's state into 'intrinsic' (shared, immutable, common across many instances — e.g. a character glyph's shape in a text editor) and 'extrinsic' (unique per instance, passed in from outside — e.g. its position on screen), letting thousands of logical objects share a much smaller number of actual shared instances."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary intent of the Proxy pattern?"
+    options:
+      - "Provide a surrogate or placeholder for another object to control access to it"
+      - "Compose objects into tree structures"
+      - "Define a one-to-many dependency so that when one object changes, dependents are notified automatically"
+      - "Encapsulate how a set of objects interact, promoting loose coupling"
+    answer: 0
+    explanation: "A Proxy implements the same interface as a 'real' object it stands in for, letting it control or augment access — common uses include lazy-loading an expensive object only when first actually used, access control/permissions checks, caching, or adding logging around remote calls."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'virtual proxy', specifically?"
+    options:
+      - "A proxy that defers creation of an expensive object until it is actually needed"
+      - "A proxy that only exists in a unit test, never in production"
+      - "A proxy that always throws an exception when accessed"
+      - "A proxy used exclusively for network communication"
+    answer: 0
+    explanation: "A virtual proxy stands in for an object that's expensive to create (e.g. a large image loaded from disk), only instantiating the real object the first time it's actually needed, which can meaningfully improve startup time or memory usage when many such objects are never actually used."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the primary intent of the Strategy pattern?"
+    options:
+      - "Define a family of interchangeable algorithms, encapsulate each one, and let them be swapped independently of the client that uses them"
+      - "Ensure a class has only one instance"
+      - "Compose a request into an object so it can be parameterized and queued"
+      - "Provide a way to access the elements of a collection sequentially"
+    answer: 0
+    explanation: "Strategy extracts an algorithm (e.g. a sorting or pricing calculation) behind a common interface, letting the object using it (the 'context') swap which concrete strategy it delegates to at runtime, without changing the context's own code."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between the Strategy and State patterns, given both let an object's behavior change at runtime?"
+    options:
+      - "Strategy lets the client explicitly choose which algorithm/behavior to use; State lets an object's internal state transitions change its own behavior automatically, often without external code choosing anything"
+      - "State is a creational pattern while Strategy is structural"
+      - "Strategy can only be used with a single implementation, State supports many"
+      - "They are functionally and structurally identical patterns"
+    answer: 0
+    explanation: "Structurally, Strategy and State often look nearly identical (an interface with interchangeable implementations held by a context object) — the distinction is in intent: with Strategy, the client typically picks and injects the algorithm; with State, the context object itself manages switching between state objects as its internal condition changes (e.g. a document moving from Draft to Review to Published), often with each state object aware of which state comes next."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the primary intent of the Observer pattern?"
+    options:
+      - "Define a one-to-many dependency so that when one object's state changes, all its dependents are notified and updated automatically"
+      - "Ensure a class has only one instance"
+      - "Convert an interface into one a client expects"
+      - "Compose objects into tree structures to represent part-whole hierarchies"
+    answer: 0
+    explanation: "An Observer (subject/publisher) maintains a list of dependents (observers/subscribers) and notifies them all automatically whenever its own state changes, without needing to know any concrete details about the observers — this is the foundation of most event/callback systems and reactive UI frameworks."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a common risk when using the Observer pattern extensively throughout a large system?"
+    options:
+      - "It can become difficult to trace the flow of control, since a single state change can trigger a cascading, hard-to-follow chain of notifications across many observers"
+      - "It guarantees a memory leak in every implementation, with no way to avoid it"
+      - "It only works correctly in single-threaded programs"
+      - "It requires every observer to be a Singleton"
+    answer: 0
+    explanation: "Because a subject doesn't need to know what its observers do in response to a notification, and observers can themselves trigger further changes that notify yet more observers, systems with heavy Observer usage can become hard to reason about and debug, even though each individual publish/subscribe relationship is simple."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the primary intent of the Command pattern?"
+    options:
+      - "Encapsulate a request (and everything needed to execute it) as a standalone object, allowing it to be parameterized, queued, logged, or undone"
+      - "Provide a simplified interface to a complex subsystem"
+      - "Allow an object to alter its behavior when its internal state changes"
+      - "Define a family of interchangeable algorithms"
+    answer: 0
+    explanation: "By wrapping a request (an action, its receiver, and its parameters) as a full object rather than a direct method call, Command enables features that a plain method call can't easily support on its own, like queuing commands, logging them for auditing, or storing them to support an undo/redo stack."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which pattern is most naturally used to implement an undo/redo feature?"
+    options:
+      - "Command"
+      - "Singleton"
+      - "Adapter"
+      - "Facade"
+    answer: 0
+    explanation: "Since each Command object encapsulates a full request (and can also record what's needed to reverse it), an application can keep a history stack of executed commands and call each one's 'undo' operation in reverse order to implement undo/redo."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary intent of the Template Method pattern?"
+    options:
+      - "Define the skeleton of an algorithm in a base class, deferring specific steps to subclasses without letting them change the algorithm's overall structure"
+      - "Encapsulate a request as an object"
+      - "Provide an interface for creating families of related objects"
+      - "Reduce memory usage by sharing state between similar objects"
+    answer: 0
+    explanation: "Template Method puts the invariant parts of an algorithm in a (often non-overridable) base class method, calling out to abstract/virtual 'hook' methods that subclasses implement for the parts that vary — the overall sequence of steps is fixed, but individual steps can be customized."
+  - type: multiple_choice
+    difficulty: 3
+    text: "How does the Template Method pattern differ from the Strategy pattern in how variation is achieved?"
+    options:
+      - "Template Method uses inheritance (subclasses override specific steps of a fixed algorithm); Strategy uses composition (a whole interchangeable algorithm object is plugged in)"
+      - "Strategy uses inheritance, Template Method uses composition"
+      - "Both patterns are only usable with static/class methods, never instance methods"
+      - "There is no meaningful difference between the two"
+    answer: 0
+    explanation: "Template Method customizes behavior at the level of individual steps within a fixed algorithm shape, via subclassing; Strategy instead swaps out an entire algorithm as a single interchangeable object via composition — a common piece of design advice ('favor composition over inheritance') often favors Strategy when the same flexibility is achievable either way."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the primary intent of the Iterator pattern?"
+    options:
+      - "Provide a way to access the elements of a collection sequentially, without exposing its underlying representation"
+      - "Ensure a class has only one instance"
+      - "Attach additional responsibilities to an object dynamically"
+      - "Define a one-to-many dependency between objects"
+    answer: 0
+    explanation: "An Iterator exposes a uniform way (e.g. 'has next / get next') to walk through a collection's elements one at a time, letting client code iterate without needing to know whether the underlying structure is an array, linked list, tree, or something else entirely."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the primary intent of the Chain of Responsibility pattern?"
+    options:
+      - "Pass a request along a chain of potential handlers until one of them handles it, decoupling the sender from knowing which handler will ultimately process it"
+      - "Ensure a class has only one instance"
+      - "Compose objects into tree structures to represent part-whole hierarchies"
+      - "Provide a simplified interface to a complex subsystem"
+    answer: 0
+    explanation: "Each handler in the chain either processes the request itself or passes it to the next handler, without the original sender needing to know the chain's structure or which specific handler will end up dealing with it — a common real-world example is middleware pipelines in web frameworks, where each middleware can handle a request or pass it further along."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the primary intent of the Mediator pattern?"
+    options:
+      - "Encapsulate how a set of objects interact, promoting loose coupling by preventing them from referring to each other directly"
+      - "Provide a placeholder for another object to control access to it"
+      - "Attach responsibilities to an object dynamically"
+      - "Define a family of interchangeable algorithms"
+    answer: 0
+    explanation: "Instead of many objects holding direct references to each other (an every-object-knows-every-other-object mess), each object communicates only with a central mediator, which coordinates the interactions — reducing the number of direct dependencies between the participating objects."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the primary intent of the Memento pattern?"
+    options:
+      - "Capture and externalize an object's internal state so it can be restored to that state later, without violating encapsulation"
+      - "Convert one interface into another that clients expect"
+      - "Compose a request into an object"
+      - "Define a one-to-many notification dependency"
+    answer: 0
+    explanation: "Memento lets an object (the 'originator') save a snapshot of its own internal state into a separate memento object, which is stored by a caretaker without inspecting or modifying its contents; later, the originator can restore itself from that memento — the classic building block behind undo functionality that involves restoring full state rather than reversing individual commands."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the primary intent of the Visitor pattern?"
+    options:
+      - "Represent an operation to be performed on the elements of an object structure, letting you define a new operation without changing the classes of the elements it operates on"
+      - "Ensure a class has only one instance"
+      - "Provide a simplified interface to a complex subsystem"
+      - "Reduce memory usage by sharing state across similar objects"
+    answer: 0
+    explanation: "Visitor separates an algorithm from the object structure it operates on: each element accepts a visitor object and calls back into it (double dispatch), letting you add entirely new operations over a fixed set of element types without modifying those element classes at all — at the cost of making it harder to add brand-new element types later."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What design principle is most directly embodied by the Strategy, Observer, and Template Method patterns' emphasis on interfaces?"
+    options:
+      - "\"Program to an interface, not an implementation\" — depend on abstract contracts rather than concrete classes"
+      - "\"Premature optimization is the root of all evil\""
+      - "\"Don't repeat yourself\" (DRY)"
+      - "\"You aren't gonna need it\" (YAGNI)"
+    answer: 0
+    explanation: "All three patterns work by having client code depend on an interface/abstract type (a Strategy, an Observer, a template method's abstract hooks) rather than on a specific concrete class, which is precisely the classic GoF advice to program to an interface — it's what makes swapping implementations possible without changing the client code."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the design principle 'favor composition over inheritance' recommend, and which pattern is a direct application of it?"
+    options:
+      - "Prefer building behavior by combining smaller objects at runtime (e.g. Strategy, Decorator) rather than relying on rigid, compile-time class hierarchies"
+      - "Always use as many levels of inheritance as possible for maximum code reuse"
+      - "Never use interfaces, only abstract classes"
+      - "Prefer Singleton over every other creational pattern"
+    answer: 0
+    explanation: "Inheritance hierarchies are fixed at compile time and can become rigid/fragile as they grow deep; composition (holding a reference to another object and delegating to it) can be reconfigured at runtime and avoids many of inheritance's pitfalls — Strategy and Decorator are textbook examples of achieving flexible behavior through composition instead of subclassing."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Which pattern would best decouple a notification system (e.g. sending order-confirmation messages by email, SMS, or push notification) so new channels can be added without modifying existing code?"
+    options:
+      - "Strategy (or Observer, if multiple channels should all react to the same event)"
+      - "Singleton"
+      - "Adapter"
+      - "Memento"
+    answer: 0
+    explanation: "Encapsulating each notification channel as an interchangeable strategy behind a common 'send notification' interface lets you add a new channel by writing a new strategy class, with no changes to the code that triggers notifications; if multiple channels should all react to the same event independently, Observer is an equally natural fit."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In the classic GoF categorization, which of these is NOT one of the three main pattern categories?"
+    options:
+      - "Concurrency patterns"
+      - "Creational patterns"
+      - "Structural patterns"
+      - "Behavioral patterns"
+    answer: 0
+    explanation: "The original Gang of Four book organizes its 23 patterns into Creational (object creation), Structural (object composition), and Behavioral (object collaboration/communication) categories; concurrency-specific patterns are a separate, later body of pattern literature (e.g. from 'Pattern-Oriented Software Architecture'), not part of the original GoF catalog."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a common criticism of applying design patterns indiscriminately to simple problems?"
+    options:
+      - "It can add unnecessary layers of abstraction and indirection, making simple code harder to understand for no real benefit"
+      - "Design patterns are illegal to use in commercial software without a license"
+      - "Patterns can only be implemented in strictly object-oriented languages"
+      - "Using more than one pattern in the same codebase is always a bug"
+    answer: 0
+    explanation: "Patterns solve recurring structural problems, but applying one where the underlying problem doesn't actually exist (e.g. wrapping a single, never-changing algorithm in a full Strategy hierarchy) adds indirection and boilerplate without a matching benefit — patterns are a means to flexibility and clarity, not a goal in themselves."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key structural difference between the Adapter and Decorator patterns, given both wrap another object?"
+    options:
+      - "Adapter changes the wrapped object's interface to match what the client expects; Decorator keeps the same interface as the wrapped object and adds behavior around it"
+      - "Decorator can only wrap exactly one object ever, Adapter can wrap unlimited objects"
+      - "Adapter is a behavioral pattern, Decorator is a creational pattern"
+      - "They are functionally identical patterns"
+    answer: 0
+    explanation: "Both use composition/wrapping, but for different purposes: Adapter exists specifically to translate between two incompatible interfaces so they can work together; Decorator deliberately preserves the exact same interface as what it wraps, so it's transparent to callers, while adding extra behavior around the delegated calls."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the intent behind the 'double dispatch' technique used by the Visitor pattern?"
+    options:
+      - "Select which operation to run based on both the concrete type of the element being visited AND the concrete type of the visitor, rather than just one of the two"
+      - "Run the same method twice in a row, always"
+      - "Dispatch a method call to two completely unrelated objects simultaneously"
+      - "Guarantee thread-safety by locking twice before executing"
+    answer: 0
+    explanation: "A single virtual method call only dispatches based on the runtime type of the receiver (single dispatch); Visitor achieves double dispatch by first calling 'accept(visitor)' on the element (dispatching on the element's type), which then calls back 'visitor.visit(this)' passing itself (dispatching again on the visitor's type), letting the correct combination of element type and operation be selected without a chain of type-checking conditionals."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which pattern is most directly responsible for how many dependency injection frameworks construct complex object graphs?"
+    options:
+      - "A combination of Factory (deciding what concrete type to create) and Builder-like configuration (assembling dependencies step by step)"
+      - "Memento"
+      - "Visitor"
+      - "Flyweight"
+    answer: 0
+    explanation: "DI containers largely automate what Factory and Builder patterns do manually: given a requested type, the container figures out (via configuration/registration) what concrete implementation to create and how to assemble its dependencies, rather than the calling code constructing objects with 'new' directly."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Which pattern is a natural fit for representing a document's lifecycle (Draft, InReview, Published, Archived) where the set of valid actions changes depending on the current stage?"
+    options:
+      - "State"
+      - "Prototype"
+      - "Flyweight"
+      - "Facade"
+    answer: 0
+    explanation: "The State pattern models exactly this: an object (the document) delegates behavior to a current 'state' object, and transitioning between DraftState, InReviewState, PublishedState, etc. changes what operations are valid and how they behave, without a tangle of conditional logic scattered throughout the document class itself."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a 'God object' anti-pattern, often cited as the opposite of good design pattern usage?"
+    options:
+      - "A single class that knows about or does far too much, becoming a tangled hub of responsibilities that should have been split apart"
+      - "A Singleton that has been correctly implemented"
+      - "A class that implements every GoF pattern simultaneously"
+      - "A term for the very first class ever written in a codebase"
+    answer: 0
+    explanation: "A God object accumulates responsibilities that should be distributed across multiple smaller, focused classes (violating the Single Responsibility Principle), often becoming a bottleneck for changes and a magnet for further unrelated additions — the pattern-based decomposition (Strategy, Command, Mediator, etc.) is precisely what helps avoid or break up such objects."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is a naive Singleton implementation often considered problematic in multi-threaded code?"
+    options:
+      - "Without proper synchronization, two threads could both see the instance as uninitialized at the same time and each create a separate instance, breaking the 'only one instance' guarantee"
+      - "Singletons cannot be compiled in a multi-threaded application at all"
+      - "Multi-threaded programs are not allowed to call static methods"
+      - "This is not actually a real concern in any language"
+    answer: 0
+    explanation: "A naive 'if instance is null, create it' check-then-create sequence is a classic race condition: two threads can both pass the null check before either has finished constructing the instance, resulting in two separate objects; safe implementations use locking, double-checked locking, or a language feature like C#'s Lazy<T> to guarantee only one instance is ever created even under concurrent first access."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which pattern would you use to make a legacy payment library (with an incompatible method signature) work with a new payment interface your application expects?"
+    options:
+      - "Adapter"
+      - "Observer"
+      - "Memento"
+      - "Iterator"
+    answer: 0
+    explanation: "This is the textbook use case for Adapter: wrap the legacy library's incompatible interface in a new class that implements the interface your application expects, translating calls (and possibly data formats) between the two."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In the Composite pattern, what must be true of both 'leaf' and 'composite' node classes for the pattern to work as intended?"
+    options:
+      - "Both must implement the same common component interface, so client code can treat them uniformly"
+      - "Only the composite class needs any interface at all"
+      - "Leaf nodes must always be Singletons"
+      - "Composite nodes cannot contain other composite nodes, only leaves"
+    answer: 0
+    explanation: "The whole point of Composite is that a client shouldn't need to distinguish between a single leaf object and a composite containing many objects; this only works if both leaf and composite classes implement the same interface, and a composite is free to contain other composites, forming an arbitrarily deep tree."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why does adding a new concrete Element type to a class hierarchy tend to be costly when using the Visitor pattern?"
+    options:
+      - "Every existing Visitor implementation must be updated to add a new 'visit' method (or case) for the new element type"
+      - "Visitor patterns cannot support more than a fixed number of element types at all"
+      - "It requires rewriting the entire Composite pattern from scratch"
+      - "It has no practical cost; Visitor was specifically designed to make adding new elements free"
+    answer: 0
+    explanation: "Visitor makes adding new operations cheap (just write a new Visitor implementation) but makes adding new element types expensive, since every existing Visitor implementation needs a new method/case to handle the new type — this is the well-known tradeoff of the pattern, effectively the inverse of a typical class hierarchy where adding a new type is cheap but adding a new operation touches every class."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the main advantage of the Builder pattern over a constructor with many optional parameters?"
+    options:
+      - "It avoids the need for numerous overloaded constructors or an unreadable long parameter list, letting each configuration step read as a clear, named method call"
+      - "It guarantees the built object is a Singleton"
+      - "It removes the need for the object to have any fields at all"
+      - "It makes the object immutable automatically in every language"
+    answer: 0
+    explanation: "A constructor with many optional parameters either needs many overloads ('telescoping constructors') or forces callers to pass placeholder values for parameters they don't care about; a Builder instead exposes named, chainable methods for each optional piece of configuration, only requiring the caller to set what's actually relevant before calling 'build'."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does it mean for the Observer pattern to support 'loose coupling' between subject and observers?"
+    options:
+      - "The subject only needs to know that observers implement a common notification interface, not any concrete detail about what a specific observer does"
+      - "Observers and subjects must always be defined in the exact same source file"
+      - "The subject and observer must share private implementation details"
+      - "Loose coupling means observers are notified only once, ever"
+    answer: 0
+    explanation: "The subject depends only on the abstract observer interface (e.g. 'update()'), so any number of unrelated, independently developed observer classes can subscribe without the subject needing any knowledge of their internals — new observer types can be added later with zero changes to the subject."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the intent of the Interpreter pattern, the 23rd classic GoF pattern not yet mentioned?"
+    options:
+      - "Given a language, define a representation for its grammar along with an interpreter that uses the representation to evaluate sentences in that language"
+      - "Ensure a class has only one instance"
+      - "Provide a surrogate for another object to control access to it"
+      - "Compose objects into tree structures representing part-whole hierarchies"
+    answer: 0
+    explanation: "Interpreter models each grammar rule as a class, building an abstract syntax tree that can be evaluated (interpreted) directly; it's the least commonly used GoF pattern in typical application code, mostly showing up in things like rule engines, simple expression evaluators, or configuration languages, since a full parser/compiler is usually a better fit for genuinely complex languages."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the 'Null Object' pattern (not one of the original 23 GoF patterns, but a common companion to them)?"
+    options:
+      - "A specific implementation of an interface that does nothing (or returns a harmless default), used in place of a null reference to avoid explicit null checks"
+      - "An object that has been garbage collected but is still referenced"
+      - "A synonym for the Singleton pattern"
+      - "A design pattern that forbids a class from ever having any fields"
+    answer: 0
+    explanation: "Instead of returning null and forcing every caller to null-check before use, a Null Object implements the same interface with no-op behavior (e.g. a NullLogger whose Log() method does nothing), letting client code call methods on it unconditionally, safely, exactly like a 'real' implementation."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In UML terms, what best describes the relationship a Decorator has with the object it wraps?"
+    options:
+      - "Composition/aggregation — the decorator holds a reference to the wrapped object and implements the same interface"
+      - "Multiple inheritance from the wrapped object's class"
+      - "No relationship at all; they are compiled completely independently"
+      - "The decorator must always be a subclass of the wrapped object's concrete class"
+    answer: 0
+    explanation: "A Decorator holds a reference to the object it wraps (composition) and implements the same interface as that object, rather than inheriting from its concrete implementation — this is precisely what allows decorators to wrap not just the original object, but also other decorators wrapping it, in any combination."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'Repository' pattern (widely used in practice, though not part of the original GoF catalog), and which GoF pattern does it resemble?"
+    options:
+      - "An abstraction over data access that mediates between the domain and data-mapping layers, resembling a Facade specialized for persistence"
+      - "A pattern for storing every object ever created by a program, forever"
+      - "A synonym for the Composite pattern"
+      - "A pattern that only applies to file-system storage, never databases"
+    answer: 0
+    explanation: "A Repository presents a simplified, collection-like interface (e.g. GetById, Add, Remove) over the underlying data access mechanism (SQL queries, an ORM, an external API), hiding persistence details from the rest of the application — conceptually similar to a Facade tailored specifically to the concern of data access."
+  - type: multiple_choice
+    difficulty: 2
+    text: "How do design patterns typically improve the testability of code that would otherwise be full of conditional logic?"
+    options:
+      - "By replacing conditional branches with polymorphic objects (e.g. Strategy, State) that can be substituted with test doubles, letting each behavior be tested in isolation"
+      - "Design patterns have no effect whatsoever on testability"
+      - "By making every class final/sealed so it cannot be mocked at all"
+      - "By requiring all tests to run against a live production database"
+    answer: 0
+    explanation: "When behavior is selected via an injected interface (as in Strategy) rather than an internal switch/if-else, tests can substitute a fake or mock implementation for that interface, testing the calling code's logic independently from any specific concrete behavior, and testing each concrete strategy independently from the code that uses it."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between 'aggregation' and 'composition' as UML relationships, both of which are 'has-a' relationships used to implement many patterns (like Composite)?"
+    options:
+      - "In composition, the contained object's lifetime is tied to the container (it's destroyed with it); in aggregation, the contained object can exist independently of the container"
+      - "Aggregation is used only for primitive types, composition only for classes"
+      - "They are exact synonyms with no distinction"
+      - "Composition can only involve exactly one contained object, aggregation can involve many"
+    answer: 0
+    explanation: "Composition implies strong ownership — e.g. a Room's Walls are created and destroyed with the Room; aggregation implies a weaker 'has-a' relationship where the contained object could belong to multiple containers or outlive any one of them — e.g. a University 'has' Students, but a Student can exist (and be part of another aggregation) independently of any specific University object."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What role does the Abstract Factory pattern often play inside a dependency injection (DI) container's internal implementation?"
+    options:
+      - "The container effectively acts as a generalized abstract factory, resolving which concrete implementation to construct for a requested abstraction based on registered configuration"
+      - "DI containers never use any creational pattern internally"
+      - "Abstract Factory is incompatible with dependency injection and cannot coexist with it"
+      - "DI containers replace Abstract Factory with the Singleton pattern exclusively"
+    answer: 0
+    explanation: "A DI container is, at its core, a generalized factory: given a requested type (often an interface), it looks up which concrete class was registered for it and constructs an instance (recursively resolving that class's own dependencies) — the same conceptual job Abstract Factory does manually, just automated and driven by configuration/registration instead of hardcoded factory methods."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'protection proxy', as one specific variant of the Proxy pattern?"
+    options:
+      - "A proxy that controls access to the real object based on permissions, only forwarding calls the caller is authorized to make"
+      - "A proxy used exclusively to protect against network failures"
+      - "A proxy that physically encrypts the object's memory"
+      - "A synonym for a virtual proxy"
+    answer: 0
+    explanation: "A protection proxy checks the caller's permissions before delegating a call to the real object, rejecting or altering calls the caller isn't authorized to make — distinct from a virtual proxy (which defers expensive creation) or a remote proxy (which represents an object living in a different address space/process)."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'remote proxy', as another specific variant of the Proxy pattern?"
+    options:
+      - "A local stand-in object that represents a real object living in a different address space (e.g. on another machine over a network), handling the communication transparently"
+      - "A proxy that can only be instantiated once, like a Singleton"
+      - "A proxy that always caches every result forever"
+      - "A synonym for the Adapter pattern"
+    answer: 0
+    explanation: "A remote proxy implements the same interface as a remote object but internally handles marshalling the call across a network (or process boundary) and returning the result, so calling code can interact with it as if it were a normal local object — this is the conceptual basis for RPC/web service client stubs."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the intent of an 'Object Pool' (a common pattern alongside the GoF catalog, though not one of the original 23)?"
+    options:
+      - "Reuse a fixed set of pre-created, expensive-to-construct objects instead of creating and destroying them repeatedly"
+      - "Guarantee an object is destroyed immediately after every single use"
+      - "Ensure objects of the same type can never coexist in memory"
+      - "A synonym for the Flyweight pattern with no distinction at all"
+    answer: 0
+    explanation: "Object Pool keeps a set of reusable objects (e.g. database connections, thread objects) ready to be checked out and returned, avoiding the overhead of repeatedly constructing and destroying genuinely expensive objects; it's related to but distinct from Flyweight, which focuses on sharing state to reduce memory rather than reusing whole objects to reduce construction cost."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is the Composite pattern sometimes described as trading 'safety' for 'transparency'?"
+    options:
+      - "Treating leaves and composites through the exact same interface (transparency) can mean leaf-only or composite-only operations (like 'add child') end up exposed on classes where they don't make sense or must be handled at runtime instead of compile time"
+      - "Composite always throws a compile error if used incorrectly, making it perfectly safe"
+      - "Composite cannot be combined with any other pattern"
+      - "This tradeoff does not actually exist; Composite is always both fully safe and fully transparent"
+    answer: 0
+    explanation: "If the shared interface includes child-management operations like Add/Remove (transparency — every node looks the same), a Leaf must either implement them as no-ops or throw at runtime, since a leaf genuinely can't have children; putting Add/Remove only on the Composite subtype instead (safety) means client code must distinguish leaves from composites, losing some of the uniform treatment that's Composite's whole point."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why might a Facade and a Mediator be confused, and what is the core distinction between them?"
+    options:
+      - "A Facade simplifies access to a subsystem from the outside, typically one-directionally; a Mediator coordinates communication between a set of colleague objects that would otherwise reference each other directly, typically bidirectionally"
+      - "They are the exact same pattern under two different names with no distinction"
+      - "Facade always requires exactly two classes, Mediator requires at least ten"
+      - "Mediator is a creational pattern, Facade is a behavioral pattern"
+    answer: 0
+    explanation: "Both reduce the number of direct dependencies a caller has to deal with, but a Facade is usually a one-way simplification layer in front of a subsystem the client doesn't otherwise interact with, while a Mediator sits between mutually-interacting colleague objects that would otherwise need direct references to each other, actively coordinating their communication rather than just exposing a simpler API."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'fluent interface', as commonly used in Builder pattern implementations?"
+    options:
+      - "An API style where methods return the same object (often 'this'), letting calls be chained together in a single readable expression"
+      - "An interface that can only ever have one method"
+      - "A synonym for an abstract interface with no default implementation"
+      - "An interface specifically designed to be unreadable for security reasons"
+    answer: 0
+    explanation: "By having each configuration method on a builder return the builder itself, calls can be chained as 'new PersonBuilder().WithName(\"Anna\").WithAge(30).Build()', reading almost like a sentence describing the object being constructed, instead of a series of separate statements."
+  - type: multiple_choice
+    difficulty: 2
+    text: "How does the Strategy pattern typically compare to a simple if/else or switch statement selecting between a few hardcoded behaviors?"
+    options:
+      - "Strategy trades a small amount of extra structure (an interface plus one class per behavior) for the ability to add new behaviors without modifying existing code, and for behaviors to be swapped or injected at runtime"
+      - "Strategy always executes measurably slower than any conditional statement, in every language"
+      - "A switch statement is functionally impossible to replace with Strategy"
+      - "There is no meaningful difference between the two approaches in any respect"
+    answer: 0
+    explanation: "For a fixed, small, never-changing set of behaviors, a conditional might genuinely be simpler; Strategy earns its cost specifically when new behaviors are added over time, when behaviors need to be swapped at runtime, or when the calling code shouldn't need to be modified (violating the Open/Closed Principle) every time a new behavior is introduced."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does it mean for the Template Method pattern to follow the 'Hollywood Principle' (\"don't call us, we'll call you\")?"
+    options:
+      - "The base class's template method calls out to the subclass's overridden hook methods, rather than the subclass driving the overall control flow itself"
+      - "Subclasses are forbidden from ever calling any base class method"
+      - "The pattern requires the use of a specific naming convention involving movie titles"
+      - "Only the subclass may call methods; the base class can never call anything"
+    answer: 0
+    explanation: "Control flow is inverted compared to a subclass simply calling base class helper methods in whatever order it likes: the base class's template method owns the overall sequence and calls into the subclass's specific hook implementations at the appropriate points, so the subclass provides pieces of behavior without controlling when they're invoked."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which pattern would best let a single logging call transparently write to multiple destinations (console, file, and a remote log server) at once, with new destinations addable later without changing the calling code?"
+    options:
+      - "Composite (a CompositeLogger implementing the same logging interface, delegating to a list of child loggers)"
+      - "Singleton"
+      - "Memento"
+      - "Adapter"
+    answer: 0
+    explanation: "A CompositeLogger implements the same ILogger interface as any individual logger, but internally holds a list of child loggers and forwards each call to all of them; calling code just logs to 'a logger' without knowing or caring whether it's writing to one destination or many, and new destinations can be added by adding another child logger to the composite."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What common problem do both the Bridge and Abstract Factory patterns address, from different angles?"
+    options:
+      - "Avoiding a combinatorial explosion of classes when multiple independent dimensions of variation need to be supported together"
+      - "Reducing the total number of interfaces in a codebase to exactly one"
+      - "Guaranteeing that only a single object of any class ever exists"
+      - "Encrypting data in transit between two objects"
+    answer: 0
+    explanation: "Bridge avoids combining two hierarchies (e.g. shapes and renderers) into one via inheritance, which would multiply the number of subclasses needed; Abstract Factory avoids scattering per-platform 'if' checks throughout client code by grouping a consistent family of related objects behind one factory interface per family — both are, in different ways, about managing variation along multiple axes without multiplying concrete classes unnecessarily."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the Null Object pattern and how it can simplify code that would otherwise need to check for null before calling a method on an object."
+    answer: "The Null Object pattern provides a concrete implementation of an interface that does nothing meaningful (or returns a safe default), used in place of an actual null reference. Instead of code needing to check 'if (logger != null) logger.Log(message);' everywhere a logger might not be configured, you assign a NullLogger (whose Log() method simply does nothing) as the default, and calling code can unconditionally call logger.Log(message) without ever needing a null check, since there's always a valid (even if inert) object to call it on."
+    explanation: "This removes a whole category of defensive null-checking scattered throughout a codebase, at the cost of needing to write and maintain one extra no-op implementation per interface that benefits from it — worthwhile mainly when the 'do nothing' case is genuinely common and the null checks it replaces are numerous."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain how a dependency injection (DI) container relates to the Abstract Factory pattern conceptually, even though most developers don't write explicit factory classes when using one."
+    answer: "A DI container is essentially a generalized, configuration-driven factory: instead of writing a specific factory class per product family (as in classic Abstract Factory), you register mappings from abstractions to concrete implementations (e.g. 'whenever ILogger is requested, construct a FileLogger'), and the container looks up the right concrete type and constructs it (recursively resolving its own dependencies too) whenever something asks for that abstraction. The core idea — the calling code depends only on an interface and never directly instantiates a concrete class — is exactly what Abstract Factory (and Factory Method) achieve manually, just automated and centralized in the container's configuration instead of scattered across hand-written factory classes."
+    explanation: "This is why many DI-heavy codebases have very few explicit uses of the classic Factory patterns written by hand — the container has effectively absorbed and automated that responsibility."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between UML 'composition' and 'aggregation' relationships, and give an example of each in the context of a Composite pattern implementation (e.g. a file system of folders and files)."
+    answer: "Composition implies the contained object's lifetime is tied to its container — if the container is destroyed, so are its contained parts, and the parts typically aren't shared with other containers. Aggregation implies a weaker relationship where the contained object can exist independently of, or be shared across, multiple containers. In a file system Composite: a Folder's contained Files/Folders are usually composition — deleting the folder deletes everything inside it, and a given File instance conceptually belongs to exactly one Folder. A counter-example of aggregation in a related context: a Playlist 'has' Songs, but deleting the Playlist shouldn't delete the underlying Song files, which can belong to multiple playlists simultaneously."
+    explanation: "The distinction matters for lifecycle management: composition relationships are usually where cascading deletes/cleanup logic belongs, while aggregation relationships require the container to reference, not own, the shared objects."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why the Interpreter pattern is rarely used directly for genuinely complex languages, and what alternative approach is typically favored instead."
+    answer: "Interpreter models each grammar rule as a class in an object hierarchy, with a tree of these objects representing a parsed sentence and each node knowing how to interpret/evaluate itself. This works reasonably well for very small, simple grammars, but for anything approaching the complexity of a real programming language, the number of grammar rule classes and the complexity of correctly parsing input into that object tree becomes unwieldy and hard to maintain. For genuinely complex languages, a dedicated parser generator/parsing library (producing an abstract syntax tree via more specialized, higher-performance techniques) combined with a separate evaluator or compiler is typically favored instead, rather than hand-rolling one class per grammar rule using the classic Interpreter pattern."
+    explanation: "Interpreter still shows up in scoped-down contexts — simple expression evaluators, rule engines, small configuration or query languages — where the grammar is genuinely small and stable enough that the one-class-per-rule approach stays manageable."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain, with an example, how the Composite pattern lets client code treat a single object and a collection of objects uniformly, and why that's useful."
+    answer: "Consider a file system: both an individual File and a Folder (which can contain Files and other Folders) implement the same interface, e.g. GetSize(). Calling GetSize() on a File simply returns its own size; calling GetSize() on a Folder sums the GetSize() of everything it contains (including nested folders, recursively). Client code that wants to know 'how big is this thing' can call GetSize() the exact same way whether 'this thing' is a single file or an entire deeply nested folder structure, without needing an if/else to check which case it's dealing with."
+    explanation: "This uniform treatment is what makes recursive operations over tree structures (size calculation, rendering a UI, computing a total price of nested product bundles, etc.) simple to write once, correctly, regardless of how deep or shallow the actual structure happens to be at runtime."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain a scenario where you would choose a protection proxy over simply adding a permission check directly inside the real object's method."
+    answer: "A protection proxy is useful when you want to add or change permission logic without touching the real object's class at all — for example, if the real object is in a third-party library you can't modify, or if different callers/contexts need different permission rules applied to the same underlying object, or if you want to keep the real object's code focused purely on its core responsibility rather than mixing in access-control concerns. The proxy implements the same interface, checks permissions first, and only forwards the call to the real object if authorized, keeping the permission logic entirely separate from and layered on top of the real object's own logic."
+    explanation: "This is a specific case of the general benefit of Proxy: adding a cross-cutting concern (here, authorization) around an existing object's interface without modifying that object's own implementation, which is especially valuable when the real object's source isn't under your control."
+  - type: open_answer
+    difficulty: 3
+    text: "Compare the Command and Strategy patterns: both wrap behavior behind a common interface, so what is the key difference in what they're typically used for?"
+    answer: "Strategy is about interchangeable ways to accomplish the same conceptual task (e.g. different sorting algorithms, all satisfying 'sort this list') — the strategies are typically stateless with respect to any single invocation and don't need to remember anything about a specific call after it returns. Command is about representing a specific request or action as an object, often carrying enough state to describe exactly what should happen (and sometimes how to undo it), and is meant to be storable, queueable, loggable, or reversible as a first-class thing in its own right, rather than just being 'the algorithm currently in use'."
+    explanation: "Structurally they can look similar (an interface with one main method, implemented by multiple classes), but the intent differs: Strategy answers 'which algorithm should I use for this kind of task', while Command answers 'what specific action needs to happen, and can I treat that action itself as data'."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what a fluent interface is and how the Builder pattern commonly uses it to make object construction more readable."
+    answer: "A fluent interface is an API design where methods return the object itself (commonly 'return this;'), allowing multiple method calls to be chained together into a single expression. In a Builder, each configuration method (e.g. WithName, WithAge) returns the builder instance, so a caller can write 'new PersonBuilder().WithName(\"Anna\").WithAge(30).Build()' as one continuous, readable chain describing exactly what's being configured, rather than a series of separate statements each reassigning or mutating a variable."
+    explanation: "Beyond readability, this style also makes the order of configuration steps explicit and self-documenting in the code itself, and lets a Builder's Build() method sit naturally as the final call in the chain, clearly marking the point where the fully-configured object is actually produced."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the 'safety versus transparency' tradeoff in the Composite pattern, and describe a concrete consequence of choosing full transparency (putting Add/Remove on the shared component interface)."
+    answer: "Transparency means every node (leaf or composite) shares the exact same interface, including child-management operations like Add() and Remove(), so client code never needs to distinguish between them. Safety means only composite nodes expose Add()/Remove(), while leaves don't have those operations at all, meaning the type system itself prevents calling Add() on a leaf. Choosing full transparency has a concrete consequence: since a Leaf class must still implement Add()/Remove() to satisfy the shared interface, it either has to throw an exception (or silently do nothing) when called, turning what could have been a compile-time impossibility (calling Add() on something that structurally can't have children) into a runtime error instead."
+    explanation: "Neither choice is strictly 'correct' — it's a genuine tradeoff between uniform, simpler client code (transparency) and stronger compile-time guarantees against misuse (safety), and different Composite implementations in practice lean different ways depending on which property matters more for that specific use case."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why 'programming to an interface, not an implementation' is considered foundational to most of the GoF patterns, using Strategy as a concrete example."
+    answer: "If the context class in a Strategy setup depended directly on a specific concrete strategy class (e.g. QuickSortStrategy) rather than a shared interface (ISortStrategy), it would be impossible to swap in a different concrete strategy (e.g. MergeSortStrategy) without changing the context's own code to reference the new concrete type. By depending only on the interface, the context class works correctly with any current or future implementation of that interface, and swapping strategies becomes a matter of passing in a different object, not modifying the context's source code at all."
+    explanation: "This same principle — depending on abstractions rather than concrete types — underlies nearly every GoF pattern that supports substitutability or extension (Strategy, Observer, State, Template Method's hooks, Factory Method's products), which is why it's often cited as the single most important piece of advice behind the whole catalog."
+  - type: completion
+    difficulty: 2
+    text: "The pattern that ensures a class has only one instance and provides a global point of access to it is called ____."
+    answer: "Singleton"
+    explanation: "Singleton typically uses a private constructor plus a static accessor that lazily creates the single instance on first access, guaranteeing every subsequent call returns that same instance."
+  - type: completion
+    difficulty: 2
+    text: "The pattern that lets subclasses decide which concrete class to instantiate, by overriding a creation method, is called ____ Method."
+    answer: "Factory"
+    explanation: "Factory Method defines a creation method in a base class that subclasses override to control which concrete product gets created, without the calling code needing to know the concrete type up front."
+  - type: completion
+    difficulty: 2
+    text: "The pattern that defines a family of interchangeable algorithms and lets a client swap between them at runtime is called ____."
+    answer: "Strategy"
+    explanation: "Strategy encapsulates each algorithm behind a shared interface, letting the object using it (the context) delegate to whichever concrete strategy is currently configured, and swap it out freely."
+  - type: completion
+    difficulty: 2
+    text: "The pattern that defines a one-to-many dependency so dependents are notified automatically when a subject's state changes is called ____."
+    answer: "Observer"
+    explanation: "Observers register themselves with a subject; whenever the subject's state changes, it notifies every registered observer automatically, without needing to know any details about what each observer does with that notification."
+  - type: completion
+    difficulty: 3
+    text: "The structural pattern that wraps an object to add responsibilities dynamically, while preserving the same interface, is called ____."
+    answer: "Decorator"
+    explanation: "Because a Decorator implements the same interface as what it wraps, it can be stacked with other decorators or used anywhere the original object is expected, layering additional behavior around the delegated calls without subclassing."
+  - type: completion
+    difficulty: 3
+    text: "The pattern that provides a simplified, unified interface to a complex subsystem of many classes is called ____."
+    answer: "Facade"
+    explanation: "A Facade exposes only the operations most client code actually needs, hiding the complexity and interdependencies of the underlying subsystem behind that simpler surface."
+  - type: completion
+    difficulty: 3
+    text: "The behavioral pattern that encapsulates a request as an object, enabling features like undo/redo and queuing, is called ____."
+    answer: "Command"
+    explanation: "By representing a request as a full object rather than a direct method call, Command lets requests be stored, queued, logged, and (if the command also records how to reverse itself) undone."
+  - type: completion
+    difficulty: 4
+    text: "The pattern that captures an object's internal state externally so it can be restored later, without breaking encapsulation, is called ____."
+    answer: "Memento"
+    explanation: "The originator produces a memento snapshot of itself; a caretaker stores it without inspecting its contents, and the originator alone knows how to restore its own state from that memento later."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word pattern name describes wrapping an incompatible class so it matches the interface a client expects?"
+    answer: "Adapter"
+    explanation: "Adapter translates between an existing class's interface and the different interface a client needs, letting the two work together without modifying either side's original code."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word pattern name describes providing a surrogate object that controls access to another object?"
+    answer: "Proxy"
+    explanation: "A Proxy implements the same interface as the real object it stands in for, letting it add access control, lazy initialization, caching, or logging transparently to callers."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word pattern name describes composing objects into tree structures so individual objects and groups of objects can be treated the same way?"
+    answer: "Composite"
+    explanation: "Composite is what lets client code call the same operation on a single leaf object or an entire subtree of objects without needing to tell them apart, since both implement the same interface."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word pattern name describes defining the skeleton of an algorithm in a base class while letting subclasses override specific steps?"
+    answer: "Template"
+    explanation: "Template Method fixes the overall sequence of steps in a base class method, deferring only the customizable individual steps to abstract/virtual methods that subclasses implement."
+  - type: single_word
+    difficulty: 4
+    text: "What one-word pattern name describes passing a request along a chain of potential handlers until one of them handles it?"
+    answer: "Chain"
+    explanation: "'Chain of Responsibility' decouples the sender of a request from the specific handler that ends up processing it — each handler either deals with the request or forwards it further down the chain."
+  - type: single_word
+    difficulty: 4
+    text: "What one-word pattern name describes an operation that can be applied across the elements of an object structure, letting new operations be added without changing the element classes?"
+    answer: "Visitor"
+    explanation: "Visitor uses double dispatch so that adding a whole new operation only requires writing a new Visitor implementation, without touching the classes of the elements being visited."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word pattern name describes an object created by copying an existing instance rather than instantiating a class directly?"
+    answer: "Prototype"
+    explanation: "Prototype clones an existing, already-configured object to produce a new one, which is useful when creating an object from scratch is expensive or when you specifically want a copy that starts out identical to an existing instance."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference in intent between the Factory Method and Abstract Factory patterns, using an example of a cross-platform UI toolkit."
+    answer: "Factory Method is about a single creation method being overridden by subclasses to decide which one concrete product gets created — e.g. a WindowsButtonCreator overriding CreateButton() to return a WindowsButton. Abstract Factory is about creating an entire family of related products through one interface — e.g. a WindowsUIFactory that has methods to create a matching Button, Checkbox, and Window all styled consistently for Windows, versus a MacUIFactory producing the Mac-styled equivalents — ensuring the products created together are always compatible with each other."
+    explanation: "Abstract Factory is often implemented internally using several Factory Methods (one per product type in the family), which is why the two are frequently confused; the key distinguishing idea is 'one product' (Factory Method) versus 'a whole compatible family of products' (Abstract Factory)."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why the Strategy pattern is often described as an application of the 'favor composition over inheritance' principle, contrasting it with a hypothetical inheritance-based alternative."
+    answer: "With Strategy, varying behavior (e.g. different pricing algorithms) is extracted into separate, interchangeable objects held by composition (a reference field) inside the context class, and can be swapped at runtime by simply assigning a different strategy object. The inheritance-based alternative would require a subclass per behavior variant (e.g. RegularPricingCalculator, DiscountPricingCalculator), fixed at compile time, with no way to change an object's pricing behavior after it's been constructed, and requiring a new subclass for every new combination of behaviors if there is more than one axis of variation."
+    explanation: "Composition-based designs like Strategy are more flexible specifically because the relationship (which behavior object is currently held) can be changed at runtime and doesn't require creating a new class for every possible combination, unlike an inheritance hierarchy which is fixed once the class is compiled."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the tradeoff of the Visitor pattern: what becomes easy, and what becomes hard, when you use it to add operations over a fixed object structure."
+    answer: "Visitor makes it easy to add new operations over an existing set of element types: you just write a new Visitor implementation with a visit method for each element type, without touching any of the element classes themselves. The tradeoff is that adding a brand-new element type becomes hard: every existing Visitor implementation must be updated to add a visit method/case for that new type, or the code won't compile (or the new type simply won't be handled)."
+    explanation: "This is effectively the inverse tradeoff of a typical object-oriented hierarchy: normally adding a new subclass is cheap (implement the existing interface) but adding a new operation is expensive (touch every subclass); Visitor flips that so adding operations is cheap but adding element types is expensive — making it a good fit specifically when the element hierarchy is stable but new operations are added often."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain what problem a naive, non-thread-safe Singleton implementation has in a multi-threaded application, and describe (in words, not code) one common way to fix it."
+    answer: "A naive implementation checks 'if the stored instance is null, create and store a new one' without synchronization. Two threads can both read the instance as null at nearly the same time, before either has finished constructing and assigning it, resulting in each thread creating its own separate instance — silently breaking the single-instance guarantee the pattern is supposed to provide. A common fix is to use a thread-safe lazy-initialization primitive provided by the language/runtime (such as C#'s Lazy<T>, which guarantees the factory delegate runs at most once even under concurrent access), or to add explicit locking around the check-and-create sequence so only one thread can perform the creation."
+    explanation: "This is a classic check-then-act race condition; the fix works by making the 'check if it exists, and if not, create it' sequence atomic with respect to other threads, either through a language-provided lazy-initialization guarantee or manual mutual exclusion around that critical section."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain how the Decorator pattern could be used to add optional features (e.g. logging, caching, retry logic) to a data-fetching service, without modifying the original service class or creating a subclass for every combination of features."
+    answer: "Define a common interface (e.g. IDataFetcher) that both the original service and each decorator implement. A LoggingDataFetcher decorator wraps any IDataFetcher and logs before/after delegating to it; a CachingDataFetcher decorator wraps any IDataFetcher and checks a cache before delegating to it. Since decorators share the same interface as what they wrap, they can be layered in any combination (e.g. wrap the original service in a CachingDataFetcher, then wrap that in a LoggingDataFetcher) at runtime, giving every combination of features without needing a dedicated subclass for each one."
+    explanation: "This avoids the combinatorial explosion of subclasses you'd get from inheritance (LoggingCachingDataFetcher, CachingLoggingDataFetcher, LoggingOnlyDataFetcher, etc.) by instead composing small, independent decorator objects, each responsible for exactly one added behavior."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the risk of overusing the Singleton pattern for shared state, specifically in terms of unit testing."
+    answer: "Code that depends directly on a singleton (by calling its static accessor rather than receiving it as an injected dependency) is hard to test in isolation, because you can't easily substitute a fake or mock instance for the test — the singleton's global, shared state persists across tests unless carefully reset, and tests that run in parallel or in different orders can interfere with each other through that shared state, producing flaky or order-dependent test failures."
+    explanation: "This is why dependency injection is often preferred over the classic Singleton pattern in testable codebases: injecting an interface as a constructor parameter lets tests substitute a mock/fake implementation freely, while still allowing the production code to register a single shared instance if that's actually needed."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the intent of the Bridge pattern and give an example of when you would use it instead of a straightforward inheritance hierarchy."
+    answer: "Bridge decouples an abstraction (what a client interacts with) from its implementation (how it's actually carried out), connecting them via composition instead of inheritance, so each side can vary independently. A concrete example: a 'Shape' abstraction (Circle, Square) that needs to be rendered using different rendering APIs (Vector rendering, Raster rendering). A naive inheritance approach would need a subclass for every combination (VectorCircle, RasterCircle, VectorSquare, RasterSquare), growing combinatorially as either dimension grows. Bridge instead gives Shape a reference to a separate Renderer interface (implemented by VectorRenderer, RasterRenderer), so any Shape can be combined with any Renderer without a subclass explosion, and new shapes or new renderers can each be added independently."
+    explanation: "The signal that Bridge is the right fit is exactly this: two independent dimensions of variation that would otherwise multiply into a combinatorial number of subclasses under plain inheritance — Bridge turns that multiplication into simple addition by composing the two hierarchies together instead of merging them into one."
+  - type: open_answer
+    difficulty: 3
+    text: "Design (in words, not code) a Command-based undo system for a simple text editor that supports typing and deleting text. Describe what the Command interface would look like and how undo would work."
+    answer: "Define a Command interface with an Execute() method and an Undo() method. A TypeCommand stores the text that was typed and the position it was inserted at; Execute() inserts that text at that position, and Undo() removes exactly that range of text again. A DeleteCommand stores the text that was deleted and its original position; Execute() removes it, and Undo() re-inserts the stored text at the stored position. Every time the user performs an action, the corresponding Command object is created, executed, and pushed onto a history stack. To undo, pop the most recent Command off the stack and call its Undo() method; to redo, keep a separate 'redone' stack (or move popped commands to a redo stack) so they can be re-executed."
+    explanation: "The key design idea is that each Command stores exactly the information it needs to reverse its own effect — this is what makes a simple stack-based undo/redo mechanism possible, since the editor itself never needs to know how to undo an arbitrary action, only how to call Undo() on whatever Command is on top of the stack."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why the State pattern is often preferred over a large switch/if-else statement on an enum representing an object's current state, as the number of states and transitions grows."
+    answer: "A switch/if-else on an enum concentrates every state-dependent branch of every method into the same few large conditional blocks, scattered across the class; as more states and transitions are added, these conditionals grow larger and more tangled, and adding a new state requires finding and updating every switch statement across the class (easy to miss one). The State pattern instead gives each state its own class implementing a common interface, so state-specific behavior lives in one focused place per state; adding a new state means adding a new class implementing the interface, without touching the logic of existing states at all, and the object's overall behavior is simply determined by which state object it currently delegates to."
+    explanation: "This mirrors the general benefit of polymorphism over conditional branching: it turns 'branch on type/state everywhere this behavior is needed' into 'each type/state knows its own behavior', trading a few extra small classes for eliminating scattered, growing conditional logic."
+  - type: open_answer
+    difficulty: 3
+    text: "Write pseudocode (or actual code in any language) for a minimal thread-safe Singleton using lazy initialization, and briefly explain what makes it thread-safe."
+    answer: |
+      ```csharp
+      public sealed class Logger
+      {
+          private static readonly Lazy<Logger> _instance = new(() => new Logger());
+          public static Logger Instance => _instance.Value;
+          private Logger() { }
+      }
+      ```
+      This is thread-safe because Lazy<T> guarantees, by default, that its factory delegate is invoked at most once even if multiple threads access .Value concurrently before initialization completes — internally it synchronizes the first access so only one thread actually constructs the Logger, and every thread (including the ones that arrived during construction) ends up with the exact same instance.
+    explanation: "This sidesteps writing manual double-checked locking by relying on a language/runtime primitive (Lazy<T>) that already solves the exact 'construct exactly once under concurrent access' problem correctly and efficiently."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which pattern is most naturally suited to representing a multi-step wizard UI (e.g. a checkout process with Cart, Shipping, Payment, Confirmation screens), where the current screen determines what the 'Next'/'Back' buttons do?"
+    options:
+      - "State"
+      - "Prototype"
+      - "Flyweight"
+      - "Visitor"
+    answer: 0
+    explanation: "Each wizard screen can be modeled as a State object that knows which state comes next/previous and what validation applies; the wizard's container simply delegates 'Next'/'Back' handling to whichever state object is current, rather than maintaining a large conditional keyed on 'which step number are we on'."
+  - type: open_answer
+    difficulty: 2
+    text: "Give a concrete real-world (non-code) example of the Observer pattern that most people are already familiar with, and identify which part plays the 'subject' and which parts play the 'observers'."
+    answer: "A YouTube channel subscription is a real-world Observer pattern: the channel is the subject, and every subscriber is an observer. When the channel (subject) uploads a new video (its state changes), every subscriber (observer) who registered interest gets notified automatically, without the channel needing to know anything about who its subscribers are individually or what they'll do with the notification (watch immediately, ignore it, etc.)."
+    explanation: "This example highlights the loose coupling at the heart of Observer: the subject (channel) only needs a generic way to notify 'whoever is subscribed', and has no dependency on the concrete identity or behavior of any specific observer."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a Repository pattern is, and why it's commonly compared to a Facade specialized for data access."
+    answer: "A Repository presents a simplified, collection-like interface (e.g. GetById, Add, Remove, Find) over whatever the actual data access mechanism happens to be — raw SQL, an ORM, an external API, or even an in-memory store — so the rest of the application interacts with 'a collection of Customers' conceptually, without knowing or caring how that data is actually persisted or fetched. It's compared to a Facade because, like a Facade, it hides the complexity of a larger subsystem (the data access layer, connection handling, query construction) behind a small, easy-to-use surface, though a Repository is specifically scoped to persistence concerns rather than being a general-purpose subsystem simplifier."
+    explanation: "A key practical benefit is testability and swappability: code that depends on an IRepository interface can be tested against an in-memory fake implementation, and the real implementation (SQL, a different ORM, a remote API) can be swapped later without touching any of the code that only ever talked to the Repository's interface."

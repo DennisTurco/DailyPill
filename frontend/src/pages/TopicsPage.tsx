@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Collapsible } from "../components/Collapsible";
 import { Topic, TopicContextDocument } from "../lib/types";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -20,6 +21,7 @@ export default function TopicsPage() {
   const [documents, setDocuments] = useState<TopicContextDocument[]>([]);
   const [schedules, setSchedules] = useState<ScheduleDraft[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
 
   const pageSize = 20;
   const [page, setPage] = useState(1);
@@ -85,6 +87,7 @@ export default function TopicsPage() {
   }
 
   function startEdit(topic: Topic) {
+    setFormOpen(true);
     setEditingId(topic.id);
     setName(topic.name);
     setCategory(topic.category ?? "");
@@ -112,6 +115,7 @@ export default function TopicsPage() {
             await uploadContext(saved.id)
         }
       resetForm();
+      setFormOpen(false);
       load();
     } catch (err) {
       setError(String(err));
@@ -140,8 +144,14 @@ export default function TopicsPage() {
       <h1><i className="fa-solid fa-layer-group"/> Topics</h1>
       {error && <div className="error">{error}</div>}
 
-      <div className="card">
-        <h3><i className="fa-solid fa-circle-plus"/> {editingId ? "Edit topic" : "New topic"}</h3>
+      <Collapsible
+        title={<><i className="fa-solid fa-circle-plus"/> {editingId ? "Edit topic" : "New topic"}</>}
+        open={formOpen}
+        onToggle={() => {
+          if (formOpen && editingId) resetForm();
+          setFormOpen((o) => !o);
+        }}
+      >
         <label>Name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} />
         <label>Category</label>
@@ -227,12 +237,18 @@ export default function TopicsPage() {
         <div className="row" style={{ marginTop: 12 }}>
           <button onClick={saveTopic}>{editingId ? "Save changes" : "Create topic"}</button>
           {editingId && (
-            <button className="secondary" onClick={resetForm}>
+            <button
+              className="secondary"
+              onClick={() => {
+                resetForm();
+                setFormOpen(false);
+              }}
+            >
               Cancel
             </button>
           )}
         </div>
-      </div>
+      </Collapsible>
 
       <div className="table-card">
         <div className="table-wrapper">

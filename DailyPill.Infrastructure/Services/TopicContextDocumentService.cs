@@ -22,7 +22,7 @@ public class TopicContextDocumentService(AppDbContext context) : ITopicContextDo
             .Select(d => d.ExtractedText)
             .ToListAsync();
 
-    public async Task<TopicContextDocumentResponseDTO> UploadAsync(int topicId, Stream stream, string filename, string contentType)
+    public async Task<TopicContextDocumentResponseDTO> UploadAsync(int topicId, Stream stream, string filename)
     {
         if (!filename.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Only .md documents are allowed");

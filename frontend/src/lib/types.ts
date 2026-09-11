@@ -1,5 +1,12 @@
 export type QuestionType = "multiple_choice" | "completion" | "single_word" | "open_answer";
 
+export interface Setting {
+  code: string
+  value?: string
+  description?: string
+  lastUpdateDate?: string
+}
+
 export interface TopicSchedule {
   id: number;
   topic_id: number;

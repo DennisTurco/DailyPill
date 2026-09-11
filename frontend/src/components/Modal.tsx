@@ -10,21 +10,9 @@ export function Modal({
   children: ReactNode;
 }) {
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.5)",
-        zIndex: 2000,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      onClick={onClose}
-    >
+    <div className="modal-overlay" onClick={onClose}>
       <div
-        className="card"
-        style={{ maxWidth: 480, width: "90%", maxHeight: "80vh", overflowY: "auto" }}
+        className="card modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>

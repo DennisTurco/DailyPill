@@ -4,11 +4,10 @@ import { api } from "../lib/api";
 import { Toast, ToastMessage } from "../components/Toast";
 import { MarkdownContent } from "../components/MarkdownContent";
 import { difficultyLabel, formatElapsed } from "../lib/format";
-import { Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Topic } from "../lib/types";
+import { Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic } from "../lib/types";
+import { getSettingValue } from "../settings";
 
 type Stage = "select" | "in_progress" | "finished";
-
-const QUIZ_QUESTION_COUNT = 5;
 
 export default function QuizPage() {
   const [searchParams] = useSearchParams();
@@ -22,9 +21,11 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [settings, setSettings] = useState<Setting[]>([]);
 
   useEffect(() => {
     api.get<Topic[]>("/topics").then(setTopics).catch((err) => setError(String(err)));
+    api.get<Setting[]>("/settings").then(setSettings).catch((err) => setError(String(err)));
   }, []);
 
   useEffect(() => {
@@ -51,9 +52,10 @@ export default function QuizPage() {
     setError(null);
     setLoading(true);
     try {
+      const questionCount = Number(getSettingValue(settings, "QuestionCount") ?? 5);
       const response = await api.post<QuizStartResponse>("/quiz/start", {
         topic_id: id,
-        question_count: QUIZ_QUESTION_COUNT,
+        question_count: questionCount,
       });
       setSession(response);
       setAnswers({});
@@ -180,7 +182,7 @@ export default function QuizPage() {
                 style={{
                   paddingTop: i === 0 ? 0 : 16,
                   marginTop: i === 0 ? 0 : 16,
-                  borderTop: i === 0 ? undefined : "1px solid #262b3d",
+                  borderTop: i === 0 ? undefined : "1px solid var(--border)",
                 }}
               >
                 {question && <div style={{ fontWeight: 600 }}> {getIconAndColorByAnswer(a.is_correct)} {question.text}</div>}
@@ -202,7 +204,7 @@ export default function QuizPage() {
                       {question.explanation && <MarkdownContent text={question.explanation} />}
                     </>
                   )}
-                  {a.ai_feedback && <div style={{ color: "#9aa0b4" }}>{a.ai_feedback}</div>}
+                  {a.ai_feedback && <div style={{ color: "var(--text-muted)" }}>{a.ai_feedback}</div>}
                 </div>
               </div>
             );
@@ -249,20 +251,20 @@ function QuizChat({ sessionId }: { sessionId: number }) {
       <h3><i className="fa-solid fa-comment-dots"/> Ask about this quiz</h3>
       <div style={{ maxHeight: 280, overflowY: "auto", marginBottom: 10 }}>
         {messages.length === 0 && (
-          <div style={{ color: "#9aa0b4" }}>
+          <div style={{ color: "var(--text-muted)" }}>
             Ask a follow-up question about the quiz you just took — e.g. why an answer was wrong, or for a deeper
             explanation of a topic.
           </div>
         )}
         {messages.map((m, i) => (
           <div key={i} style={{ marginBottom: 8 }}>
-            <div style={{ fontWeight: 600, color: m.role === "user" ? "#7c9cff" : "#e6e6e6" }}>
+            <div style={{ fontWeight: 600, color: m.role === "user" ? "#7c9cff" : "var(--text-primary)" }}>
               {m.role === "user" ? "You" : "DailyPill"}
             </div>
             <MarkdownContent text={m.content} />
           </div>
         ))}
-        {loading && <div style={{ color: "#9aa0b4" }}>Thinking...</div>}
+        {loading && <div style={{ color: "var(--text-muted)" }}>Thinking...</div>}
       </div>
       {error && (
         <div className="error" style={{ marginBottom: 8 }}>

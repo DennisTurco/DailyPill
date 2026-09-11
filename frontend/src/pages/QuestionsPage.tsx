@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Tabs } from "../components/Tabs";
 import { difficultyLabel } from "../lib/format";
 import { AIGeneratedQuestion, Question, QuestionType, Topic } from "../lib/types";
 
@@ -18,6 +19,7 @@ export default function QuestionsPage() {
   const [page, setPage] = useState(1);
 
   const [deleteTarget, setDeleteTarget] = useState<Question | null>(null);
+  const [activeTab, setActiveTab] = useState("ai");
 
   const [form, setForm] = useState({
     topic_id: 0,
@@ -134,104 +136,119 @@ export default function QuestionsPage() {
       <h1><i className="fa-solid fa-circle-question"/> Questions</h1>
       {error && <div className="error">{error}</div>}
 
-      <div className="card">
-        <h3><i className="fa-solid fa-robot"/> AI-generate questions</h3>
-        <label>Topic</label>
-        <select value={aiTopicId} onChange={(e) => setAiTopicId(Number(e.target.value))}>
-          <option value="" disabled>
-            Select...
-          </option>
-          {topics.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-        <label>Prompt</label>
-        <textarea
-          value={aiPrompt}
-          onChange={(e) => setAiPrompt(e.target.value)}
-          rows={2}
-          placeholder="e.g. generate 5 medium questions about C# LINQ"
-        />
-        <label>Count</label>
-        <input type="number" value={aiCount} onChange={(e) => setAiCount(Number(e.target.value))} min={1} max={20} />
-        <div style={{ marginTop: 10 }}>
-          <button disabled={aiLoading || !aiTopicId} onClick={generateWithAI}>
-            {aiLoading ? "Generating..." : "Generate"}
-          </button>
-        </div>
-        {aiError && <div className="error" style={{ marginTop: 8 }}>{aiError}</div>}
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: "ai",
+            label: <><i className="fa-solid fa-robot"/> AI-generate</>,
+            content: (
+              <>
+                <label>Topic</label>
+                <select value={aiTopicId} onChange={(e) => setAiTopicId(Number(e.target.value))}>
+                  <option value="" disabled>
+                    Select...
+                  </option>
+                  {topics.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+                <label>Prompt</label>
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. generate 5 medium questions about C# LINQ"
+                />
+                <label>Count</label>
+                <input type="number" value={aiCount} onChange={(e) => setAiCount(Number(e.target.value))} min={1} max={20} />
+                <div style={{ marginTop: 10 }}>
+                  <button disabled={aiLoading || !aiTopicId} onClick={generateWithAI}>
+                    {aiLoading ? "Generating..." : "Generate"}
+                  </button>
+                </div>
+                {aiError && <div className="error" style={{ marginTop: 8 }}>{aiError}</div>}
 
-        {aiDrafts.map((draft, i) => (
-          <div className="card" key={i} style={{ marginTop: 10 }}>
-            <div>{draft.text}</div>
-            {draft.options && (
-              <ul>
-                {draft.options.map((o) => (
-                  <li key={o}>{o}</li>
+                {aiDrafts.map((draft, i) => (
+                  <div className="card" key={i} style={{ marginTop: 10 }}>
+                    <div>{draft.text}</div>
+                    {draft.options && (
+                      <ul>
+                        {draft.options.map((o) => (
+                          <li key={o}>{o}</li>
+                        ))}
+                      </ul>
+                    )}
+                    <div style={{ color: "var(--text-muted)" }}>Correct: {draft.correct_answer}</div>
+                    <button style={{ marginTop: 8 }} onClick={() => saveDraft(draft, i)}>
+                      Save to dataset
+                    </button>
+                  </div>
                 ))}
-              </ul>
-            )}
-            <div style={{ color: "#9aa0b4" }}>Correct: {draft.correct_answer}</div>
-            <button style={{ marginTop: 8 }} onClick={() => saveDraft(draft, i)}>
-              Save to dataset
-            </button>
-          </div>
-        ))}
-      </div>
+              </>
+            ),
+          },
+          {
+            key: "manual",
+            label: <><i className="fa-solid fa-circle-plus"/> Add manually</>,
+            content: (
+              <>
+                <label>Topic</label>
+                <select value={form.topic_id} onChange={(e) => setForm({ ...form, topic_id: Number(e.target.value) })}>
+                  <option value={0} disabled>
+                    Select...
+                  </option>
+                  {topics.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+                <label>Type</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as QuestionType })}>
+                  {TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <label>Text</label>
+                <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={2} />
+                {form.type === "multiple_choice" && (
+                  <>
+                    <label>Options (one per line)</label>
+                    <textarea
+                      value={form.optionsRaw}
+                      onChange={(e) => setForm({ ...form, optionsRaw: e.target.value })}
+                      rows={4}
+                    />
+                  </>
+                )}
+                <label>Correct answer</label>
+                <input value={form.correct_answer} onChange={(e) => setForm({ ...form, correct_answer: e.target.value })} />
+                <label>Difficulty (1-5)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={form.difficulty}
+                  onChange={(e) => setForm({ ...form, difficulty: Number(e.target.value) })}
+                />
+                <label>Explanation (optional)</label>
+                <textarea value={form.explanation} onChange={(e) => setForm({ ...form, explanation: e.target.value })} rows={2} />
+                <div style={{ marginTop: 10 }}>
+                  <button onClick={createQuestion}>Add question</button>
+                </div>
+              </>
+            ),
+          },
+        ]}
+      />
 
-      <div className="card">
-        <h3><i className="fa-solid fa-circle-plus"/> Add question manually</h3>
-        <label>Topic</label>
-        <select value={form.topic_id} onChange={(e) => setForm({ ...form, topic_id: Number(e.target.value) })}>
-          <option value={0} disabled>
-            Select...
-          </option>
-          {topics.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-        <label>Type</label>
-        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as QuestionType })}>
-          {TYPES.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-        <label>Text</label>
-        <textarea value={form.text} onChange={(e) => setForm({ ...form, text: e.target.value })} rows={2} />
-        {form.type === "multiple_choice" && (
-          <>
-            <label>Options (one per line)</label>
-            <textarea
-              value={form.optionsRaw}
-              onChange={(e) => setForm({ ...form, optionsRaw: e.target.value })}
-              rows={4}
-            />
-          </>
-        )}
-        <label>Correct answer</label>
-        <input value={form.correct_answer} onChange={(e) => setForm({ ...form, correct_answer: e.target.value })} />
-        <label>Difficulty (1-5)</label>
-        <input
-          type="number"
-          min={1}
-          max={5}
-          value={form.difficulty}
-          onChange={(e) => setForm({ ...form, difficulty: Number(e.target.value) })}
-        />
-        <label>Explanation (optional)</label>
-        <textarea value={form.explanation} onChange={(e) => setForm({ ...form, explanation: e.target.value })} rows={2} />
-        <div style={{ marginTop: 10 }}>
-          <button onClick={createQuestion}>Add question</button>
-        </div>
-      </div>
-
-      <div className="card row">
+      <div className="card filter-bar">
         <div>
           <label>Filter by topic</label>
           <select value={filterTopic} onChange={(e) => setFilterTopic(e.target.value ? Number(e.target.value) : "")}>

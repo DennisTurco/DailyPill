@@ -29,57 +29,61 @@ export default function DashboardPage() {
     <div>
       <h1><i className="fa-solid fa-gauge-simple-high"/> Dashboard</h1>
 
-      <div className="card row" style={{ justifyContent: "space-between" }}>
-        <Stat label={<><i className="fa-solid fa-circle-play"/> Quiz sessions</>} value={progress.total_quiz_sessions} />
-        <Stat label={<><i className="fa-solid fa-reply"/> Answers given</>} value={progress.total_answers} />
-        <Stat label={<><i className="fa-solid fa-check-double"/> Overall accuracy</>} value={`${Math.round(progress.overall_accuracy * 100)}%`} />
-        <Stat label={<><i className="fa-solid fa-fire"/> Current streak</>} value={`${progress.current_streak_days} days`} />
+      <div className="stat-grid">
+        <Stat icon="fa-solid fa-circle-play" label="Quiz sessions" value={progress.total_quiz_sessions} />
+        <Stat icon="fa-solid fa-reply" label="Answers given" value={progress.total_answers} />
+        <Stat icon="fa-solid fa-check-double" label="Overall accuracy" value={`${Math.round(progress.overall_accuracy * 100)}%`} />
+        <Stat icon="fa-solid fa-fire" label="Current streak" value={`${progress.current_streak_days} days`} />
       </div>
 
-      <div className="card">
-        <h3><i className="fa-solid fa-layer-group"/> By topic</h3>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Topic</th>
-              <th>Questions</th>
-              <th>Answers</th>
-              <th>Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {progress.by_topic.map((t) => (
-              <tr key={t.topic_id}>
-                <td>{t.topic_name}</td>
-                <td>{t.question_count}</td>
-                <td>{t.total_answers}</td>
-                <td>{Math.round(t.accuracy * 100)}% {getIconAndColorByAccuracy(t.total_answers, t.accuracy * 100)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <div className="dashboard-grid">
+        <div className="card">
+          <h3><i className="fa-solid fa-layer-group"/> By topic</h3>
+          <div className="scroll-table">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Topic</th>
+                  <th>Questions</th>
+                  <th>Answers</th>
+                  <th>Accuracy</th>
+                </tr>
+              </thead>
+              <tbody>
+                {progress.by_topic.map((t) => (
+                  <tr key={t.topic_id}>
+                    <td>{t.topic_name}</td>
+                    <td>{t.question_count}</td>
+                    <td>{t.total_answers}</td>
+                    <td>{Math.round(t.accuracy * 100)}% {getIconAndColorByAccuracy(t.total_answers, t.accuracy * 100)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      <div className="card">
-        <h3><i className="fa-solid fa-person-hiking"/> By difficulty</h3>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Difficulty</th>
-              <th>Answers</th>
-              <th>Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {progress.by_difficulty.map((d) => (
-              <tr key={d.difficulty}>
-                <td>{difficultyLabel(d.difficulty)}</td>
-                <td>{d.total_answers}</td>
-                <td>{Math.round(d.accuracy * 100)}% {getIconAndColorByAccuracy(d.total_answers, d.accuracy * 100)}</td>
+        <div className="card">
+          <h3><i className="fa-solid fa-person-hiking"/> By difficulty</h3>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Difficulty</th>
+                <th>Answers</th>
+                <th>Accuracy</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {progress.by_difficulty.map((d) => (
+                <tr key={d.difficulty}>
+                  <td>{difficultyLabel(d.difficulty)}</td>
+                  <td>{d.total_answers}</td>
+                  <td>{Math.round(d.accuracy * 100)}% {getIconAndColorByAccuracy(d.total_answers, d.accuracy * 100)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {progress.weakest_topics.length > 0 && (
@@ -98,11 +102,16 @@ export default function DashboardPage() {
   );
 }
 
-function Stat({ label, value }: { label: ReactNode; value: string | number }) {
+function Stat({ icon, label, value }: { icon: string; label: ReactNode; value: string | number }) {
   return (
-    <div>
-      <div style={{ fontSize: 24, fontWeight: 700 }}>{value}</div>
-      <div style={{ fontSize: 12, color: "#9aa0b4" }}>{label}</div>
+    <div className="stat-tile">
+      <div className="stat-tile-icon">
+        <i className={icon} />
+      </div>
+      <div>
+        <div className="stat-tile-value">{value}</div>
+        <div className="stat-tile-label">{label}</div>
+      </div>
     </div>
   );
 }

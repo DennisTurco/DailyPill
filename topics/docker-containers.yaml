@@ -1,0 +1,859 @@
+name: Docker & Container Basics
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  Container fundamentals: how containers differ from virtual machines, images
+  and layers, the Dockerfile instruction set, image registries, networking
+  modes, volumes vs bind mounts, docker-compose for multi-container setups,
+  and basic image/security best practices.
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the fundamental difference between a container and a virtual machine?"
+    options:
+      - "A container shares the host OS kernel and isolates processes at the OS level; a VM virtualizes hardware and runs a full separate guest OS"
+      - "A container is always slower to start than a VM"
+      - "A VM shares the host OS kernel, while a container runs its own separate kernel"
+      - "There is no meaningful technical difference between the two"
+    answer: 0
+    explanation: "Containers use OS-level isolation features (namespaces, cgroups on Linux) to run processes that share the host's kernel but see an isolated filesystem/process/network view; a VM instead virtualizes hardware and boots an entire independent guest operating system, which is why containers start in milliseconds/seconds and use far less overhead than a VM."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is a Docker image?"
+    options:
+      - "A read-only template containing an application and everything needed to run it, used to create containers"
+      - "A running instance of an application"
+      - "A virtual machine's hard disk file"
+      - "A configuration file listing which ports are open on a server"
+    answer: 0
+    explanation: "An image is an immutable, layered filesystem snapshot plus metadata (default command, exposed ports, environment variables); running that image creates a container, which is a live, running (and writable) instance of it."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the relationship between a Docker image and a Docker container?"
+    options:
+      - "A container is a running instance created from an image; the same image can be used to start many independent containers"
+      - "An image is created from a container after it stops running, and never the other way around"
+      - "They are exact synonyms with no distinction"
+      - "One image can only ever produce exactly one container"
+    answer: 0
+    explanation: "Images are the static, shareable template; 'docker run' instantiates a container from that image, adding a thin writable layer on top — you can run many containers from the same image simultaneously, each with its own isolated writable state."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'FROM' instruction in a Dockerfile do?"
+    options:
+      - "Specifies the base image that the new image is built on top of"
+      - "Defines the container's exposed network ports"
+      - "Copies files from the host machine into the image"
+      - "Sets an environment variable inside the image"
+    answer: 0
+    explanation: "Every Dockerfile must start with FROM, naming the base image (e.g. 'FROM node:20-alpine') whose filesystem and configuration the new image builds upon by adding further layers on top."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between the 'COPY' and 'ADD' Dockerfile instructions?"
+    options:
+      - "ADD supports extra features like automatically extracting local tar archives and fetching remote URLs; COPY only does a straightforward file/directory copy"
+      - "COPY can only copy a single file, while ADD can copy entire directories"
+      - "ADD is deprecated and no longer works in modern Docker"
+      - "They are functionally identical in every version of Docker"
+    answer: 0
+    explanation: "Because ADD's extra 'magic' behaviors (auto-extracting archives, downloading from a URL) can be surprising and are rarely what's actually intended, official Docker guidance generally recommends COPY for simple file copying and reserving ADD only for the specific cases where its extra behavior is genuinely wanted."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between the 'CMD' and 'ENTRYPOINT' Dockerfile instructions?"
+    options:
+      - "ENTRYPOINT defines the fixed executable that always runs when the container starts; CMD supplies default arguments that can be overridden at 'docker run' time"
+      - "CMD can only be used once per Dockerfile, ENTRYPOINT can be used unlimited times"
+      - "ENTRYPOINT is only valid for Windows containers"
+      - "They are exact synonyms and always interchangeable"
+    answer: 0
+    explanation: "ENTRYPOINT sets the container's main executable, which is much harder to override at runtime; CMD provides default arguments to that entrypoint (or a default command if there's no ENTRYPOINT), which a user can easily replace by passing arguments to 'docker run'. Combining both is a common pattern: a fixed ENTRYPOINT binary with a CMD supplying its default arguments."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why does Docker layer images, and what practical benefit does this provide?"
+    options:
+      - "Each Dockerfile instruction typically creates a new layer, and unchanged layers can be cached and reused across builds and shared across images, saving build time and disk space"
+      - "Layers exist purely for security isolation between containers"
+      - "Layering has no practical effect on build time or storage"
+      - "Each layer must always be re-downloaded fully on every build"
+    answer: 0
+    explanation: "If an early Dockerfile instruction (e.g. installing dependencies) hasn't changed, Docker reuses the cached layer from a previous build instead of re-running it, dramatically speeding up rebuilds; multiple images sharing the same base layers also only need to store/download those shared layers once on a given machine."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why does the order of instructions in a Dockerfile matter for build caching?"
+    options:
+      - "Docker invalidates the cache starting from the first changed instruction, so placing rarely-changing instructions (like dependency installation) before frequently-changing ones (like copying source code) maximizes cache reuse"
+      - "Instruction order has no effect on caching whatsoever"
+      - "Dockerfiles are always executed in reverse order regardless of how they're written"
+      - "Only the very last instruction in a Dockerfile is ever cached"
+    answer: 0
+    explanation: "Since each layer's cache validity depends on the layers before it being unchanged, a common optimization is copying only dependency manifests (e.g. package.json) and running the install step before copying the rest of the source code — so editing application code doesn't invalidate (and force re-running) the potentially slow dependency-installation layer."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'multi-stage build' in a Dockerfile?"
+    options:
+      - "Using multiple FROM instructions in one Dockerfile so a later stage can selectively copy only the needed artifacts from an earlier build stage, discarding everything else"
+      - "Building the same image on multiple different operating systems simultaneously"
+      - "Running a container in multiple network namespaces at once"
+      - "A deprecated feature no longer supported in current Docker versions"
+    answer: 0
+    explanation: "Multi-stage builds let you use a full SDK/build-tooling image in an early stage to compile/build an application, then copy just the compiled output into a much smaller final-stage base image (e.g. a slim runtime image), producing a final image that doesn't carry the entire build toolchain's weight and attack surface."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the purpose of the 'WORKDIR' instruction in a Dockerfile?"
+    options:
+      - "Sets the working directory for any subsequent instructions (RUN, CMD, COPY, etc.) in the Dockerfile"
+      - "Permanently deletes a directory inside the image"
+      - "Defines which host directory gets mounted as a volume"
+      - "Specifies the entrypoint script's file extension"
+    answer: 0
+    explanation: "WORKDIR changes the current directory context for all following instructions, similar to running 'cd' before them, and also sets the default working directory for the container when it starts, avoiding the need to repeat absolute paths throughout the Dockerfile."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between 'ENV' and 'ARG' in a Dockerfile?"
+    options:
+      - "ENV sets an environment variable available both during the build and inside the running container; ARG defines a build-time-only variable not available after the image is built"
+      - "ARG variables persist into the running container, ENV variables do not"
+      - "They are identical and interchangeable in every situation"
+    answer: 0
+    explanation: "ENV values become part of the image and are visible as regular environment variables inside any container started from it; ARG values are only available during the 'docker build' process itself (e.g. to parameterize a version number) and disappear once the image is built, unless explicitly also assigned to an ENV variable."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'EXPOSE' instruction in a Dockerfile actually do?"
+    options:
+      - "Documents which port(s) the containerized application listens on; it does not by itself publish/map that port to the host"
+      - "Automatically opens the port on the host machine's firewall"
+      - "Forces the container to only accept traffic on that port, blocking all others"
+      - "Publishes the port publicly on the internet"
+    answer: 0
+    explanation: "EXPOSE is primarily documentation/metadata (and enables some tooling, like 'docker run -P' to auto-publish exposed ports to random host ports) — actually making a container's port reachable from the host requires the '-p host_port:container_port' flag on 'docker run', or the equivalent 'ports' entry in docker-compose."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does 'docker run -p 8080:80 myimage' do?"
+    options:
+      - "Maps port 80 inside the container to port 8080 on the host machine"
+      - "Maps port 8080 inside the container to port 80 on the host machine"
+      - "Runs the container using exactly 8080 MB of memory"
+      - "Restricts the container to run for only 80 seconds"
+    answer: 0
+    explanation: "The '-p' flag format is 'host_port:container_port', so requests to the host machine's port 8080 get forwarded to port 80 inside the container, letting you access a containerized web server (listening internally on 80) via localhost:8080 on the host."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between a Docker volume and a bind mount?"
+    options:
+      - "A volume is managed entirely by Docker (stored in Docker's own storage area); a bind mount maps a specific existing path on the host filesystem directly into the container"
+      - "A bind mount can only be used for read-only data, a volume cannot"
+      - "Volumes only work on Linux hosts, bind mounts only work on Windows"
+      - "They are exact synonyms with no practical difference"
+    answer: 0
+    explanation: "Volumes are created and managed by Docker itself (docker volume create, or implicitly), living in a location Docker controls and are portable across environments; bind mounts reference an arbitrary, specific path on the host machine, which is useful for local development (e.g. mounting your source code directory) but ties the setup to that host's specific filesystem layout."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why would you use a volume for a database container's data directory instead of just letting it live in the container's own writable layer?"
+    options:
+      - "Data in a volume persists independently of the container's lifecycle, surviving container removal/recreation; data in the writable layer is lost when the container is removed"
+      - "Volumes make database queries run faster than any other storage option"
+      - "The container's writable layer cannot store any data larger than 10MB"
+      - "There is no difference; both persist identically forever"
+    answer: 0
+    explanation: "Containers are meant to be disposable — recreating one (e.g. after an image update) discards its writable layer entirely; a volume is a separate, persistent piece of storage that a new container can be reattached to, so the actual data (like a database's files) survives container replacement instead of being lost with it."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the purpose of a .dockerignore file?"
+    options:
+      - "It lists files/patterns to exclude from the build context sent to the Docker daemon, keeping images smaller and builds faster"
+      - "It lists container images that should never be pulled"
+      - "It configures which containers are allowed to communicate over the network"
+      - "It is a Docker-specific alias for .gitignore with no independent effect"
+    answer: 0
+    explanation: ".dockerignore works like .gitignore but for the Docker build context: excluding things like local dependency folders, build artifacts, or .git history keeps the amount of data sent to the Docker build process smaller (faster builds) and prevents accidentally copying unwanted or sensitive files into the image via a broad COPY."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the purpose of 'docker-compose' (or the 'docker compose' CLI plugin)?"
+    options:
+      - "Define and run multi-container applications using a single declarative configuration file"
+      - "Compile Dockerfiles into standalone executables"
+      - "Convert a container directly into a virtual machine image"
+      - "Automatically write Dockerfiles by analyzing existing source code"
+    answer: 0
+    explanation: "A docker-compose.yml file declares a set of services (each typically one container), their images/build instructions, networking, volumes, and dependencies between them, letting the whole multi-container application be started, stopped, and rebuilt together with simple commands like 'docker compose up'."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In a docker-compose.yml file, what does the 'depends_on' setting between two services control?"
+    options:
+      - "The startup order — the depended-on service's container is started before the dependent service's container (though not necessarily 'ready' yet)"
+      - "Which service is allowed to consume more CPU"
+      - "Whether a service's image is rebuilt automatically on every run"
+      - "It has no actual effect and is purely documentation"
+    answer: 0
+    explanation: "depends_on controls only container start order, not full application readiness — a database container being 'started' doesn't mean the database process inside is actually ready to accept connections yet, which is why applications (or a dedicated healthcheck/wait mechanism) often still need their own retry/wait logic even when depends_on is configured correctly."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the default Docker network driver used when you run a container without specifying '--network', and what does it provide?"
+    options:
+      - "The 'bridge' driver, which gives the container its own private IP on an internal virtual network, isolated from the host's network by default"
+      - "The 'host' driver, which shares the host machine's network stack directly"
+      - "The 'none' driver, meaning the container has no networking at all"
+      - "Docker always requires you to manually create a network before running any container"
+    answer: 0
+    explanation: "The default bridge network gives each container its own network namespace and private IP, communicating with the outside world through Docker's virtual bridge and NAT rules; ports must be explicitly published ('-p') to be reachable from the host, unlike the 'host' network mode which shares the host's networking stack directly (and thus doesn't need explicit port publishing, but also loses network isolation)."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the practical benefit of Docker's 'host' network mode compared to the default bridge mode?"
+    options:
+      - "It removes the network isolation/NAT overhead by sharing the host's network stack directly, which can be useful for performance-sensitive networking, at the cost of losing per-container network isolation"
+      - "It automatically encrypts all outgoing traffic"
+      - "It allows the container to run without a Docker daemon at all"
+      - "It is required for any container that needs to expose a port"
+    answer: 0
+    explanation: "With host networking, the container listens directly on the host's actual network interfaces (no port mapping/NAT translation needed, and no private container IP), which can reduce networking overhead, but it also means the container can potentially bind to any host port and loses the network isolation that bridge networking provides by default."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why do many minimal production Docker images use an 'alpine' base image?"
+    options:
+      - "Alpine Linux is a very small, minimal distribution, resulting in a smaller final image size and reduced attack surface"
+      - "Alpine images run measurably faster CPU instructions than any other Linux distribution"
+      - "Alpine is the only base image that supports networking"
+      - "Alpine images cannot be used in production environments"
+    answer: 0
+    explanation: "Alpine-based images are often only a few megabytes (versus hundreds of megabytes for a full distribution like Ubuntu), which speeds up image pulls/pushes and reduces the surface exposed to potential vulnerabilities — though Alpine's use of musl libc instead of glibc occasionally causes subtle compatibility issues with some compiled dependencies, worth being aware of."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is it considered a security best practice to avoid running a container's main process as the root user?"
+    options:
+      - "If an attacker manages to escape the containerized process, running as a non-root user limits what they can do both inside the container and, in some escape scenarios, on the host"
+      - "Root is not permitted to be used inside any Docker container, so this is enforced automatically"
+      - "Non-root processes always run measurably faster than root processes"
+      - "This only matters for Windows containers, never for Linux containers"
+    answer: 0
+    explanation: "Containers share the host's kernel, so certain container-escape vulnerabilities can potentially grant host-level privileges matching whatever privilege the escaping process had inside the container; running as a dedicated non-root user (via a USER instruction in the Dockerfile) is a defense-in-depth measure limiting the blast radius if such an escape or in-container compromise occurs."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'docker ps' show by default?"
+    options:
+      - "Currently running containers"
+      - "All images ever pulled or built, regardless of container state"
+      - "The contents of the Docker build cache"
+      - "A list of available Docker Hub repositories"
+    answer: 0
+    explanation: "'docker ps' lists running containers with their ID, image, status, and ports; 'docker ps -a' additionally includes stopped/exited containers, and 'docker images' (a different command) lists images rather than containers."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'docker exec -it <container> bash' let you do?"
+    options:
+      - "Open an interactive shell session inside an already-running container"
+      - "Start a brand-new container from an image and immediately delete it afterward"
+      - "Permanently modify the image the container was created from"
+      - "Copy files from the container to the host"
+    answer: 0
+    explanation: "'exec' runs an additional command inside an already-running container's namespace; '-it' allocates an interactive terminal, so 'docker exec -it <container> bash' effectively gives you a shell inside the live container for debugging/inspection, without stopping or restarting it."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the key difference between 'docker stop' and 'docker kill'?"
+    options:
+      - "'docker stop' sends a graceful termination signal (SIGTERM) and waits for a timeout before forcing termination; 'docker kill' immediately force-terminates the container (SIGKILL)"
+      - "'docker kill' only works on containers that have already stopped"
+      - "'docker stop' permanently deletes the container's image"
+      - "They are exact synonyms in every version of Docker"
+    answer: 0
+    explanation: "'docker stop' gives the container's main process a chance to shut down cleanly (e.g. flush buffers, close connections) via SIGTERM, only sending SIGKILL after a grace period (default 10 seconds) if it hasn't exited; 'docker kill' skips straight to SIGKILL, immediately terminating the process without giving it any chance to clean up."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What happens to a container's writable layer (and any data written there) when the container is removed with 'docker rm'?"
+    options:
+      - "It is permanently deleted, unless that data lived in a mounted volume or bind mount instead"
+      - "It is automatically converted into a new image"
+      - "It is preserved indefinitely on disk regardless of any other action"
+      - "It is automatically pushed to Docker Hub"
+    answer: 0
+    explanation: "A container's own writable layer is ephemeral and tied to that specific container's lifecycle; removing the container discards it entirely, which is exactly why any data meant to persist beyond a single container's life (databases, uploaded files) should be stored in a volume or bind mount instead of the container's own filesystem."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does a container 'restart policy' (e.g. 'unless-stopped', 'always', 'on-failure') control?"
+    options:
+      - "Whether and under what conditions Docker automatically restarts a container if it stops or the Docker daemon restarts"
+      - "How often the container's image is automatically rebuilt"
+      - "How frequently the container's logs are rotated"
+      - "Which network the container reconnects to after a restart"
+    answer: 0
+    explanation: "A restart policy tells the Docker daemon how to react to a container exiting: 'on-failure' restarts only on a non-zero exit code, 'always' restarts unconditionally (including after a Docker daemon/host reboot) unless explicitly stopped, and 'unless-stopped' behaves like 'always' but respects an explicit manual stop, not restarting it after the daemon comes back up if it was deliberately stopped before that."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a container registry (such as Docker Hub)?"
+    options:
+      - "A storage and distribution service for Docker images, letting you push images to share and pull them down on other machines"
+      - "A tool for monitoring a container's CPU and memory usage"
+      - "A built-in Docker feature for encrypting network traffic"
+      - "A synonym for a Dockerfile"
+    answer: 0
+    explanation: "A registry hosts images under repository names and tags; 'docker push' uploads a locally built image to a registry, and 'docker pull' downloads an image from a registry — Docker Hub is the default public registry, though private/self-hosted registries are also common, especially in enterprise settings."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In an image reference like 'myapp:1.2.0', what does the part after the colon represent?"
+    options:
+      - "The image tag, typically used to identify a specific version or variant of the image"
+      - "The exact port the container will listen on"
+      - "The size limit of the image in megabytes"
+      - "The username of whoever built the image"
+    answer: 0
+    explanation: "Tags let a single image name have multiple versions/variants available in a registry (e.g. 'node:20', 'node:20-alpine', 'node:latest'); omitting a tag defaults to 'latest', which — despite the name — is just a conventional tag and not guaranteed to always be the most recently published version unless the maintainer keeps it updated that way."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why is relying on the ':latest' tag considered risky for reproducible deployments?"
+    options:
+      - "'latest' is just a movable tag that different builds may point to different underlying image content over time, so the same 'myapp:latest' reference can silently resolve to different actual images at different times"
+      - "'latest' images are always significantly larger in file size than versioned images"
+      - "The 'latest' tag cannot be pulled from private registries"
+      - "Using 'latest' is a compile-time error in Docker"
+    answer: 0
+    explanation: "Because tags are just labels that can be reassigned to point at a new image at any time, deploying 'myapp:latest' today and again next month could pull two genuinely different images without any explicit indication of that change — pinning to a specific, immutable version tag (or content digest) is the standard fix for genuinely reproducible builds/deployments."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a health check in Docker (the HEALTHCHECK instruction, or a compose 'healthcheck' entry) used for?"
+    options:
+      - "Periodically running a command inside the container to determine whether the application is actually functioning correctly, beyond just 'the process is running'"
+      - "Checking whether the host machine has enough free disk space before pulling an image"
+      - "Automatically fixing bugs found in the application's source code"
+      - "Verifying the Dockerfile's syntax before building"
+    answer: 0
+    explanation: "A running process doesn't necessarily mean the application inside is actually healthy (e.g. a web server process could be running but deadlocked, or a database still initializing); a health check command (like curling a /health endpoint) lets Docker/orchestration tools report and react to a more meaningful notion of 'is this container actually ready and working', which matters especially for things like load balancer readiness or dependent-service startup ordering."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What command builds a Docker image from a Dockerfile in the current directory, tagging it 'myapp:1.0'?"
+    options:
+      - "docker build -t myapp:1.0 ."
+      - "docker run -t myapp:1.0 ."
+      - "docker pull myapp:1.0"
+      - "docker exec -t myapp:1.0 ."
+    answer: 0
+    explanation: "'docker build' reads a Dockerfile (by default named 'Dockerfile' in the given build context directory) and executes its instructions to produce a new image; '-t' assigns it a name:tag, and the trailing '.' specifies the current directory as the build context sent to the Docker daemon."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the general difference between using Docker alone versus using an orchestrator like Kubernetes on top of it?"
+    options:
+      - "Docker runs and manages individual containers on a single machine; an orchestrator manages containers across many machines, handling scheduling, scaling, self-healing, and networking between them automatically"
+      - "Kubernetes replaces Docker's image format entirely and cannot run any Docker-built image"
+      - "Orchestrators are only used for containers that don't expose any network ports"
+      - "There is no practical difference; they solve the exact same problem"
+    answer: 0
+    explanation: "Docker (and the underlying container runtime) is concerned with building and running individual containers; an orchestrator sits a layer above, deciding which of potentially many machines a container should run on, restarting failed containers automatically, scaling the number of replicas up/down, and managing networking/service discovery across the whole cluster — problems that become important once you're running more containers than fit comfortably on one machine."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'docker logs <container>' show?"
+    options:
+      - "The standard output/error streams captured from the container's main process since it started"
+      - "The full history of every Docker command ever run on the host"
+      - "The contents of the container's filesystem"
+      - "A list of every image ever pulled to the host"
+    answer: 0
+    explanation: "By default, Docker captures whatever a container's main process writes to stdout/stderr; 'docker logs' surfaces that captured output, which is why containerized applications are typically configured to log to stdout/stderr rather than to a file inside the container, so this captured log stream actually contains something useful."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is it generally recommended for a containerized application to log to stdout/stderr rather than to a log file inside the container?"
+    options:
+      - "Docker automatically captures stdout/stderr for retrieval via 'docker logs' or forwarding to external logging systems, while a log file inside a disposable container's writable layer is lost when the container is removed"
+      - "Writing to stdout is measurably faster at the CPU instruction level than writing to any file"
+      - "Docker containers are physically incapable of writing files to their own filesystem"
+      - "Log files inside a container are automatically encrypted, which is considered undesirable"
+    answer: 0
+    explanation: "Since containers are meant to be disposable and their writable layer is ephemeral, logs written only to an internal file disappear along with the container unless specifically persisted via a volume; logging to stdout/stderr instead lets Docker's own logging drivers capture and optionally forward that output to external log aggregation systems uniformly, regardless of what's running inside."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the general purpose of Linux namespaces and cgroups in how containers achieve isolation, at a conceptual level?"
+    options:
+      - "Namespaces isolate what a process can see (its own view of processes, network, filesystem mounts, etc.); cgroups limit and account for the resources (CPU, memory) a process or group of processes can use"
+      - "Namespaces limit CPU/memory usage; cgroups isolate what a process can see"
+      - "They are two different names for the exact same Linux kernel feature"
+      - "Neither has anything to do with how containers are implemented"
+    answer: 0
+    explanation: "These are the two core Linux kernel primitives underlying container isolation: namespaces (PID, network, mount, user, etc.) give a process a restricted, isolated view of the system (it can't see other containers' processes, has its own network stack, etc.), while cgroups (control groups) enforce resource limits and accounting, preventing one container from monopolizing the host's CPU or memory — together they provide the illusion of an isolated machine without the overhead of full hardware virtualization."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the effect of the '--rm' flag on 'docker run --rm myimage'?"
+    options:
+      - "The container is automatically removed (its writable layer discarded) as soon as it exits"
+      - "The image is deleted from the local machine after the container starts"
+      - "The container runs with no resource limits at all"
+      - "The container is prevented from writing to any file"
+    answer: 0
+    explanation: "'--rm' is convenient for short-lived, one-off containers (e.g. running a quick script or test) where you don't want leftover stopped containers accumulating and cluttering 'docker ps -a' output after every run."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a docker-compose.yml file, what does defining a custom top-level 'networks' section typically let multiple services do?"
+    options:
+      - "Communicate with each other using their service names as hostnames, resolved automatically via Docker's built-in DNS on that network"
+      - "Share the exact same filesystem automatically"
+      - "Bypass the need for any port publishing under any circumstances"
+      - "Automatically load-balance traffic across every container on the host"
+    answer: 0
+    explanation: "Services attached to the same custom Docker network can reach each other simply by service name (e.g. an app service connecting to 'db:5432'), since Docker provides automatic DNS resolution for container/service names within a shared network — this is why compose setups rarely need to hardcode container IP addresses."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'docker inspect <container>' provide that 'docker ps' does not?"
+    options:
+      - "Detailed, low-level JSON metadata about the container's configuration, network settings, mounts, and state"
+      - "A live interactive shell inside the container"
+      - "A summary of application-level errors logged by the process inside the container"
+      - "A list of every image ever built on the host machine"
+    answer: 0
+    explanation: "'docker ps' gives a brief, human-scannable summary line per container; 'docker inspect' dumps the full underlying JSON configuration and runtime state Docker maintains for that container — useful for scripting, debugging networking/mount issues, or checking exact environment variable values."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'docker system prune' do (with default options)?"
+    options:
+      - "Removes stopped containers, unused networks, dangling images, and build cache not currently in use by any running container"
+      - "Deletes every image and container, including ones currently running"
+      - "Uninstalls the Docker engine from the host machine entirely"
+      - "Compresses all running containers to reduce their memory usage"
+    answer: 0
+    explanation: "Prune is a cleanup command for reclaiming disk space from accumulated unused Docker objects; by default it does not touch anything still attached to a running container, though additional flags (like -a, or --volumes) can extend it to remove more, including things you might not have intended, so it's worth checking what it will remove first."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the practical benefit of pinning a specific base image digest (e.g. 'node@sha256:abc123...') instead of just a tag?"
+    options:
+      - "A digest uniquely and immutably identifies exact image content, guaranteeing you always get exactly the same bytes, unlike a tag which can be reassigned to different content over time"
+      - "Digests make the image build measurably faster"
+      - "Only digests are compatible with multi-stage builds"
+      - "Tags cannot be used at all in a FROM instruction"
+    answer: 0
+    explanation: "A content digest is a hash of the actual image content, so referencing an image by digest guarantees byte-for-byte identical content every time, unlike a tag (even a versioned one) which is technically just a movable pointer that could, in principle, be reassigned — digest pinning is the strongest guarantee of build reproducibility."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'docker run --name mycontainer myimage' do differently from a plain 'docker run myimage'?"
+    options:
+      - "It assigns a specific, human-readable name to the container instead of Docker's randomly generated default name"
+      - "It renames the underlying image permanently"
+      - "It forces the container to run in the background"
+      - "It has no effect; --name is ignored if a name isn't already registered"
+    answer: 0
+    explanation: "Without --name, Docker assigns a random name (like 'brave_einstein') to each container; specifying --name gives it a memorable, predictable name you can reference in later commands (docker stop mycontainer, docker logs mycontainer) instead of needing to look up a generated name or container ID."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'docker cp' let you do?"
+    options:
+      - "Copy files or directories between a container's filesystem and the host machine"
+      - "Duplicate a running container into a brand-new, independent container"
+      - "Copy environment variables from one container to another"
+      - "Clone an entire Docker registry"
+    answer: 0
+    explanation: "'docker cp <container>:/path/in/container /host/path' (or the reverse direction) copies files directly between a container and the host filesystem, useful for quickly extracting a log file or config from a running container without setting up a volume."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the '--env-file' flag on 'docker run' let you do?"
+    options:
+      - "Load a set of environment variables from a file instead of specifying each one individually with -e"
+      - "Save the container's current environment variables to a file for later inspection"
+      - "Encrypt all environment variables automatically"
+      - "Share environment variables between all running containers on the host"
+    answer: 0
+    explanation: "--env-file points to a file of KEY=VALUE lines, letting you load many environment variables at once (e.g. from a local .env file) instead of repeating '-e KEY=VALUE' for every single variable on the command line."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the 'none' Docker network driver provide to a container?"
+    options:
+      - "No networking at all — the container has no network interfaces beyond a loopback, fully isolating it from any network"
+      - "A network shared identically with the host's own network stack"
+      - "Automatic access to every other container's network on the host"
+      - "The default networking mode used unless explicitly overridden"
+    answer: 0
+    explanation: "'--network none' is used when a container genuinely needs no network access at all (e.g. a purely offline batch-processing task), giving it maximum network isolation; this is distinct from bridge (isolated private network) and host (shares the host's network stack) modes."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the benefit of creating a custom user-defined bridge network instead of relying on Docker's default bridge network for multi-container communication?"
+    options:
+      - "Containers on a custom network get automatic DNS-based name resolution by container/service name, which the default bridge network does not provide"
+      - "A custom bridge network removes the need for any port publishing whatsoever"
+      - "Custom networks are required before any container can be started at all"
+      - "There is no functional difference between the default and a custom bridge network"
+    answer: 0
+    explanation: "On the default bridge network, containers can only reach each other by IP address (which can change), with no automatic name resolution; on a user-defined bridge network, Docker provides built-in DNS so containers can reach each other reliably by container name, which is why docker-compose automatically creates a custom network for each project rather than relying on the default one."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a 'distroless' base image, and why might it be used instead of even a minimal distribution like Alpine?"
+    options:
+      - "An image containing only an application and its runtime dependencies, with no package manager, shell, or other OS utilities — reducing attack surface and image size even further than a minimal distro"
+      - "An image that contains every Linux distribution simultaneously for maximum compatibility"
+      - "A synonym for the 'scratch' base image with no distinction"
+      - "An image format that only works with Kubernetes, never plain Docker"
+    answer: 0
+    explanation: "Distroless images deliberately omit things a minimal distro like Alpine would still include (a shell, package manager, coreutils), on the theory that an attacker who compromises the application inside the container gains much less if there's no shell or package manager available to further explore or install tools within the container."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the 'scratch' base image in Docker?"
+    options:
+      - "A completely empty base image with absolutely no filesystem contents, used as the starting point for images containing only a fully static, self-contained binary"
+      - "The default base image used automatically if no FROM instruction is specified"
+      - "A base image containing every common Linux utility pre-installed"
+      - "A deprecated image no longer usable in current Docker versions"
+    answer: 0
+    explanation: "'scratch' is literally empty — it only makes sense for applications compiled into a fully static binary with no external runtime dependencies (common with languages like Go using static linking), since there's no libc, shell, or anything else available inside the image beyond what you explicitly COPY in."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why does a containerized process traditionally need to handle being PID 1 carefully (e.g. properly forwarding and responding to SIGTERM)?"
+    options:
+      - "As PID 1, the container's main process doesn't get Unix's usual default signal handling behavior and also becomes responsible for reaping zombie child processes, so it must explicitly handle signals like SIGTERM to shut down gracefully"
+      - "PID 1 processes are not permitted to write to disk at all"
+      - "This concern only applies to Windows containers, never Linux containers"
+      - "PID 1 automatically ignores all incoming network connections"
+    answer: 0
+    explanation: "Normal processes get sensible default behavior for signals like SIGTERM (terminate); PID 1 in Linux is special-cased and does NOT get that default handling unless the process explicitly installs a handler, meaning an application unaware of this can simply ignore 'docker stop's SIGTERM and only die once the SIGKILL timeout is reached — this is also why lightweight 'init' wrappers (like tini) are sometimes added specifically to handle signal forwarding and zombie process reaping correctly on behalf of the real application."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'docker stats' show?"
+    options:
+      - "A live, continuously updating view of CPU, memory, network, and I/O usage for running containers"
+      - "The full command-line history used to build an image"
+      - "A static list of every image ever pulled to the host"
+      - "The exact line-by-line source code running inside a container"
+    answer: 0
+    explanation: "'docker stats' is useful for a quick, real-time look at resource consumption per container without needing external monitoring tooling, which is handy for spotting a runaway container consuming unexpectedly high CPU or memory."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What do the '--memory' and '--cpus' flags on 'docker run' control?"
+    options:
+      - "Hard limits on how much memory and CPU the container is allowed to consume"
+      - "The exact amount of memory and CPU the container will always reserve, whether it uses it or not"
+      - "The minimum Docker Engine version required to run the container"
+      - "They only apply to containers using the 'host' network mode"
+    answer: 0
+    explanation: "These flags cap resource usage (e.g. '--memory 512m --cpus 1.5') using the underlying cgroups mechanism, which is important for preventing one misbehaving or resource-hungry container from starving other containers (or the host itself) of CPU and memory on a shared machine."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'docker history <image>' show?"
+    options:
+      - "The sequence of layers that make up the image, along with the instruction that created each one and its size"
+      - "A log of every container ever started from that image"
+      - "The commit history of the source code used to build the image"
+      - "A list of every host machine the image has ever been deployed to"
+    answer: 0
+    explanation: "'docker history' is a useful debugging tool for understanding why an image is larger than expected, since it shows each layer's size and the Dockerfile instruction responsible for it, helping identify which specific step is bloating the final image."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between the 'shell form' and 'exec form' of the CMD/ENTRYPOINT instructions (e.g. 'CMD npm start' vs 'CMD [\"npm\", \"start\"]')?"
+    options:
+      - "Shell form runs the command through a shell (e.g. /bin/sh -c), which can interfere with proper signal forwarding to the actual process; exec form runs the command directly as PID 1, without an intermediate shell"
+      - "Exec form is only valid for RUN instructions, never for CMD/ENTRYPOINT"
+      - "Shell form and exec form differ only in that shell form cannot accept any arguments"
+      - "They are functionally identical in every situation"
+    answer: 0
+    explanation: "In shell form, the shell process becomes PID 1 and the actual application runs as a child process of that shell, meaning signals sent to the container (like SIGTERM from docker stop) go to the shell, which may or may not properly forward them to the real application; exec form (the JSON array syntax) runs the specified process directly as PID 1, which generally handles signal delivery more predictably."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why might an application inside a container appear to ignore 'docker stop' and always take the full timeout before being killed?"
+    options:
+      - "The application (or the shell wrapping it, in shell-form CMD/ENTRYPOINT) isn't handling SIGTERM at all, so nothing happens until SIGKILL is finally sent after the grace period"
+      - "'docker stop' never actually sends any signal to the container's process"
+      - "This only happens if the container was started with the '--rm' flag"
+      - "Ignoring SIGTERM is impossible; every process always exits immediately upon receiving it"
+    answer: 0
+    explanation: "'docker stop' sends SIGTERM and waits (default 10 seconds) before escalating to SIGKILL; if the application (or an intermediate shell process acting as PID 1) doesn't have any handling for SIGTERM, the process simply keeps running until the timeout expires and SIGKILL forcibly ends it — explicitly handling SIGTERM to shut down promptly and cleanly avoids this unnecessary delay."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a common way to manage different configurations for development versus production when using docker-compose?"
+    options:
+      - "Using a base docker-compose.yml plus an additional override file (e.g. docker-compose.override.yml or a separate docker-compose.prod.yml) merged in for environment-specific settings"
+      - "Docker Compose does not support any notion of multiple environments at all"
+      - "Creating an entirely separate Docker installation for each environment"
+      - "Manually editing the same single compose file back and forth before every deployment"
+    answer: 0
+    explanation: "Compose automatically merges docker-compose.yml with docker-compose.override.yml if present, and supports specifying additional files explicitly (docker compose -f docker-compose.yml -f docker-compose.prod.yml up), letting shared configuration live in the base file while environment-specific differences (like enabling bind-mount live-reloading only in dev) live in override files."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why is scanning Docker images for known vulnerabilities (e.g. with a tool like Docker Scout, Trivy, or Snyk) considered good practice?"
+    options:
+      - "Base images and installed packages can contain known security vulnerabilities that get discovered after the image was built, so periodic scanning helps catch images that need to be rebuilt with patched versions"
+      - "Vulnerability scanning is required by Docker before any image can be pulled at all"
+      - "Scanning automatically patches every vulnerability it finds without any further action needed"
+      - "This only matters for images that will never be updated again"
+    answer: 0
+    explanation: "An image built today might include a package version with a vulnerability discovered next month; automated scanning (often integrated into CI pipelines or registries) flags images containing known-vulnerable package versions, prompting a rebuild against updated, patched base images or dependencies before deployment."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the general purpose of Docker 'secrets' (e.g. in Docker Swarm, or the equivalent concept in Kubernetes) compared to plain environment variables for sensitive data?"
+    options:
+      - "Secrets are handled through a mechanism specifically designed to avoid exposing sensitive values in places like 'docker inspect' output, image layers, or process listings, unlike plain environment variables"
+      - "Secrets and environment variables are functionally identical with no security difference"
+      - "Secrets can only be used for database passwords, never API keys or certificates"
+      - "Using secrets removes the need for any authentication in the application entirely"
+    answer: 0
+    explanation: "Environment variables can inadvertently leak through 'docker inspect', crash dumps, child process environments, or even being visible via '/proc' on the host in some configurations; dedicated secrets mechanisms typically mount sensitive values as in-memory files with tighter access control, specifically to reduce these exposure paths."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a practical downside of adding a 'RUN apt-get update && apt-get install -y <package>' as a separate, later layer in a long-lived Dockerfile, compared to combining it into fewer, well-ordered RUN instructions?"
+    options:
+      - "Splitting related install steps across many separate RUN layers can produce a larger image (since apt's cache/package lists may be retained in an intermediate layer) and makes it easy to accidentally use stale cached package lists"
+      - "Docker limits Dockerfiles to a maximum of exactly 5 RUN instructions"
+      - "Separate RUN instructions always run in parallel, causing race conditions"
+      - "There is no practical downside whatsoever to any number of RUN instructions"
+    answer: 0
+    explanation: "A common Dockerfile best practice is combining 'apt-get update' and 'apt-get install' (plus cleanup of apt's cache) into a single RUN instruction, both to avoid an easy-to-hit bug where a cached 'update' layer becomes stale relative to a later, separately-cached 'install' layer, and to avoid leaving package-manager cache files bloating an intermediate layer that can't easily be removed afterward."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the term 'container orchestration' broadly refer to?"
+    options:
+      - "Automating the deployment, scaling, networking, and lifecycle management of containers across a cluster of machines"
+      - "The process of manually writing a Dockerfile by hand"
+      - "A synonym for building a Docker image"
+      - "Compressing container images to reduce registry storage costs"
+    answer: 0
+    explanation: "Orchestration tools (Kubernetes, Docker Swarm, Nomad) handle concerns that go beyond running individual containers — deciding which machine to place a container on, restarting failed ones, scaling replica counts based on load, routing traffic between services, and rolling out updates without downtime."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'replicas' typically refer to in an orchestrated container deployment (e.g. Kubernetes, Docker Swarm)?"
+    options:
+      - "Multiple identical, independently running instances of the same container/service, used for load distribution and fault tolerance"
+      - "Backup copies of an image stored only for disaster recovery, never actually run"
+      - "A synonym for a container's volumes"
+      - "The number of Dockerfiles used to build one image"
+    answer: 0
+    explanation: "Running multiple replicas of the same stateless service lets an orchestrator distribute incoming traffic across them and keep the service available even if one replica's container crashes or its host becomes unavailable, since the others continue serving requests."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is storing application state (like session data or file uploads) in a container's local writable layer generally discouraged in an orchestrated, multi-replica deployment?"
+    options:
+      - "Since requests can be routed to any of several replicas (potentially on different machines), state stored only in one specific container's local storage wouldn't be visible to other replicas handling later requests"
+      - "Writing to a container's writable layer is always slower than writing to a volume"
+      - "Local writable-layer storage has a hard-coded maximum size of exactly 1MB"
+      - "This is not actually a real concern in orchestrated deployments"
+    answer: 0
+    explanation: "If a user's session data is stored only inside the specific container instance that handled their first request, a later request routed to a different replica (a very normal occurrence with load balancing) wouldn't see that data at all — orchestrated, horizontally-scaled services generally need to keep state in a shared, external store (a database, distributed cache) rather than any individual container's local storage."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the purpose of authenticating with a private container registry (e.g. via 'docker login')?"
+    options:
+      - "To gain permission to pull and/or push images that aren't publicly accessible, restricted to authorized users or systems"
+      - "To encrypt all network traffic between every container on the host"
+      - "Authentication is required before Docker itself can be installed on a machine"
+      - "It grants unrestricted access to every registry on the internet simultaneously"
+    answer: 0
+    explanation: "Private registries (whether self-hosted or a private repository on a hosted service) restrict access to authorized accounts; 'docker login <registry>' authenticates the local Docker client so subsequent pulls/pushes to that registry succeed instead of being rejected as unauthorized."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which flag on 'docker run' mounts a bind mount or volume as read-only inside the container?"
+    options:
+      - "Appending ':ro' to the volume/mount specification (e.g. -v /host/path:/container/path:ro)"
+      - "There is no way to make a mount read-only in Docker"
+      - "Using the --readonly-mount flag on 'docker build'"
+      - "Prefixing the mount path with 'ro-'"
+    answer: 0
+    explanation: "Adding ':ro' to a -v (or --mount) specification makes the mount read-only from inside the container, useful for mounting configuration files or reference data that the container should be able to read but never modify."
+  - type: completion
+    difficulty: 1
+    text: "The instruction that runs a shell command while building a Docker image (e.g. installing packages) is '____'."
+    answer: "RUN"
+    explanation: "RUN executes a command during the image build process and commits the resulting filesystem changes as a new layer, distinct from CMD/ENTRYPOINT which define what runs when a container is later started from the finished image."
+  - type: completion
+    difficulty: 2
+    text: "The command used to download an image from a registry without running it is 'docker ____'."
+    answer: "pull"
+    explanation: "'docker pull <image>' fetches an image (and any missing layers) from a registry to the local machine; 'docker run' will implicitly pull an image too if it isn't already present locally."
+  - type: completion
+    difficulty: 2
+    text: "The command that uploads a locally built image to a registry is 'docker ____'."
+    answer: "push"
+    explanation: "'docker push <image:tag>' uploads the image to whichever registry the image name is qualified for (Docker Hub by default, or a custom registry hostname prefixed to the image name), making it available for others (or other machines) to pull."
+  - type: completion
+    difficulty: 3
+    text: "A Dockerfile technique that uses multiple FROM instructions to keep only necessary build artifacts in the final image is called a ____-stage build."
+    answer: "multi"
+    explanation: "A multi-stage build lets an early stage contain a full build toolchain (compilers, SDKs) while the final stage only copies over the compiled output, resulting in a much smaller and leaner final image than if everything were built and shipped from a single stage."
+  - type: completion
+    difficulty: 2
+    text: "The Dockerfile instruction that sets the current working directory for subsequent instructions and the container's default startup directory is '____'."
+    answer: "WORKDIR"
+    explanation: "WORKDIR changes the effective directory context for later RUN/CMD/COPY instructions, similar to a 'cd', and also becomes the working directory when the container starts, avoiding repeated absolute paths throughout the Dockerfile."
+  - type: completion
+    difficulty: 2
+    text: "The command that stops a running container by sending SIGTERM (then SIGKILL after a timeout) is 'docker ____'."
+    answer: "stop"
+    explanation: "'docker stop' gives the container's main process a chance to shut down gracefully via SIGTERM before escalating to a forced SIGKILL after the default grace period, unlike 'docker kill' which force-terminates immediately."
+  - type: completion
+    difficulty: 3
+    text: "The Dockerfile instruction that documents which port(s) a containerized application listens on, without itself publishing them to the host, is '____'."
+    answer: "EXPOSE"
+    explanation: "EXPOSE is primarily metadata/documentation; actually making a port reachable from the host requires the '-p' flag on 'docker run' (or the 'ports' entry in a compose file)."
+  - type: completion
+    difficulty: 2
+    text: "The command that lists currently running containers is 'docker ____'."
+    answer: "ps"
+    explanation: "'docker ps' shows running containers by default; adding '-a' additionally includes stopped/exited ones."
+  - type: single_word
+    difficulty: 1
+    text: "What is the name of the text file, conventionally named 'Dockerfile', that contains the instructions to build a Docker image?"
+    answer: "Dockerfile"
+    explanation: "A Dockerfile is a plain-text script of instructions (FROM, RUN, COPY, CMD, etc.) that 'docker build' reads and executes in order to produce a new image, layer by layer."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word term describes Docker's persistent storage mechanism, managed by Docker itself, used to keep data alive independent of any single container's lifecycle?"
+    answer: "volume"
+    explanation: "A volume is Docker-managed storage that outlives the container(s) attached to it, commonly used for databases and other stateful services so their data survives container removal, recreation, or image updates."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word term is used for the default (public) Docker image registry most people pull official images from?"
+    answer: "Hub"
+    explanation: "Docker Hub is the default public registry hosting official images (like 'node', 'postgres', 'nginx') as well as community and private images; 'docker pull'/'docker push' target Docker Hub by default unless another registry is explicitly specified in the image name."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word term describes a lightweight Linux distribution commonly used as a minimal Docker base image to reduce final image size?"
+    answer: "Alpine"
+    explanation: "Alpine Linux images are typically only a few megabytes, far smaller than a full distribution, which is why they're a popular choice for minimizing final image size and reducing the attack surface, at the cost of occasional compatibility quirks from its use of musl libc instead of glibc."
+  - type: single_word
+    difficulty: 3
+    text: "What is the one-word term for the multi-container orchestration tool that reads a YAML file to define and run a set of related services together?"
+    answer: "Compose"
+    explanation: "Docker Compose reads a docker-compose.yml describing services, their images/builds, networks, and volumes, letting you bring up (or tear down) an entire multi-container application with one command instead of manually running each container separately."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word term names the Docker networking mode where a container shares the host machine's network stack directly, with no network isolation from the host?"
+    answer: "host"
+    explanation: "In 'host' network mode, the container has no separate network namespace of its own — it listens directly on the host's network interfaces, which avoids NAT/port-mapping overhead but also loses the network isolation the default 'bridge' mode provides."
+  - type: single_word
+    difficulty: 2
+    text: "What one-word Dockerfile instruction sets an environment variable that will also be visible inside the running container?"
+    answer: "ENV"
+    explanation: "ENV persists into the built image's metadata and is set automatically in every container started from that image, unlike ARG, which is only available during the image build itself and disappears afterward."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between a Docker image and a Docker container, using an analogy to a class and an object in object-oriented programming."
+    answer: "A Docker image is like a class: an immutable template/blueprint describing what the thing should look like and contain, but not a running instance itself. A Docker container is like an object (an instance of that class): a live, running instantiation of the image, with its own writable state layered on top, and just as many objects can be instantiated from one class, many independent containers can be started from the same image simultaneously."
+    explanation: "This analogy also explains why changes made inside a running container (its 'instance state') don't affect the original image, or other containers started from it, the same way modifying one object's fields doesn't change the class definition or other instances of it."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why Docker's layer caching means the order of instructions in a Dockerfile can significantly affect build speed, using a typical Node.js application (package.json + source code) as an example."
+    answer: "Docker invalidates the build cache starting from the first Dockerfile instruction whose input has changed, and every instruction after that point must also be re-run, even if their own inputs are unchanged. If a Dockerfile copies the entire source code first and then runs the dependency install step, any single source code change invalidates the cache for the COPY instruction, forcing the (often much slower) dependency install to also re-run every time, even though the actual dependencies (package.json) didn't change. Instead, copying only package.json first, running the install step, and only then copying the rest of the source code means editing source files no longer invalidates the (already cached) install layer, since that layer's only input (package.json) hasn't changed."
+    explanation: "This reordering trick is one of the most common and impactful Dockerfile optimizations, since dependency installation is often the slowest step in a typical application build, and it's usually the step that changes least often relative to application source code."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a multi-stage Dockerfile build is and why it produces a smaller final image than a single-stage build for a compiled application (e.g. a Go or .NET app)."
+    answer: "A multi-stage build uses more than one FROM instruction in the same Dockerfile, each starting a new, independent stage. An early stage uses a full SDK/build-tooling base image (containing compilers, build dependencies, etc.) to compile the application. A later, final stage starts from a much smaller runtime-only base image and uses 'COPY --from=<earlier stage>' to copy over just the compiled output (e.g. a single executable or a small set of published files), discarding the entire build toolchain, source code, and intermediate build artifacts. The final image therefore only contains what's actually needed to run the application, not everything that was needed to build it."
+    explanation: "Without multi-stage builds, you'd either need a single, bloated image containing the full SDK just so it could compile the app once at build time (and then carry that SDK's weight around forever afterward), or a separate manual process to build outside Docker and copy artifacts in — multi-stage builds let both steps happen cleanly within one Dockerfile."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between a Docker volume and a bind mount, and describe a scenario where each would be the more appropriate choice."
+    answer: "A volume is fully managed by Docker, stored in a location Docker controls, and is portable across different host environments without depending on a specific host filesystem path — it's the appropriate choice for persistent application data like a database's files, especially in production, since it doesn't tie the setup to a particular host directory structure. A bind mount instead maps a specific, existing path on the host directly into the container, which is ideal during local development — for example, mounting your project's source code directory into a container so code changes on the host are immediately visible inside the running container, without needing to rebuild the image after every edit."
+    explanation: "The key distinguishing factor is who 'owns' and manages the storage location: Docker for volumes (abstracted, portable), versus you and your host's actual filesystem for bind mounts (concrete, host-specific) — which is exactly why bind mounts are so convenient for live-editing source code locally but less suited to production data persistence across different deployment environments."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why running a containerized process as root is considered a security risk, even though the process is 'isolated' inside a container."
+    answer: "Containers share the host machine's kernel rather than running their own separate one, and container isolation (via namespaces/cgroups) is a software-enforced boundary, not a hardware-level one like a virtual machine's. If an attacker exploits a vulnerability that lets them break out of the container's isolation (a 'container escape'), the privilege level they end up with on the host is directly related to the privilege level the process had inside the container — a process running as root inside the container is more likely to escalate to meaningful host-level privileges after an escape than one running as an unprivileged user, since root inside the container often maps to genuinely privileged capabilities on the shared kernel."
+    explanation: "This is why running as a dedicated non-root user (via a Dockerfile USER instruction) is recommended as defense-in-depth: it doesn't prevent every possible attack, but it meaningfully limits what an attacker can do even if they do find a way to escape or otherwise compromise the containerized process."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain why relying on the ':latest' tag for a production deployment is risky, and describe a safer alternative practice."
+    answer: "':latest' is just a conventional, movable tag — whoever publishes the image can repoint it to entirely different image content at any time, with no guarantee it always points to a genuinely 'newest' or even compatible version. Deploying 'myapp:latest' today and redeploying the same reference weeks later could silently pull a completely different image than what was originally tested, without any explicit version change being visible in your deployment configuration. A safer practice is pinning to a specific, immutable version tag (e.g. 'myapp:1.4.2') or, for the strongest guarantee, a content digest (e.g. 'myapp@sha256:...'), ensuring the exact same image content is used every single time, regardless of what happens to other tags later."
+    explanation: "This matters most for reproducibility and rollback: if a deployment starts failing, being able to say precisely 'we deployed exactly this image, unchanged' (via a pinned version or digest) is essential for debugging and for reliably rolling back to a known-good previous version."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a Docker health check is for, and why 'the container's process is running' is not always a sufficient signal that the application inside is actually working correctly."
+    answer: "A process being alive only tells you the operating-system-level process hasn't crashed or exited — it says nothing about whether the application inside is actually functioning: it could be stuck in an infinite loop, deadlocked, still initializing (e.g. a database loading data before accepting connections), or failing every request while technically still running. A health check defines an actual application-level probe (commonly hitting a dedicated /health HTTP endpoint or running a specific command) that Docker (or an orchestrator) runs periodically, letting the system distinguish between 'process exists' and 'application is actually ready and responding correctly' — which matters for decisions like whether to route traffic to a container, or whether a dependent service should keep waiting before starting."
+    explanation: "This distinction is especially important in orchestrated environments (like Kubernetes) where readiness/liveness probes directly control whether traffic is routed to an instance or whether it gets automatically restarted, decisions that a bare 'is the process running' check can't make reliably on its own."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why containerized applications are conventionally designed to log to stdout/stderr instead of writing log files inside the container's own filesystem."
+    answer: "A container's own writable filesystem layer is ephemeral and tied to that specific container's lifecycle — if the container is removed or recreated (which happens routinely during deployments, scaling, or crashes and restarts), any log file stored only inside it is lost along with the container. Docker automatically captures whatever a container's main process writes to stdout/stderr, making that output retrievable via 'docker logs' and forwardable to external logging/monitoring systems through Docker's logging drivers, entirely independent of the container's own filesystem lifecycle. Logging to stdout/stderr therefore decouples the durability and collection of logs from the transient nature of any individual container instance."
+    explanation: "This convention is part of a broader philosophy (sometimes summarized as the 'twelve-factor app' approach) of treating containerized application instances as disposable, with anything meant to persist — logs, data — deliberately routed to systems designed for persistence, rather than relying on the container's own local, ephemeral storage."
+  - type: open_answer
+    difficulty: 2
+    text: "Write the docker-compose.yml snippet (just the relevant service definitions, not a full file) for a simple web application service depending on a Postgres database service, including the dependency relationship and port mapping for the web service."
+    answer: |
+      ```yaml
+      services:
+        web:
+          build: .
+          ports:
+            - "8080:80"
+          depends_on:
+            - db
+        db:
+          image: postgres:16
+          environment:
+            POSTGRES_PASSWORD: example
+      ```
+    explanation: "'depends_on' ensures the db container starts before the web container (though not necessarily that Postgres is fully ready to accept connections yet); the 'ports' mapping makes the web service's internal port 80 reachable on the host's port 8080; within the same compose network, the web service could reach the database simply by hostname 'db', without needing any explicit IP address."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why PID 1 inside a container needs to handle signals like SIGTERM explicitly, and describe what can go wrong if it doesn't."
+    answer: "In Linux, PID 1 does not receive the usual default signal handling behavior that every other process gets automatically — if the process running as PID 1 doesn't install its own explicit handler for a signal like SIGTERM, that signal is effectively ignored by default rather than terminating the process. This means 'docker stop', which sends SIGTERM and waits for a grace period before escalating to SIGKILL, can appear to do nothing at all: the container keeps running the full timeout and is only actually stopped once the forceful SIGKILL arrives, rather than shutting down promptly and cleanly."
+    explanation: "This is a common gotcha with shell-form CMD/ENTRYPOINT (where a shell, not the real application, ends up as PID 1) or with applications that were never written with this Linux-specific PID 1 behavior in mind; a small init wrapper like tini is sometimes added specifically to handle signal forwarding correctly on the application's behalf."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between 'docker stop' and 'docker kill', and describe a situation where using 'docker kill' directly might be appropriate."
+    answer: "'docker stop' sends SIGTERM first, giving the container's process a chance to shut down gracefully (closing connections, flushing buffers) before forcing termination with SIGKILL only after a timeout (10 seconds by default) if it hasn't exited on its own. 'docker kill' sends SIGKILL immediately, with no grace period at all. 'docker kill' might be appropriate when a container is completely unresponsive/hung and you don't want to wait out the full stop timeout, or in automated scripts/tests where immediate termination is preferred over waiting for a graceful shutdown that isn't actually needed."
+    explanation: "In normal operation, 'docker stop' is almost always preferred since it gives the application a real chance to clean up; 'docker kill' trades that safety for immediacy, which is occasionally the right tradeoff but should be a deliberate choice rather than the default habit."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a Docker registry is, and describe the difference between a public registry like Docker Hub and a private, self-hosted registry."
+    answer: "A registry is a storage and distribution service for container images, organized into repositories and tags; 'docker push' uploads images to a registry and 'docker pull' downloads them. Docker Hub is a public registry (though it also supports private repositories) hosting official and community images that anyone can pull by default. A private/self-hosted registry restricts access to authorized users or systems (often within an organization's own infrastructure or cloud account), which is common for proprietary application images that shouldn't be publicly accessible, and typically requires authenticating (e.g. via 'docker login') before pulling or pushing."
+    explanation: "The underlying mechanics (push/pull, tags, layers) are identical regardless of which registry is used — the difference is purely about access control and where the images are hosted."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the purpose of resource limits like '--memory' and '--cpus' on a container, and describe what could happen on a shared host if they were never set."
+    answer: "These flags cap how much memory and CPU a container is allowed to consume, enforced by the underlying cgroups mechanism. Without any limits, a single misbehaving or unexpectedly resource-hungry container (due to a bug, a memory leak, or a traffic spike) could consume all of the host machine's available memory or CPU, starving every other container (and potentially the host's own processes) running on that same machine — a classic 'noisy neighbor' problem in shared, multi-container environments."
+    explanation: "Setting sensible resource limits is a basic but important isolation practice, especially once multiple unrelated containers share the same host, since without limits, containers are only isolated in terms of filesystem/process/network namespaces, not automatically in terms of how much of the host's actual hardware resources they can consume."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a custom, user-defined Docker bridge network provides that the default bridge network does not, and why this matters for a typical docker-compose application with a web service and a database service."
+    answer: "A user-defined bridge network provides automatic DNS-based name resolution between containers attached to it, letting them reach each other by container/service name (e.g. the web service connecting to 'db:5432') rather than needing to know or hardcode a specific IP address, which the default bridge network does not support. This matters for a compose application because container IP addresses aren't guaranteed to stay the same across restarts, so relying on IP addresses directly would be fragile; docker-compose handles this automatically by creating a dedicated custom network for each project and attaching all its services to it."
+    explanation: "This is why compose-based multi-container applications can simply reference services by name in configuration (like a database connection string using 'db' as the hostname) without any manual network configuration — the custom network and its DNS resolution are set up implicitly by compose."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why storing session data or uploaded files only in a container's local writable layer becomes a problem once an application is scaled to multiple replicas behind a load balancer."
+    answer: "With multiple replicas, a load balancer can route different requests from the same user to different container instances over time, each with its own independent local writable layer. If session data or an uploaded file is only saved inside the specific container that handled the first request, a later request routed to a different replica won't have access to that data at all, causing inconsistent or broken behavior (e.g. a user appearing logged out, or an uploaded file 'disappearing') depending purely on which replica happened to handle each request."
+    explanation: "The standard fix is moving such state out of any individual container's local storage into a shared, external system all replicas can access equally — a shared database or cache for session data, and object storage or a shared volume for uploaded files — so behavior doesn't depend on which specific replica serves a given request."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what 'docker system prune' does by default, and why it's worth checking what it will remove before running it with additional flags like -a or --volumes."
+    answer: "By default, 'docker system prune' removes stopped containers, dangling (untagged) images, unused networks, and unused build cache — specifically excluding anything still attached to or used by a currently running container. Adding '-a' additionally removes all unused images (not just dangling ones), and adding '--volumes' additionally removes unused volumes, both of which can delete things you didn't intend to lose — for example, an image you plan to reuse later but isn't currently backing a running container, or a volume holding data from a container that's just temporarily stopped."
+    explanation: "Because volumes in particular can hold meaningful persistent data (like a database's files), running prune with --volumes without first checking what would actually be removed can lead to genuine, unrecoverable data loss — it's worth listing what's currently unused before broadening the cleanup scope."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between the 'shell form' and 'exec form' of the ENTRYPOINT instruction, and why exec form is generally preferred for proper signal handling."
+    answer: "Shell form (e.g. 'ENTRYPOINT npm start') runs the given command through an intermediate shell (like /bin/sh -c '...'), meaning the shell process itself becomes PID 1 inside the container, with the actual application running as a child process of that shell. Exec form (e.g. 'ENTRYPOINT [\"npm\", \"start\"]', the JSON array syntax) runs the specified process directly as PID 1, with no intermediate shell. Exec form is generally preferred because signals sent to the container (like SIGTERM from 'docker stop') go directly to the real application process rather than to an intermediate shell that may not forward them properly, which can otherwise cause the container to ignore stop requests until the SIGKILL timeout is reached."
+    explanation: "This is a subtle but common source of containers that seem to 'hang' on shutdown until force-killed — switching a Dockerfile's ENTRYPOINT/CMD from shell form to exec form is a common, simple fix for that specific symptom."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why combining 'apt-get update' and 'apt-get install' into a single RUN instruction (rather than two separate RUN instructions) is a recommended Dockerfile practice."
+    answer: "If 'apt-get update' and 'apt-get install' are separate RUN instructions, Docker's layer caching can reuse the 'update' layer from a previous build even when the actual package list on the remote repository has changed since then, because from Docker's perspective the instruction's input (the command text itself) hasn't changed, so it doesn't know the underlying package index is now stale. This can silently cause 'apt-get install' to fail (or install unexpectedly old package versions) if it runs against a cached, out-of-date package index. Combining both into a single RUN instruction (with '&&') ensures that whenever this step's cache is invalidated for any reason, both the update and the install always run together, using a fresh package index every time they do run."
+    explanation: "This is a specific, well-documented instance of a more general Dockerfile principle: instructions whose correctness depends on each other running together (not just independently) should usually be combined into a single RUN instruction, rather than relying on Docker's layer caching to always re-run them in sync."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what a Docker health check is for, and give a concrete example of a health check command for a simple web service."
+    answer: "A health check periodically runs a command inside the container to verify the application is actually functioning correctly, beyond just 'the process hasn't crashed'. A concrete example for a web service: 'HEALTHCHECK CMD curl -f http://localhost/health || exit 1', which requests a dedicated /health endpoint the application exposes; if the request fails (non-2xx response, or curl itself fails to connect), the health check reports the container as unhealthy, letting tools like 'docker ps' or an orchestrator's readiness checks reflect that the application isn't actually ready to serve traffic, even though its process is still running."
+    explanation: "This distinction — process running versus application actually healthy — matters especially in orchestrated environments where traffic routing and restart decisions depend on a more meaningful readiness signal than simply whether the OS-level process still exists."
+  - type: open_answer
+    difficulty: 3
+    text: "Write the Dockerfile instruction that copies a local 'package.json' file into the image, runs 'npm install', and only afterward copies the rest of the application source code — structured to maximize Docker's build cache reuse when only source code (not dependencies) changes."
+    answer: |
+      ```dockerfile
+      FROM node:20-alpine
+      WORKDIR /app
+      COPY package.json package-lock.json ./
+      RUN npm install
+      COPY . .
+      CMD ["node", "index.js"]
+      ```
+    explanation: "Because only the dependency manifest files are copied before running 'npm install', that (often slow) layer only gets invalidated and re-run when the dependency files themselves change; copying the rest of the source afterward means everyday source code edits invalidate only the final COPY layer, leaving the cached 'npm install' layer untouched and reused."
+  - type: open_answer
+    difficulty: 2
+    text: "Write the docker run command to start a Postgres container in detached mode, name it 'mydb', set the POSTGRES_PASSWORD environment variable to 'secret', and map container port 5432 to host port 5432."
+    answer: |
+      ```bash
+      docker run -d --name mydb -e POSTGRES_PASSWORD=secret -p 5432:5432 postgres:16
+      ```
+    explanation: "'-d' runs the container in detached (background) mode; '--name' gives it a predictable name for later reference; '-e' sets an environment variable inside the container (which the official postgres image reads to configure the initial superuser password); '-p host:container' publishes the container's port 5432 to the same port on the host."
+  - type: open_answer
+    difficulty: 3
+    text: "Write the Dockerfile instructions for a minimal multi-stage build of a compiled application: an initial 'build' stage using a full SDK image to build the app, and a final stage that copies just the built output into a minimal runtime image."
+    answer: |
+      ```dockerfile
+      FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+      WORKDIR /src
+      COPY . .
+      RUN dotnet publish -c Release -o /app/publish
+
+      FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+      WORKDIR /app
+      COPY --from=build /app/publish .
+      ENTRYPOINT ["dotnet", "MyApp.dll"]
+      ```
+    explanation: "The 'build' stage (named via 'AS build') has the full SDK needed to compile and publish the application; the final stage starts fresh from a much smaller runtime-only base image and uses 'COPY --from=build' to bring over only the already-compiled output, so the SDK, source code, and any intermediate build artifacts never end up in the final image at all."

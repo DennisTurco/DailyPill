@@ -24,8 +24,7 @@ public class TopicContextDocumentController(ITopicContextDocumentService topicCo
     {
         var stream = file.OpenReadStream();
         var filename = file.FileName;
-        var contentType = file.ContentType;
-        var created = await topicContextDocumentService.UploadAsync(id, stream, filename, contentType);
+        var created = await topicContextDocumentService.UploadAsync(id, stream, filename);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 

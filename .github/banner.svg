@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" width="1200" height="260" role="img" aria-label="DailyPill">
+  <defs>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c9cff"/>
+      <stop offset="100%" stop-color="#b07cff"/>
+    </linearGradient>
+    <radialGradient id="glowTopLeft" cx="0%" cy="0%" r="75%">
+      <stop offset="0%" stop-color="#7c9cff" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#7c9cff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowBottomRight" cx="100%" cy="100%" r="70%">
+      <stop offset="0%" stop-color="#b07cff" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#b07cff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="capsuleLeftHalf">
+      <rect x="-90" y="-60" width="90" height="120"/>
+    </clipPath>
+    <clipPath id="capsuleRightHalf">
+      <rect x="0" y="-60" width="90" height="120"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="260" fill="#0a0b12"/>
+  <rect width="1200" height="260" fill="url(#glowTopLeft)"/>
+  <rect width="1200" height="260" fill="url(#glowBottomRight)"/>
+
+  <!-- decorative accent -->
+  <circle cx="1080" cy="50" r="180" fill="#7c9cff" opacity="0.07"/>
+  <circle cx="1150" cy="220" r="120" fill="#b07cff" opacity="0.09"/>
+
+  <!-- logo mark: capsule chip -->
+  <rect x="90" y="70" width="120" height="120" rx="28" fill="#151827" stroke="url(#accentGradient)" stroke-width="2"/>
+  <g transform="translate(150,130) rotate(-45)">
+    <rect x="-90" y="-32" width="180" height="64" rx="32" fill="url(#accentGradient)" clip-path="url(#capsuleLeftHalf)"/>
+    <rect x="-90" y="-32" width="180" height="64" rx="32" fill="#eef1f8" clip-path="url(#capsuleRightHalf)"/>
+  </g>
+
+  <!-- wordmark -->
+  <text x="250" y="152" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="72" font-weight="800" letter-spacing="-1" fill="url(#accentGradient)">DailyPill</text>
+  <text x="253" y="188" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="21" fill="#a3aac2">Your daily dose of knowledge, quizzed by a local AI.</text>
+</svg>

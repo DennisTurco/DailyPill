@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserAnswer> UserAnswers => Set<UserAnswer>();
     public DbSet<InfoFact> InfoFacts => Set<InfoFact>();
     public DbSet<TopicContextDocument> TopicContextDocument => Set<TopicContextDocument>();
+    public DbSet<Settings> Settings => Set<Settings>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -72,5 +73,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(f => f.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Settings>().HasData(
+            new Settings
+            {
+                Code = "QuestionCount",
+                Value = "5",
+                Description = "Question count per quiz",
+                LastUpdateDate = null
+            }
+        );
     }
 }

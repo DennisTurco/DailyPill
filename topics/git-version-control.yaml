@@ -1,0 +1,841 @@
+name: Git & Version Control
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  Git fundamentals: the repository model (working tree, staging area, commits),
+  branching and merging, rebasing and history rewriting, remotes and
+  collaboration workflows, conflict resolution, stashing, tags, hooks, and
+  the underlying object model (blobs, trees, commits, the reflog).
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does 'git init' do?"
+    options:
+      - "Creates a new, empty Git repository in the current directory"
+      - "Uploads the current directory to a remote server"
+      - "Downloads an existing repository from a URL"
+      - "Deletes all commit history in the current repository"
+    answer: 0
+    explanation: "'git init' creates a new .git subdirectory containing all the metadata Git needs to track history, turning the current directory into a repository; it does not touch any remote or existing history."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the staging area (also called the index) in Git?"
+    options:
+      - "An intermediate area where changes are collected before being committed"
+      - "A remote server that stores backup copies of commits"
+      - "The folder where deleted files are moved before permanent removal"
+      - "A cache of the last five commits for faster access"
+    answer: 0
+    explanation: "The staging area lets you build up a commit incrementally: 'git add' moves specific changes there, and only what's staged becomes part of the next 'git commit', letting you commit a subset of your working tree's changes."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which command shows which files have been modified, staged, or are untracked?"
+    options:
+      - "git status"
+      - "git log"
+      - "git diff"
+      - "git show"
+    answer: 0
+    explanation: "'git status' summarizes the state of the working tree and staging area relative to the last commit; 'git diff' shows the actual line-by-line changes, and 'git log' shows commit history instead."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between 'git fetch' and 'git pull'?"
+    options:
+      - "'git fetch' downloads new history without merging it; 'git pull' fetches and then merges (or rebases) into the current branch"
+      - "'git fetch' only works on the first clone, 'git pull' works afterward"
+      - "'git pull' downloads without merging, 'git fetch' merges automatically"
+      - "They are exact synonyms"
+    answer: 0
+    explanation: "'git fetch' updates your local copies of remote-tracking branches (e.g. origin/main) without touching your current branch; 'git pull' is effectively 'git fetch' followed by a merge (or rebase, with --rebase) into the branch you're on."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'HEAD' refer to in Git?"
+    options:
+      - "A pointer to the commit that the currently checked-out branch (or commit) is at"
+      - "The very first commit ever made in the repository"
+      - "The remote repository's default branch"
+      - "A list of all branches in the repository"
+    answer: 0
+    explanation: "HEAD is a reference that normally points to the tip of the current branch; when you check out a specific commit directly rather than a branch, HEAD points straight at that commit instead, which is called a 'detached HEAD' state."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What happens when you're in a 'detached HEAD' state and make new commits, then check out a branch without first creating a new branch to save them?"
+    options:
+      - "The new commits become unreachable from any branch and are eventually garbage-collected unless referenced (e.g. via a new branch or the reflog)"
+      - "The new commits are automatically merged into the branch you check out"
+      - "Git refuses to let you check out another branch until you commit"
+      - "The commits are automatically pushed to the remote for safekeeping"
+    answer: 0
+    explanation: "Commits made in detached HEAD aren't on any branch, so once you move HEAD elsewhere they have no reference pointing to them; they aren't deleted immediately, but they become unreachable and are eventually cleaned up by garbage collection unless you create a branch or tag pointing at them first (or recover them via the reflog in the meantime)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which command creates a new branch AND switches to it in one step?"
+    options:
+      - "git checkout -b <branch-name>"
+      - "git branch <branch-name>"
+      - "git merge <branch-name>"
+      - "git commit -b <branch-name>"
+    answer: 0
+    explanation: "'git checkout -b <name>' (or the newer 'git switch -c <name>') creates the branch and checks it out immediately; 'git branch <name>' alone only creates it, leaving you on your current branch."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a 'fast-forward' merge?"
+    options:
+      - "A merge where the target branch's pointer is simply moved forward, since it has no divergent commits of its own"
+      - "A merge that skips running any commit hooks"
+      - "A merge that automatically resolves every conflict without user input"
+      - "A merge performed by rebasing instead of the merge command"
+    answer: 0
+    explanation: "If the branch being merged in is a direct descendant of the current branch (no new commits were made on the current branch since they diverged), Git can just move the current branch's pointer forward to that commit, with no merge commit or conflict resolution needed."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the main structural difference between using 'git merge' and 'git rebase' to bring another branch's commits into yours?"
+    options:
+      - "Merge preserves the original commits and adds a merge commit tying histories together; rebase rewrites your commits to appear as if made on top of the other branch, producing a linear history"
+      - "Rebase always creates a merge commit, while merge never does"
+      - "Merge deletes the source branch automatically, rebase does not"
+      - "There is no practical difference; they produce identical commit histories"
+    answer: 0
+    explanation: "Merge keeps both branches' history exactly as it happened and joins them with a new merge commit that has two parents; rebase instead replays your commits one by one on top of the target branch, giving new commit hashes and a straight-line history, at the cost of rewriting commits that may already be shared elsewhere."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why is rebasing commits that have already been pushed and pulled by others generally discouraged?"
+    options:
+      - "Rebase creates new commits with different hashes, so anyone who already based work on the old commits will get diverging, duplicated, or conflicting history"
+      - "Rebase permanently deletes the remote repository"
+      - "Rebase is not supported once a branch has been pushed"
+      - "Rebase automatically force-pushes to every remote configured"
+    answer: 0
+    explanation: "Because rebase rewrites commit history (new commit hashes replace the old ones), anyone else who has already pulled the original commits will find their local history has diverged from the rewritten one, typically requiring a forced sync or producing duplicated commits — hence the common rule 'never rebase shared/public history'."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git cherry-pick <commit>' do?"
+    options:
+      - "Applies the changes introduced by a specific commit from another branch onto the current branch, as a new commit"
+      - "Deletes a specific commit from history everywhere"
+      - "Picks a random commit to display in the log"
+      - "Merges an entire branch, ignoring only the first commit"
+    answer: 0
+    explanation: "Cherry-pick takes just the diff introduced by one specific commit (not the whole branch it came from) and replays it as a new commit on your current branch, useful for pulling in a single bugfix without merging unrelated history."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between 'git reset --soft', '--mixed', and '--hard' relative to a previous commit?"
+    options:
+      - "--soft keeps changes staged, --mixed keeps changes but unstages them, --hard discards the changes entirely"
+      - "--soft discards everything, --mixed keeps only staged changes, --hard keeps only the working tree"
+      - "They are three names for the exact same operation"
+      - "--hard only affects remote branches, not the local one"
+    answer: 0
+    explanation: "All three move the current branch pointer to the target commit, but differ in what happens to the changes since then: --soft leaves them staged (ready to commit again), --mixed (the default) unstages them but keeps them in the working tree, and --hard discards them entirely, resetting the working tree to match the target commit exactly."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key difference between 'git revert' and 'git reset' for undoing a commit?"
+    options:
+      - "'git revert' creates a new commit that undoes the changes, preserving history; 'git reset' moves the branch pointer, rewriting what the branch points to"
+      - "'git reset' is always safe to use on shared/pushed branches, 'git revert' is not"
+      - "'git revert' deletes the commit from history entirely, exactly like 'git reset --hard'"
+      - "They are interchangeable in every situation"
+    answer: 0
+    explanation: "'git revert' adds a brand-new commit that applies the inverse of a previous commit's changes, which is safe on shared history since nothing is rewritten; 'git reset' instead moves the branch pointer (and optionally the working tree) to a different commit, which can rewrite what a shared branch points to if pushed."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git stash' do?"
+    options:
+      - "Temporarily saves uncommitted changes (staged and/or unstaged) so you can switch context, then restore them later"
+      - "Permanently deletes uncommitted changes"
+      - "Commits all changes immediately with an automatic message"
+      - "Pushes uncommitted changes directly to the remote"
+    answer: 0
+    explanation: "'git stash' records the current state of the working directory and index and reverts them to match HEAD, letting you switch branches or pull cleanly; 'git stash pop' (or 'apply') later restores those changes."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between 'git stash pop' and 'git stash apply'?"
+    options:
+      - "'pop' applies the stashed changes and removes that stash entry; 'apply' applies them but keeps the stash entry for later reuse"
+      - "'apply' deletes the stash, 'pop' keeps it forever"
+      - "They only differ in which branch they apply to"
+      - "'pop' works on remote stashes, 'apply' only works locally"
+    answer: 0
+    explanation: "Both restore the stashed changes into your working tree, but 'pop' additionally removes that entry from the stash list once applied successfully, while 'apply' leaves the stash entry in place in case you want to apply the same changes again elsewhere."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What is the purpose of a .gitignore file?"
+    options:
+      - "It lists file patterns that Git should not track or show as untracked"
+      - "It lists commits that should never be pushed"
+      - "It stores the repository's commit history"
+      - "It configures which branches can be merged into main"
+    answer: 0
+    explanation: ".gitignore lists file/folder patterns (e.g. build output, dependency folders, local secrets) that Git should ignore, so they never show up as untracked files or get accidentally committed."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git log --oneline' show compared to plain 'git log'?"
+    options:
+      - "A condensed one-line-per-commit summary (short hash + first line of the commit message)"
+      - "Only the very first commit in the repository"
+      - "The full diff for every commit"
+      - "Only commits made in the last 24 hours"
+    answer: 0
+    explanation: "--oneline compresses each commit's log entry to a single line with its abbreviated hash and subject line, which is much easier to scan than the full author/date/message block plain 'git log' prints for every commit."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'git bisect' help you do?"
+    options:
+      - "Binary-search through commit history to find the specific commit that introduced a bug"
+      - "Split a single commit into two smaller commits"
+      - "Merge two unrelated repositories together"
+      - "Compare two remote repositories for differences"
+    answer: 0
+    explanation: "'git bisect' automates a binary search: you mark a known-good and a known-bad commit, and it checks out commits in between, letting you mark each as good or bad, narrowing down the exact commit that introduced a regression in roughly log2(n) steps instead of checking every commit."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the 'reflog' in Git, and what is it useful for?"
+    options:
+      - "A local log of where HEAD and branch tips have pointed over time, useful for recovering commits that seem 'lost' (e.g. after a hard reset)"
+      - "A public log visible to everyone with access to the remote repository"
+      - "A log of every line changed across all files in history"
+      - "A record of all merge conflicts ever resolved"
+    answer: 0
+    explanation: "The reflog records every change to HEAD and branch references locally (commits, resets, checkouts, rebases...), even ones that are no longer reachable from any branch; since Git doesn't immediately garbage-collect unreachable commits, the reflog often lets you recover work you thought was lost after a 'git reset --hard' or a bad rebase."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between a lightweight tag and an annotated tag in Git?"
+    options:
+      - "An annotated tag is a full object with its own message, author, and date; a lightweight tag is just a named pointer to a commit"
+      - "A lightweight tag can point to multiple commits at once"
+      - "An annotated tag automatically triggers a deployment"
+      - "There is no functional difference between the two"
+    answer: 0
+    explanation: "A lightweight tag is essentially just a branch that never moves — a simple pointer to a commit. An annotated tag ('git tag -a') is a full Git object storing a tagger name, email, date, and message, and can be GPG-signed, which is why it's recommended for marking releases."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'git commit --amend' do?"
+    options:
+      - "Modifies the most recent commit (message and/or staged changes) instead of creating a new one"
+      - "Modifies any arbitrary commit in history by its hash"
+      - "Un-commits and un-stages all changes since the last push"
+      - "Creates an entirely new branch from the amended commit"
+    answer: 0
+    explanation: "--amend replaces the tip commit with a new one that combines the previous commit's changes with anything currently staged, and lets you edit the commit message; like rebase, it rewrites history, so amending a commit that's already been pushed and pulled by others is risky."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does an interactive rebase ('git rebase -i') let you do that a normal rebase does not?"
+    options:
+      - "Reorder, squash, edit, drop, or reword individual commits as they're replayed"
+      - "Rebase onto a remote branch instead of a local one"
+      - "Skip conflict resolution entirely"
+      - "Rebase multiple branches simultaneously in one command"
+    answer: 0
+    explanation: "Interactive rebase opens an editable list of the commits about to be replayed, where each line can be changed from 'pick' to actions like 'squash' (combine with the previous commit), 'reword' (edit the message), 'edit' (pause to amend), or 'drop' (remove it entirely) — giving fine-grained control over cleaning up commit history before sharing it."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'squashing' commits mean, in the context of a pull request?"
+    options:
+      - "Combining multiple commits into a single commit, usually to keep the target branch's history clean"
+      - "Deleting a branch without merging it"
+      - "Automatically resolving every merge conflict"
+      - "Splitting one large commit into several smaller ones"
+    answer: 0
+    explanation: "Squashing collapses a series of (often messy, work-in-progress) commits from a feature branch into one clean commit before or during merge, which many teams prefer for a tidier main-branch history, at the cost of losing the fine-grained intermediate history."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a typical Git remote setup, what does 'origin' conventionally refer to?"
+    options:
+      - "The default name given to the remote repository a project was cloned from"
+      - "The very first commit in the repository"
+      - "A required, hardcoded name that cannot be changed"
+      - "The name of the default local branch"
+    answer: 0
+    explanation: "'origin' is just a convention (the default remote name Git assigns on 'git clone') for the remote repository — it's a human-friendly alias for a URL, and can be renamed or you can add additional remotes (e.g. 'upstream') with different names."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In a fork-based workflow, what does 'upstream' conventionally refer to?"
+    options:
+      - "The original repository that was forked, as opposed to your own fork ('origin')"
+      - "Any branch that has been merged into main"
+      - "The remote branch you are currently pushing to"
+      - "A required alias that Git creates automatically on every clone"
+    answer: 0
+    explanation: "When you fork a repository, 'origin' typically points to your own fork, while 'upstream' is manually added as an additional remote pointing back to the original repository, letting you fetch/pull updates from the project you forked from."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why does 'git push --force' carry risk on a shared branch?"
+    options:
+      - "It can overwrite the remote branch's history, discarding commits that others may have already based work on"
+      - "It permanently deletes the entire remote repository"
+      - "It only works the very first time a branch is pushed"
+      - "It automatically merges every open pull request"
+    answer: 0
+    explanation: "A regular push is rejected if it isn't a fast-forward of the remote branch (e.g. after a rebase changed history); --force overrides that safety check and replaces the remote branch's history outright, which can silently discard commits other collaborators already pulled and built on."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does '--force-with-lease' do differently from a plain '--force' push?"
+    options:
+      - "It refuses to force-push if the remote branch has new commits you haven't seen yet, preventing you from accidentally overwriting someone else's work"
+      - "It force-pushes to every remote configured for the repository at once"
+      - "It skips the pre-push hook automatically"
+      - "It behaves identically to --force in every case"
+    answer: 0
+    explanation: "--force-with-lease checks that the remote branch's current tip still matches what you last fetched before overwriting it; if someone else pushed in the meantime, the push is rejected instead of silently clobbering their commits, making it a safer alternative to a blind --force."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a merge conflict, fundamentally?"
+    options:
+      - "A situation where Git cannot automatically decide how to combine changes because the same lines were modified differently on both sides"
+      - "An error that occurs whenever two different people commit on the same day"
+      - "A permanent failure that requires deleting one of the branches"
+      - "A warning that only appears when merging unrelated repositories"
+    answer: 0
+    explanation: "Git can merge non-overlapping changes automatically, but when the same region of a file was changed differently on both branches being merged, it can't decide which version is correct and marks the file as conflicted, leaving conflict markers for a human to resolve manually."
+  - type: multiple_choice
+    difficulty: 2
+    text: "After resolving conflict markers in a file by hand, what must you do before completing the merge?"
+    options:
+      - "Stage the resolved file (git add) and then complete the merge commit"
+      - "Delete the file and recreate it from scratch"
+      - "Nothing further is needed; Git detects the resolution automatically"
+      - "Force-push immediately to finalize the resolution"
+    answer: 0
+    explanation: "Editing the file to remove the conflict markers only changes the working tree; Git still considers the file conflicted until you explicitly 'git add' it to mark the conflict as resolved, after which 'git commit' (or 'git merge --continue') finalizes the merge."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is a Git submodule?"
+    options:
+      - "A reference in one repository to a specific commit of another, entirely separate repository, checked out as a subdirectory"
+      - "A folder that is automatically excluded from version control"
+      - "A branch that can only contain configuration files"
+      - "A built-in Git feature for splitting a monorepo into microservices at runtime"
+    answer: 0
+    explanation: "A submodule embeds another Git repository inside your own at a specific commit, useful for depending on external code you also want under version control separately; it's notorious for tripping people up because the submodule's checked-out commit doesn't update automatically when the parent repo is pulled."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'shallow clone' ('git clone --depth 1')?"
+    options:
+      - "A clone that only downloads the most recent commit(s), omitting the full history, to save time and bandwidth"
+      - "A clone that only downloads the .gitignore file"
+      - "A clone that skips downloading any files, only the folder structure"
+      - "A clone that automatically deletes itself after use"
+    answer: 0
+    explanation: "--depth 1 fetches only the latest commit (and none of its ancestry), which is much faster and smaller for cases like CI pipelines that just need the current state of the code and don't need full history — at the cost of most history-dependent operations (like full log or bisect) not working properly."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the purpose of a Git hook, such as 'pre-commit'?"
+    options:
+      - "A script that Git runs automatically at a specific point in the workflow (e.g. before a commit is created), often to run checks or formatting"
+      - "A keyboard shortcut for a common Git command"
+      - "A remote server endpoint that receives push notifications"
+      - "A way to permanently lock a branch from further commits"
+    answer: 0
+    explanation: "Hooks are scripts stored in .git/hooks that Git invokes automatically at defined points (pre-commit, pre-push, post-merge, etc.); a pre-commit hook commonly runs linters, formatters, or tests, and can reject the commit if it fails."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'git blame <file>' show?"
+    options:
+      - "For each line in the file, which commit last modified it and who authored that commit"
+      - "A list of every person who has ever cloned the repository"
+      - "Which commit introduced the most bugs, based on issue tracker data"
+      - "A diff between the file and its version on the remote"
+    answer: 0
+    explanation: "'git blame' annotates each line of a file with the commit hash, author, and date of the last change to that line, which is useful for understanding why a specific line exists or tracking down who to ask about it."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What are the three core object types that make up Git's underlying content model (besides tags)?"
+    options:
+      - "Blobs (file contents), trees (directory listings), and commits (snapshots with metadata)"
+      - "Branches, remotes, and stashes"
+      - "Repositories, working trees, and indexes"
+      - "Pushes, pulls, and fetches"
+    answer: 0
+    explanation: "A blob stores a file's raw content, a tree records a directory's structure (mapping names to blobs/other trees), and a commit points to a tree plus metadata (author, message, parent commit(s)) — together these form Git's content-addressable object database, where every object is identified by the hash of its content."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a merge commit's defining structural feature?"
+    options:
+      - "It has two (or more) parent commits instead of the usual single parent"
+      - "It cannot contain any file changes of its own"
+      - "It is always the very first commit in a repository"
+      - "It must always be tagged"
+    answer: 0
+    explanation: "Ordinary commits have exactly one parent (the previous commit on that branch); a merge commit records two (or more) parents, representing the point where two independent lines of history were joined back together."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which command lets you see the exact line-by-line changes between your working directory and the last commit?"
+    options:
+      - "git diff"
+      - "git status"
+      - "git log"
+      - "git branch"
+    answer: 0
+    explanation: "'git diff' with no arguments shows unstaged changes as a unified diff; 'git diff --staged' shows staged changes instead; 'git status' only tells you which files changed, not the actual content differences."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the effect of running 'git checkout -- <file>' (or 'git restore <file>')?"
+    options:
+      - "It discards uncommitted changes to that file, restoring it to match the last commit"
+      - "It permanently deletes the file from the repository"
+      - "It stages the file for the next commit"
+      - "It creates a new branch containing only that file"
+    answer: 0
+    explanation: "This discards any unstaged modifications to the given file, reverting it to the version in the index/last commit — it's a destructive operation on uncommitted work, so it's worth double-checking the filename before running it."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the '.git' directory contain?"
+    options:
+      - "All of the repository's metadata and history: objects, refs, configuration, and hooks — everything that makes it a Git repository"
+      - "Only the .gitignore file"
+      - "A compressed backup of the remote repository's web server"
+      - "Nothing; it's an empty marker folder"
+    answer: 0
+    explanation: "The .git folder is the actual repository: it holds the object database (commits, trees, blobs), references (branches, tags), the index (staging area), configuration, and hooks. The rest of the project directory is just the working tree — a checked-out snapshot of one commit's content."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between 'git branch' and 'git branch -a'?"
+    options:
+      - "Plain 'git branch' lists only local branches; '-a' additionally lists remote-tracking branches"
+      - "'-a' deletes all branches at once"
+      - "Plain 'git branch' lists remote branches only"
+      - "They are identical; '-a' has no effect"
+    answer: 0
+    explanation: "'git branch' by default only shows local branches; adding '-a' (all) also lists remote-tracking branches (like origin/main, origin/feature-x), which are read-only local references to the state of branches on the remote as of the last fetch."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does 'git clone <url>' do?"
+    options:
+      - "Downloads a full copy of a remote repository, including its history, into a new local directory"
+      - "Creates a completely empty new repository with no connection to any remote"
+      - "Uploads your current local repository to a new remote"
+      - "Only downloads the latest file contents, discarding all history"
+    answer: 0
+    explanation: "Clone copies the entire repository (by default, full history) from the given URL into a new local directory, and automatically sets up a remote named 'origin' pointing back to the source."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'tracking branch' in Git?"
+    options:
+      - "A local branch configured to have a direct relationship with a specific remote branch, enabling plain 'git push'/'git pull' without specifying the remote and branch each time"
+      - "A branch that automatically records every keystroke made while editing"
+      - "A branch used exclusively for tagging releases"
+      - "A branch that cannot be deleted once created"
+    answer: 0
+    explanation: "A tracking (or 'upstream') branch links a local branch to a remote counterpart (e.g. local 'main' tracking 'origin/main'), so Git knows what to compare against for 'ahead/behind' status and which remote branch a bare 'git push'/'git pull' should target."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is the practical benefit of 'git worktree'?"
+    options:
+      - "It lets you check out multiple branches of the same repository into separate directories simultaneously, without needing multiple clones"
+      - "It automatically formats code according to a style guide"
+      - "It merges the working trees of two different repositories into one"
+      - "It replaces the need for a .gitignore file"
+    answer: 0
+    explanation: "Normally a single repository can only have one branch checked out at a time; 'git worktree add' creates an additional working directory linked to the same repository/object database but with a different branch checked out, useful for working on a hotfix without disturbing your current feature branch's uncommitted state."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git rm --cached <file>' do, as opposed to plain 'git rm <file>'?"
+    options:
+      - "Removes the file from Git tracking (and stages that removal) while leaving the actual file on disk"
+      - "Deletes the file from disk but leaves it tracked in Git"
+      - "Removes the file from the remote repository only"
+      - "Permanently deletes the file from all of Git's history"
+    answer: 0
+    explanation: "'--cached' only affects the index/staging area — the file stops being tracked (useful for a file that was committed by mistake and should now be gitignored) but the actual file remains untouched on disk; without --cached, 'git rm' deletes the file from disk too."
+  - type: multiple_choice
+    difficulty: 3
+    text: "In GitFlow-style branching, what is the typical purpose of a 'develop' branch alongside 'main'?"
+    options:
+      - "'develop' integrates completed features for the next release, while 'main' reflects only stable, released code"
+      - "'develop' is used only by a single designated lead developer"
+      - "'develop' and 'main' are kept as two unrelated, completely separate repositories"
+      - "'develop' is automatically deleted after every release"
+    answer: 0
+    explanation: "In the classic GitFlow model, feature branches merge into 'develop' as they're completed, and 'develop' is periodically merged into 'main' (often via a release branch) once it's considered stable enough to ship — keeping 'main' always representing what's actually in production."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is 'trunk-based development' as an alternative to long-lived feature branches?"
+    options:
+      - "A workflow where developers integrate small, frequent changes directly into a single shared branch (often behind feature flags) rather than working in long-lived branches"
+      - "A workflow where every developer has their own permanent, never-merged branch"
+      - "A workflow that forbids the use of branches entirely, including for releases"
+      - "A synonym for GitFlow"
+    answer: 0
+    explanation: "Trunk-based development favors small, frequent commits merged into a single main branch (the 'trunk'), often paired with feature flags to hide incomplete work, specifically to avoid the painful, large merges that long-lived feature branches tend to accumulate."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'git config --global user.name \"...\"' configure, compared to the same command without --global?"
+    options:
+      - "It sets the value for all repositories on the machine for the current user, rather than just the current repository"
+      - "It sets the value only for the very next commit"
+      - "It configures a setting shared by every user on the machine, system-wide"
+      - "--global and no flag behave identically"
+    answer: 0
+    explanation: "Git configuration has scopes: --system (machine-wide, all users), --global (per-user, applies to all of that user's repositories), and local/repository-level (no flag, stored in .git/config, overrides global for that one repository)."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why can 'git gc' (garbage collection) actually delete commits that seem to still be tracked in your reflog history?"
+    options:
+      - "By default, reflog entries and unreachable objects expire after a certain time (commonly 90 days), after which gc is free to prune them permanently"
+      - "'git gc' deletes all commits older than the most recent one, regardless of reachability"
+      - "'git gc' only ever deletes files, never commit objects"
+      - "'git gc' cannot run unless explicitly forced with --force on every single object"
+    answer: 0
+    explanation: "Unreachable objects (like commits left over from a reset or rebase) aren't deleted immediately, since they're recoverable via the reflog for a grace period; but reflog entries and unreachable objects have expiration settings (gc.reflogExpire, gc.pruneExpire), after which 'git gc' is allowed to permanently remove them to keep the repository from growing unbounded."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is Git LFS (Large File Storage) designed to solve?"
+    options:
+      - "Storing large binary files (images, videos, datasets) efficiently by keeping only lightweight pointers in the main history and the actual content in separate storage"
+      - "Compressing every commit message to save space"
+      - "Automatically splitting large repositories into smaller ones"
+      - "Encrypting all files in the repository"
+    answer: 0
+    explanation: "Git's history model works poorly with frequently-changing large binaries, since every version is stored in full; LFS replaces those files in the repository with small text pointers, storing the actual binary content in a separate LFS server, keeping the main Git history lean."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the practical difference between 'git merge --no-ff' and a regular fast-forwardable merge?"
+    options:
+      - "'--no-ff' always creates an explicit merge commit, preserving a visible record that a branch was merged, even when a fast-forward would otherwise have been possible"
+      - "'--no-ff' skips creating any merge commit at all"
+      - "'--no-ff' automatically deletes the merged branch"
+      - "'--no-ff' is only valid when merging conflicts exist"
+    answer: 0
+    explanation: "Without --no-ff, Git prefers a fast-forward (just moving the pointer) whenever possible, which leaves no trace that a separate branch ever existed; --no-ff forces a merge commit regardless, which some teams prefer so the history clearly shows where feature branches were merged in."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a Pull Request (or Merge Request), fundamentally, in platforms like GitHub/GitLab?"
+    options:
+      - "A request to merge changes from one branch into another, typically opened for code review and discussion before merging"
+      - "A native Git command"
+      - "An automatic weekly summary email of repository activity"
+      - "A request to delete a branch permanently"
+    answer: 0
+    explanation: "Pull/Merge Requests are a feature of hosting platforms (not Git itself) that wrap a proposed merge with a review workflow: comments, required approvals, CI status checks, and a UI diff — Git only provides the underlying branches and commits being compared."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git add -p' (patch mode) let you do?"
+    options:
+      - "Interactively choose which specific hunks (chunks of changes) within a file to stage, rather than staging the whole file at once"
+      - "Automatically apply a patch file downloaded from the internet"
+      - "Add every file in the repository except ignored ones"
+      - "Permanently delete a file's history"
+    answer: 0
+    explanation: "-p walks through each changed hunk in a file and asks whether to stage it, split it further, or skip it — useful when a file has multiple unrelated changes and you want to commit them separately with clear, focused commit messages."
+  - type: multiple_choice
+    difficulty: 1
+    text: "Which command lists all branches in the current repository?"
+    options:
+      - "git branch"
+      - "git commit"
+      - "git status"
+      - "git remote"
+    answer: 0
+    explanation: "'git branch' with no arguments lists local branches, marking the currently checked-out one with an asterisk; creating, deleting, and renaming branches also go through this same command with additional flags."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the effect of deleting a remote-tracking branch locally (e.g. 'git branch -d -r origin/feature-x') versus deleting the actual branch on the remote?"
+    options:
+      - "Deleting the local remote-tracking reference only affects your local view; it does not delete the branch on the actual remote server"
+      - "They are exactly equivalent operations"
+      - "Deleting the local reference automatically deletes it on the remote too"
+      - "Neither operation is possible in Git"
+    answer: 0
+    explanation: "Remote-tracking branches (like origin/feature-x) are just local bookmarks reflecting the last-known state of a remote branch; removing that local reference doesn't touch the remote at all — actually deleting a branch on the remote requires 'git push origin --delete feature-x'."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does 'git rebase --onto' let you do that a plain 'git rebase <branch>' cannot as directly?"
+    options:
+      - "Replay a specific range of commits onto a different base than the one they were originally taken from, letting you move commits between unrelated branch points precisely"
+      - "Rebase every branch in the repository simultaneously"
+      - "Skip the need to resolve any conflicts"
+      - "Automatically push the result to the remote"
+    answer: 0
+    explanation: "'--onto <newbase> <oldbase> <branch>' lets you take just the commits unique to <branch> since <oldbase> and replay them onto <newbase> instead — useful for surgically moving a range of commits (e.g. extracting part of a branch) rather than rebasing an entire branch onto another tip."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is 'plumbing' versus 'porcelain' in Git terminology?"
+    options:
+      - "Plumbing commands are Git's low-level internal building blocks; porcelain commands are the user-friendly, high-level commands built on top of them"
+      - "Plumbing refers to remote commands, porcelain refers to local-only commands"
+      - "Plumbing is a deprecated term with no modern meaning"
+      - "Porcelain commands only work on Windows"
+    answer: 0
+    explanation: "Commands like 'git commit-tree', 'git hash-object', and 'git cat-file' are plumbing — low-level, stable, scriptable primitives; commands like 'git commit', 'git status', and 'git log' are porcelain — friendlier, higher-level commands (often implemented in terms of plumbing) meant for everyday human use."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is a commit's SHA-1 (or SHA-256) hash described as 'content-addressable'?"
+    options:
+      - "The hash is computed from the object's own content (and metadata), so identical content always produces the identical hash, and any change to the content changes the hash"
+      - "The hash is assigned sequentially, like an auto-incrementing database ID"
+      - "The hash is chosen randomly by the committer"
+      - "The hash encodes the committer's IP address"
+    answer: 0
+    explanation: "Because the object's identifier is derived deterministically from its own content, two identical blobs/trees/commits anywhere in history (or even across repositories) will always share the same hash — which is also how Git detects that a file's content is unchanged without needing to store it twice."
+  - type: completion
+    difficulty: 1
+    text: "The command that records staged changes as a new point in history is 'git ____'."
+    answer: "commit"
+    explanation: "'git commit' takes whatever is currently staged and creates a new commit object recording that snapshot, along with a message describing the change."
+  - type: completion
+    difficulty: 2
+    text: "The command used to send local commits to a remote repository is 'git ____'."
+    answer: "push"
+    explanation: "'git push' uploads local commits on a branch to the corresponding branch on a remote, updating the remote's history (assuming it's a fast-forward, or --force is used)."
+  - type: completion
+    difficulty: 2
+    text: "To temporarily save uncommitted changes without committing them, you use 'git ____'."
+    answer: "stash"
+    explanation: "'git stash' shelves your uncommitted changes so the working tree matches HEAD again, letting you switch tasks and later restore the saved changes with 'stash pop' or 'stash apply'."
+  - type: completion
+    difficulty: 3
+    text: "The command that replays commits from one branch on top of another, producing a linear history, is 'git ____'."
+    answer: "rebase"
+    explanation: "'git rebase <branch>' takes the commits unique to your current branch and reapplies them one by one on top of <branch>'s current tip, instead of creating a merge commit."
+  - type: completion
+    difficulty: 3
+    text: "The command that applies the changes of one specific existing commit onto your current branch is 'git ____'."
+    answer: "cherry-pick"
+    explanation: "'git cherry-pick <commit>' takes just the diff introduced by that single commit and creates an equivalent new commit on your current branch, without pulling in anything else from the source branch."
+  - type: completion
+    difficulty: 2
+    text: "The file that tells Git which files/patterns to never track is called '.git____'."
+    answer: "ignore"
+    explanation: "'.gitignore' lists glob patterns for files Git should treat as untracked and hide from 'git status', commonly used for build artifacts, dependency folders, and local secrets."
+  - type: completion
+    difficulty: 4
+    text: "The local log recording every position HEAD and branches have pointed to over time, useful for recovering 'lost' commits, is called the ____."
+    answer: "reflog"
+    explanation: "The reflog is a safety net: even after a hard reset or a rebase rewrites history, the old commit references remain in the reflog for a while, letting you find and restore them with 'git reflog' plus a reset or branch creation."
+  - type: completion
+    difficulty: 3
+    text: "The subcommand that performs a binary search through history to find which commit introduced a bug is 'git ____'."
+    answer: "bisect"
+    explanation: "'git bisect start' begins the process; you mark a known-good and known-bad commit, and Git checks out commits in between for you to test and mark, narrowing down the culprit in logarithmic time."
+  - type: single_word
+    difficulty: 1
+    text: "What is the name of the directory (hidden by default) at the root of a repository that stores all of Git's history and metadata?"
+    answer: ".git"
+    explanation: "This hidden folder is the actual repository — the object database, refs, config, and hooks all live here; deleting it removes all Git history while leaving your files' current content on disk untouched."
+  - type: single_word
+    difficulty: 2
+    text: "What is the term for the default name Git gives the remote repository a project was cloned from?"
+    answer: "origin"
+    explanation: "'origin' is simply the conventional default name; it's just an alias for a URL, and both the name and the URL it points to can be changed with 'git remote rename'/'git remote set-url'."
+  - type: single_word
+    difficulty: 2
+    text: "What is the general term for a set of conflicting changes that Git cannot automatically reconcile during a merge or rebase?"
+    answer: "conflict"
+    explanation: "A conflict arises when the same region of a file was changed differently on both sides being combined; Git marks the file with conflict markers and pauses the operation until a human resolves it and stages the result."
+  - type: single_word
+    difficulty: 3
+    text: "What is the one-word term for a Git object that represents a directory listing (mapping names to blobs and other trees)?"
+    answer: "tree"
+    explanation: "A tree object records the structure of a directory at a point in time — filenames, modes, and the hashes of the blobs or sub-trees they point to; a commit references exactly one tree, representing the entire project's state at that commit."
+  - type: single_word
+    difficulty: 2
+    text: "What is the term for a repository copy hosted on a platform like GitHub that you own, created from someone else's original repository?"
+    answer: "fork"
+    explanation: "Forking creates your own independent copy of a repository under your account, which you can freely modify; if you want your changes considered for the original project, you open a pull request from your fork back to the original ('upstream') repository."
+  - type: single_word
+    difficulty: 3
+    text: "What is the term for a Git object storing raw file content, with no filename or directory information attached to it directly?"
+    answer: "blob"
+    explanation: "A blob is pure file content, identified purely by the hash of that content; the filename and permissions are recorded separately in the tree object that references the blob, which is also why two identically-named files with the same content in different folders share the same blob."
+  - type: single_word
+    difficulty: 2
+    text: "What is the one-word term for downloading a repository's history and files to your local machine for the first time?"
+    answer: "clone"
+    explanation: "'git clone' is a one-time operation that creates a full local copy of a remote repository, including its history and a configured 'origin' remote; subsequent updates use 'fetch'/'pull' instead of cloning again."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between 'git fetch' and 'git pull', and describe a situation where you would prefer to fetch rather than pull."
+    answer: "'git fetch' downloads new commits and updates remote-tracking branches (like origin/main) without touching your current branch or working tree; 'git pull' does a fetch and then immediately merges (or rebases) those changes into your current branch. You'd prefer fetch when you want to inspect incoming changes first (e.g. with 'git log main..origin/main' or 'git diff') before deciding how to integrate them, rather than merging blindly."
+    explanation: "Fetch is the safe, inspect-first option since it never modifies your working branch; pull is the convenient one-step option but can surprise you with an automatic merge (and possibly a conflict) you weren't expecting, especially if your local branch has diverged."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a 'fast-forward' merge is, and why Git can sometimes avoid creating a merge commit entirely."
+    answer: "A fast-forward merge happens when the branch being merged in is a direct descendant of the current branch, meaning the current branch has no commits of its own since they diverged. In that case, merging doesn't require combining two divergent histories — Git can simply move the current branch's pointer forward to the other branch's tip, since all of its commits already come after the current tip in a straight line, so no separate merge commit is needed."
+    explanation: "A merge commit (with two parents) is only necessary to represent the joining of two lines of history that actually diverged; if one side is simply 'ahead' with no competing changes, moving the pointer preserves a perfectly accurate, and simpler, linear history."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the practical risk of running 'git push --force' on a branch that other people are also working from, and describe a safer alternative command."
+    answer: "Force-pushing overwrites the remote branch's history with your local history, discarding any commits that were pushed by others in the meantime (or that exist on the remote but not locally), causing them to silently disappear from the branch for anyone who pulls afterward. A safer alternative is 'git push --force-with-lease', which checks that the remote branch still matches what you last fetched before overwriting it, and refuses the push if someone else has pushed new commits you haven't seen — preventing an accidental overwrite of their work."
+    explanation: "--force-with-lease adds a check that plain --force skips entirely: it verifies your local knowledge of the remote branch is up to date before allowing the destructive rewrite, turning a blind overwrite into a conditional one."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why rewriting history that has already been pushed and pulled by teammates (via rebase or amend) is generally discouraged, and what the immediate symptom is for someone who already has the old commits."
+    answer: "Rebasing or amending replaces old commits with new ones that have different hashes, even if the actual code changes are identical. Anyone who already pulled the original commits still has those old commits in their local history; when they fetch/pull again, Git sees the rewritten commits as unrelated to (or diverging from) what they already have, since they don't share the same hashes as an ancestor. This typically shows up as their branch appearing to have 'diverged', forcing them to either merge the two diverging histories (creating a messy duplicate merge) or manually reset/rebase onto the new history themselves."
+    explanation: "This is exactly why the common rule is 'never rewrite history that's already shared' — locally, before pushing, rewriting is completely safe and often desirable for cleanliness; once others have built on top of a commit, that commit's identity effectively becomes fixed."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what the Git staging area (index) is for, and why committing directly from the working directory without staging would be more limiting."
+    answer: "The staging area is an intermediate snapshot between the working directory and the repository's history: 'git add' copies specific changes into it, and only what's staged becomes part of the next commit. Without a staging area, every commit would have to include every current change in the working directory as one all-or-nothing unit, making it impossible to split unrelated changes (e.g. a bugfix and an unrelated typo fix) into separate, focused commits without first manually reverting one of them."
+    explanation: "The staging area is what makes commands like 'git add -p' (staging only specific hunks) possible, letting you shape exactly what goes into each commit, independent of what other uncommitted changes might also be sitting in your working directory at the same time."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain what the reflog is and describe, at a high level, how you could use it to recover commits that were lost after an accidental 'git reset --hard' to an earlier commit."
+    answer: "The reflog is a local, chronological record of every position HEAD (and branches) have pointed to, including commits that later became unreachable from any branch. After an accidental hard reset, the commits you were on before are no longer reachable from any branch, but they still exist in the object database and are still referenced by an entry in the reflog. Running 'git reflog' lists these historical HEAD positions with their commit hashes; you can then run 'git reset --hard <hash>' (or create a new branch at that hash) using the hash shown for the point right before the accidental reset, restoring your branch to that state."
+    explanation: "This works because Git doesn't immediately delete unreachable objects — they're only garbage-collected after an expiration period (commonly 90 days for unreachable objects), specifically to give this reflog-based recovery a real window to work in."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between 'git merge' and 'git rebase' in terms of the resulting commit history, and describe one advantage of each approach."
+    answer: "Merge combines two branches by creating a new merge commit with two parents, preserving the exact history of both branches including when and how they diverged; its advantage is that it's non-destructive and safe even on already-shared history. Rebase replays your branch's commits one by one on top of another branch's tip, producing a clean, linear history with no merge commits; its advantage is a simpler, easier-to-read history, at the cost of generating new commit hashes and being unsafe to use on commits already shared with others."
+    explanation: "Neither approach is universally 'correct' — many teams merge feature branches into a shared branch (safe, preserves context) while rebasing local, not-yet-shared work before pushing (keeps history clean before it becomes permanent for others)."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the purpose of a pre-commit hook and give one concrete example of what it might check before allowing a commit to proceed."
+    answer: "A pre-commit hook is a script Git runs automatically right before a commit is finalized, and if the script exits with a non-zero status, the commit is aborted. It's commonly used to enforce quality checks automatically rather than relying on developers to remember to run them manually. A concrete example: running a code formatter/linter on the staged files and rejecting the commit if there are formatting violations or lint errors, so badly-formatted code never enters the repository's history in the first place."
+    explanation: "Because the hook runs locally before the commit exists, it's the earliest possible point to catch a problem — much cheaper than catching the same issue later in CI after the commit (and possibly a push) has already happened."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain, at a conceptual level, why two completely unrelated files with identical content in a Git repository only take up the storage of one blob."
+    answer: "Git identifies objects (including blobs) by the SHA hash of their content, not by filename or path. Since the hash is computed purely from the file's bytes, two files with byte-for-byte identical content produce the exact same hash and are therefore represented by the exact same blob object in Git's object database. The tree objects for each directory simply reference that one blob by hash alongside the respective filename, so the content is effectively stored once and referenced twice, rather than being duplicated."
+    explanation: "This content-addressable design is also why renaming a file 'for free' doesn't change any object — the blob's hash is unaffected by its name, only the tree entry (which records the name-to-hash mapping) changes, and why Git's storage is efficient even with many near-duplicate files across history."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what a merge conflict marker (the '<<<<<<<', '=======', '>>>>>>>' lines) means when it appears in a file, and what you must do before the merge can be completed."
+    answer: "These markers delimit the two competing versions of the same region of a file: the section between '<<<<<<<' and '=======' shows your current branch's version, and the section between '=======' and '>>>>>>>' shows the incoming branch's version, since Git couldn't automatically decide which one (or what combination) is correct. To complete the merge, you must manually edit the file to the version you actually want (removing the marker lines entirely), then stage the resolved file with 'git add', and finally run 'git commit' (or 'git merge --continue') to finish the merge."
+    explanation: "Until every conflicted file is staged, Git considers the merge unfinished and will refuse to let you commit normally (or will remind you a merge is in progress), which is a deliberate safeguard against accidentally finalizing a merge with unresolved conflict markers still in the code."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why 'git commit --amend' should generally not be used on a commit that has already been pushed to a shared remote branch."
+    answer: "--amend replaces the previous commit entirely with a new one (new hash, potentially new message and/or content), rather than adding on top of it. If that commit was already pushed, anyone who pulled it now has the old version in their history; once you amend and push again, the remote branch's history diverges from what they have, and a normal push will be rejected (requiring a force-push), while their next pull will see the old and new versions as unrelated/conflicting rather than a simple continuation."
+    explanation: "The underlying reason is the same as for rebasing shared history: amend rewrites rather than appends, so it's only safe when nobody else could possibly already depend on the specific commit being replaced."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain the tradeoff between GitFlow-style long-lived feature branches and trunk-based development with feature flags, in terms of merge complexity and deployability."
+    answer: "Long-lived feature branches let developers work in isolation for extended periods, but the longer a branch lives without merging, the more it diverges from the main line, making the eventual merge larger, more conflict-prone, and riskier to review and test all at once. Trunk-based development instead requires developers to integrate small, frequent changes directly into a single shared branch, keeping merges trivial and history simple, but incomplete features must be hidden behind feature flags so that a broken or half-finished feature doesn't affect what's deployed, and the codebase must be robust enough to always be in a deployable state."
+    explanation: "The core tradeoff is where the complexity is paid: GitFlow defers integration pain to occasional, large merge events, while trunk-based development front-loads a small amount of discipline (frequent small commits, feature flags, robust main branch) in exchange for avoiding those large, risky merges altogether."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what happens to the commits made while in a 'detached HEAD' state if you check out a branch without first saving them, and how you could have prevented losing easy access to them."
+    answer: "Commits made in detached HEAD have no branch pointing to them; once you check out a branch, HEAD moves away and those commits become unreachable from any branch, tag, or other reference (though not immediately deleted — they linger until eventually garbage-collected, and can still be found via the reflog for a while). To prevent this, you should create a new branch pointing at those commits (e.g. 'git switch -c new-branch-name') before checking out something else, which gives them a permanent reference so they remain part of normal, easily accessible history."
+    explanation: "This is a very common beginner trap: checking out a specific commit (e.g. from 'git log' output) to look at old code, making changes there without realizing it's a detached state, and then losing easy access to those commits by switching branches without first creating one."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the purpose of Git tags, and the difference between a lightweight tag and an annotated tag."
+    answer: "Tags mark a specific commit with a memorable, permanent name, most commonly used to mark released versions (e.g. v1.0.0) so that specific point in history is easy to find and check out later, independent of whichever branch happens to still contain that commit. A lightweight tag is just a simple named pointer to a commit, with no extra data. An annotated tag is a full object in its own right, storing the tagger's name, email, date, and a message, and can optionally be GPG-signed — which is why annotated tags are generally recommended for actual releases."
+    explanation: "Unlike branches, tags are not meant to move — once created, a tag should keep pointing at the same commit forever, which is what makes them reliable markers for 'this exact code is what we released as v1.0.0'."
+  - type: open_answer
+    difficulty: 3
+    text: "Write the Git commands (in order) to create a new branch called 'feature/login' from the current branch, switch to it, and push it to the remote 'origin' while setting up tracking so future plain 'git push'/'git pull' work on that branch."
+    answer: |
+      ```bash
+      git checkout -b feature/login
+      git push -u origin feature/login
+      ```
+    explanation: "'checkout -b' creates and switches to the new branch in one step; 'push -u origin feature/login' (short for --set-upstream) pushes the branch and simultaneously configures it to track 'origin/feature/login', so subsequent 'git push'/'git pull' on this branch no longer need the remote and branch name spelled out explicitly."
+  - type: open_answer
+    difficulty: 4
+    text: "Write the Git command to squash the last 3 commits on your current branch into a single commit using interactive rebase (you don't need to write the contents of the interactive editor, just the command that opens it)."
+    answer: |
+      ```bash
+      git rebase -i HEAD~3
+      ```
+    explanation: "This opens an editable list of the last 3 commits (oldest first); leaving the first as 'pick' and changing the other two lines from 'pick' to 'squash' (or 'fixup' to also discard their messages) combines all three into a single commit once you save and close the editor."
+  - type: open_answer
+    difficulty: 3
+    text: "Write the Git command to undo the most recent commit but keep all of its changes staged, ready to be committed again (e.g. to fix the commit message or add a forgotten file)."
+    answer: |
+      ```bash
+      git reset --soft HEAD~1
+      ```
+    explanation: "'--soft' moves the branch pointer back one commit without touching the working tree or the index, so every change from that commit remains staged exactly as it was — perfect for redoing the commit (e.g. with a corrected message via 'git commit --amend' style workflow, or adding another file first)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git clean -fd' do?"
+    options:
+      - "Removes untracked files and directories from the working tree that are not covered by .gitignore"
+      - "Removes tracked files that have uncommitted changes"
+      - "Deletes all remote branches"
+      - "Resets every configuration setting to default"
+    answer: 0
+    explanation: "'git clean' deletes files Git doesn't track at all (not modifications to tracked files); -f forces the deletion (required by default as a safety measure) and -d also removes untracked directories, not just files. It's often run alongside 'git reset --hard' to fully clean a working tree."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a 'bare' Git repository?"
+    options:
+      - "A repository with no working directory, containing only the .git metadata itself — typically used as a central server-side repository"
+      - "A repository with no commit history at all"
+      - "A repository that has been stripped of all branches except main"
+      - "A repository that only accepts read-only clones"
+    answer: 0
+    explanation: "A bare repository (created with 'git init --bare') has no checked-out files, just the object database and refs — since nobody edits files directly on a shared server repository, there's no need for a working tree, and it avoids the possibility of someone directly modifying files on the server."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'git show <commit>' display?"
+    options:
+      - "The commit's metadata (author, date, message) along with the diff it introduced"
+      - "Only the list of files that exist in the repository at that commit"
+      - "The full contents of every file in the repository"
+      - "A list of every branch that contains that commit"
+    answer: 0
+    explanation: "'git show' is commonly used to inspect one specific commit in detail: its message/metadata plus the actual changes (diff) it introduced relative to its parent — useful for reviewing a single commit without listing the whole history."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does 'git log --author=\"Jane\" --since=\"2 weeks ago\"' filter the log by?"
+    options:
+      - "Only commits authored by Jane within the last two weeks"
+      - "Only commits that modified files authored by Jane in any timeframe"
+      - "Only merge commits from the last two weeks, regardless of author"
+      - "It is invalid syntax and Git would reject it"
+    answer: 0
+    explanation: "'git log' supports numerous filters that can be combined; --author matches the commit's author field (by substring), and --since restricts to commits after a given date/relative time expression, letting you narrow down history by both criteria at once."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of 'git format-patch' combined with 'git am'?"
+    options:
+      - "format-patch exports commits as individual patch files that can be emailed or transferred, and 'git am' applies those patch files as real commits on another repository"
+      - "format-patch permanently deletes commits, and 'git am' restores them from backup"
+      - "They are used exclusively for resolving merge conflicts"
+      - "format-patch compresses the entire repository into a single archive file"
+    answer: 0
+    explanation: "This pair predates (and still coexists with) pull requests: format-patch turns a range of commits into .patch files (in a mailbox-compatible format, preserving author/message/diff), which can be sent to someone who then applies them with 'git am' to recreate the same commits in their own repository."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the purpose of a .gitattributes file?"
+    options:
+      - "It lets you configure per-path behavior, such as forcing consistent line endings, marking files as binary, or customizing diff behavior"
+      - "It lists which files should never be tracked, identical to .gitignore"
+      - "It stores each contributor's personal Git configuration"
+      - "It defines which branches are protected from force-push"
+    answer: 0
+    explanation: ".gitattributes controls how Git treats specific paths — for example normalizing line endings across platforms (text=auto), telling Git a file is binary so it doesn't try to diff/merge it as text, or specifying a custom diff driver for certain file types."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does 'sparse checkout' let you do in a large repository?"
+    options:
+      - "Check out only a subset of the repository's directory tree into your working directory, while still having the full history available"
+      - "Clone only the most recent commit, discarding all older history"
+      - "Check out a repository without downloading any file contents at all"
+      - "Automatically split a monorepo into multiple smaller repositories"
+    answer: 0
+    explanation: "Sparse checkout is useful for very large monorepos where you only need to work on a small part of the tree: Git still has the full object history, but only populates the working directory with the paths you've specified, saving disk space and checkout time."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what 'git show HEAD' would display, and how it differs from 'git log -1'."
+    answer: "'git show HEAD' displays the current commit's full metadata (author, date, message) plus the actual diff it introduced compared to its parent. 'git log -1' shows only the metadata of the most recent commit (limited to 1 entry) without the diff content, unless you add '-p'/'--patch' to also include it."
+    explanation: "Both commands can end up showing similar information, but 'git show' is oriented around inspecting one specific object (commit, tag, blob) in full detail including its diff by default, while 'git log' is oriented around browsing a sequence of commits, with the diff being opt-in via -p."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the purpose of a bare Git repository and why a typical developer would never want to edit files directly inside one."
+    answer: "A bare repository has no working directory — it only contains the .git metadata (objects, refs, config), and is meant to be a shared, central point that developers push to and pull/fetch from, not a place where anyone directly edits files. Since there's no working tree, there's nothing to 'edit' directly in a meaningful way; all real work happens in a normal (non-bare) clone, with changes pushed back to the bare repository to be shared with others."
+    explanation: "This is exactly the model used by self-hosted Git servers and by platforms like GitHub under the hood — the server holds a bare repository as the single source of truth, and every developer works from their own regular clone."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what problem .gitattributes' line-ending normalization (e.g. '* text=auto') solves for a team with both Windows and Unix/macOS developers."
+    answer: "Windows and Unix-like systems use different line-ending characters by default (CRLF vs LF). Without normalization, a file edited on Windows can end up with different line endings than the same file edited on macOS/Linux, causing every single line to show as changed in a diff even when no meaningful content changed, and creating spurious merge conflicts. '* text=auto' tells Git to normalize line endings to LF in the repository itself while still allowing each platform's tools to check out files with their native line ending, avoiding these false diffs."
+    explanation: "This is a very common real-world source of confusing 'the whole file changed' diffs and merge conflicts on cross-platform teams, and .gitattributes is the recommended, repository-level fix (as opposed to relying on each individual's local Git or editor configuration)."
+  - type: open_answer
+    difficulty: 2
+    text: "Write the Git command to remove all untracked files and directories from your working tree, excluding anything covered by .gitignore."
+    answer: |
+      ```bash
+      git clean -fd
+      ```
+    explanation: "-f (force) is required by Git as a safety measure since this permanently deletes files, and -d additionally removes untracked directories, not just loose untracked files; add -x to also remove files that are ignored by .gitignore, if that's specifically intended."
+  - type: open_answer
+    difficulty: 2
+    text: "Write the Git command to permanently discard all uncommitted changes in your working directory, restoring every tracked file to match the last commit."
+    answer: |
+      ```bash
+      git checkout -- .
+      ```
+    explanation: "This restores every tracked file in the current directory (and subdirectories) to its committed version, discarding uncommitted modifications; the equivalent modern syntax is 'git restore .'. Note this only affects tracked files already known to Git, not new untracked files, which would need 'git clean' instead."

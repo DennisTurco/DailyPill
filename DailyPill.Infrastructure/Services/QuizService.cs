@@ -24,7 +24,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
     public async Task<QuizStartResponseDTO> StartAsync(QuizStartRequestDTO dto)
     {
-        var questionCount = Math.Clamp(dto.QuestionCount, 1, 5);
+        var questionCount = Math.Clamp(dto.QuestionCount, 1, 50);
         var aiAvailable = ollamaService.IsAvailable();
 
         var candidates = await context.Questions
@@ -44,7 +44,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
         var shuffled = candidates.OrderBy(_ => Random.Shared.Next()).ToList();
 
-        var selected = shuffled.Count >= 5
+        var selected = shuffled.Count >= questionCount
             ? GetRandomQuestionsWithMixedDifficulty(shuffled, questionCount)
             : shuffled.Take(questionCount).OrderBy(s => s.Difficulty).ToList();
         selected = selected.OrderBy(q => q.Difficulty).ToList();
@@ -191,7 +191,8 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
     private async Task<QuizSessionResponseDTO?> GetSessionDtoAsync(int sessionId)
     {
-        var session = await context.QuizSessions.Include(s => s.Answers)
+        var session = await context.QuizSessions
+            .Include(s => s.Answers)
             .FirstOrDefaultAsync(s => s.Id == sessionId);
         return session is null ? null : MapToDto(session);
     }
@@ -219,6 +220,9 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
         var questionsBasedDifficulty = questions
             .Where(q => q.Difficulty == difficulty)
             .ToList();
+
+        if (questionsBasedDifficulty.Count == 0)
+            return null;
 
         var answersCount = questionsBasedDifficulty.Min(a => a.Answers.Count);
 

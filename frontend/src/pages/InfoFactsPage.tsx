@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { Modal } from "../components/Modal";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { Tabs } from "../components/Tabs";
 import { AIGeneratedInfoFact, InfoFact, Topic } from "../lib/types";
 
 export default function InfoFactsPage() {
@@ -12,6 +13,7 @@ export default function InfoFactsPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [previewFact, setPreviewFact] = useState<InfoFact | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<InfoFact | null>(null);
+  const [activeTab, setActiveTab] = useState("ai");
 
   const [form, setForm] = useState({
     topic_id: 0,
@@ -71,6 +73,7 @@ export default function InfoFactsPage() {
   }
 
   function editFact(fact: InfoFact) {
+    setActiveTab("manual");
     setEditingId(fact.id);
     setForm({
       topic_id: fact.topic_id,
@@ -133,95 +136,112 @@ export default function InfoFactsPage() {
       <h1><i className="fa-solid fa-tablets"/> Info facts</h1>
       {error && <div className="error">{error}</div>}
 
-      <div className="card">
-        <h3><i className="fa-solid fa-robot"/> AI-generate facts</h3>
-        <label>Topic</label>
-        <select value={aiTopicId} onChange={(e) => setAiTopicId(Number(e.target.value))}>
-          <option value="" disabled>
-            Select...
-          </option>
-          {informationalTopics.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-        <label>Prompt</label>
-        <textarea
-          value={aiPrompt}
-          onChange={(e) => setAiPrompt(e.target.value)}
-          rows={2}
-          placeholder="e.g. generate 5 short facts about the Liskov Substitution Principle"
-        />
-        <label>Count</label>
-        <input type="number" value={aiCount} onChange={(e) => setAiCount(Number(e.target.value))} min={1} max={20} />
-        <div style={{ marginTop: 10 }}>
-          <button disabled={aiLoading || !aiTopicId} onClick={generateWithAI}>
-            {aiLoading ? "Generating..." : "Generate"}
-          </button>
+      <Tabs
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        items={[
+          {
+            key: "ai",
+            label: <><i className="fa-solid fa-robot"/> AI-generate</>,
+            content: (
+              <>
+                <label>Topic</label>
+                <select value={aiTopicId} onChange={(e) => setAiTopicId(Number(e.target.value))}>
+                  <option value="" disabled>
+                    Select...
+                  </option>
+                  {informationalTopics.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+                <label>Prompt</label>
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. generate 5 short facts about the Liskov Substitution Principle"
+                />
+                <label>Count</label>
+                <input type="number" value={aiCount} onChange={(e) => setAiCount(Number(e.target.value))} min={1} max={20} />
+                <div style={{ marginTop: 10 }}>
+                  <button disabled={aiLoading || !aiTopicId} onClick={generateWithAI}>
+                    {aiLoading ? "Generating..." : "Generate"}
+                  </button>
+                </div>
+                {aiError && <div className="error" style={{ marginTop: 8 }}>{aiError}</div>}
+
+                {aiDrafts.map((draft, i) => (
+                  <div className="card" key={i} style={{ marginTop: 10 }}>
+                    <div style={{ fontWeight: 600 }}>{draft.title}</div>
+                    <div style={{ color: "var(--text-muted)" }}>{draft.description}</div>
+                    {draft.link && <div style={{ color: "var(--text-muted)" }}>{draft.link}</div>}
+                    <button style={{ marginTop: 8 }} onClick={() => saveDraft(draft, i)}>
+                      Save to dataset
+                    </button>
+                  </div>
+                ))}
+              </>
+            ),
+          },
+          {
+            key: "manual",
+            label: <><i className="fa-solid fa-circle-plus"/> {editingId ? "Edit fact" : "Add manually"}</>,
+            content: (
+              <>
+                <label>Topic</label>
+                <select value={form.topic_id} onChange={(e) => setForm({ ...form, topic_id: Number(e.target.value) })}>
+                  <option value={0} disabled>
+                    Select...
+                  </option>
+                  {informationalTopics.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+                <label>Title</label>
+                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                <label>Description</label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  rows={4}
+                />
+                <label>Link (optional)</label>
+                <input
+                  type="url"
+                  value={form.link}
+                  onChange={(e) => setForm({ ...form, link: e.target.value })}
+                  placeholder="https://..."
+                />
+                <div style={{ marginTop: 10 }} className="row">
+                  <button onClick={saveFact}> {editingId ? "Save changes" : "Add fact"}</button>
+                  {editingId && (
+                    <button className="secondary" onClick={resetForm}>
+                      Cancel edit
+                    </button>
+                  )}
+                </div>
+              </>
+            ),
+          },
+        ]}
+      />
+
+      <div className="card filter-bar">
+        <div>
+          <label>Filter by topic</label>
+          <select value={filterTopic} onChange={(e) => setFilterTopic(e.target.value ? Number(e.target.value) : "")}>
+            <option value="">All informational topics</option>
+            {informationalTopics.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
         </div>
-        {aiError && <div className="error" style={{ marginTop: 8 }}>{aiError}</div>}
-
-        {aiDrafts.map((draft, i) => (
-          <div className="card" key={i} style={{ marginTop: 10 }}>
-            <div style={{ fontWeight: 600 }}>{draft.title}</div>
-            <div style={{ color: "#9aa0b4" }}>{draft.description}</div>
-            {draft.link && <div style={{ color: "#9aa0b4" }}>{draft.link}</div>}
-            <button style={{ marginTop: 8 }} onClick={() => saveDraft(draft, i)}>
-              Save to dataset
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <div className="card">
-        <h3><i className="fa-solid fa-circle-plus"/> {editingId ? "Edit fact" : "Add fact manually"}</h3>
-        <label>Topic</label>
-        <select value={form.topic_id} onChange={(e) => setForm({ ...form, topic_id: Number(e.target.value) })}>
-          <option value={0} disabled>
-            Select...
-          </option>
-          {informationalTopics.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-        <label>Title</label>
-        <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
-        <label>Description</label>
-        <textarea
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          rows={4}
-        />
-        <label>Link (optional)</label>
-        <input
-          type="url"
-          value={form.link}
-          onChange={(e) => setForm({ ...form, link: e.target.value })}
-          placeholder="https://..."
-        />
-        <div style={{ marginTop: 10 }} className="row">
-          <button onClick={saveFact}> {editingId ? "Save changes" : "Add fact"}</button>
-          {editingId && (
-            <button className="secondary" onClick={resetForm}>
-              Cancel edit
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="card">
-        <label>Filter by topic</label>
-        <select value={filterTopic} onChange={(e) => setFilterTopic(e.target.value ? Number(e.target.value) : "")}>
-          <option value="">All informational topics</option>
-          {informationalTopics.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
       </div>
 
       <div className="table-card">

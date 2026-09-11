@@ -1,0 +1,832 @@
+name: API Design & HTTP
+category: Computer Science
+difficulty: medium
+ai_generate: true
+content: |
+  HTTP fundamentals (methods, status codes, headers, caching, statelessness),
+  REST API design principles (resources, versioning, pagination, filtering),
+  authentication and authorization (API keys, Basic, Bearer/JWT, OAuth2),
+  content negotiation, idempotency, rate limiting, CORS, and how REST compares
+  to alternatives like GraphQL, gRPC, and webhooks.
+manual_questions:
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does the HTTP GET method conventionally indicate?"
+    options:
+      - "A request to retrieve a resource's current representation, without modifying server state"
+      - "A request to create a new resource on the server"
+      - "A request to permanently delete a resource"
+      - "A request to partially update an existing resource"
+    answer: 0
+    explanation: "GET is defined as a 'safe' method — it should not change server state — which is also why GET requests are commonly cached by browsers/proxies and why sensitive actions (like deleting data) should never be triggered by a plain GET."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does the HTTP POST method conventionally indicate?"
+    options:
+      - "Submitting data to be processed, often resulting in the creation of a new resource"
+      - "Retrieving a resource without any side effects"
+      - "Requesting only the headers of a response, not the body"
+      - "Removing a resource from the server"
+    answer: 0
+    explanation: "POST is the traditional method for creating a new resource (e.g. POST /orders creating a new order) or for actions that don't map cleanly onto GET/PUT/PATCH/DELETE — unlike GET, POST is neither safe nor guaranteed idempotent by default."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key semantic difference between PUT and PATCH?"
+    options:
+      - "PUT conventionally replaces a resource entirely with the provided representation; PATCH applies a partial modification to an existing resource"
+      - "PATCH can only be used to create new resources, never modify existing ones"
+      - "PUT is only valid for images and binary files"
+      - "They are exact synonyms with no distinction"
+    answer: 0
+    explanation: "A PUT request is expected to supply the full desired state of the resource (fields not included are conventionally treated as removed/reset), while PATCH is meant for sending only the specific fields that should change, leaving the rest of the resource untouched."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does it mean for an HTTP method to be 'idempotent'?"
+    options:
+      - "Making the same request multiple times has the same effect on server state as making it once"
+      - "The request can never fail under any circumstances"
+      - "The request must always be encrypted"
+      - "The response body must always be identical byte-for-byte across every call"
+    answer: 0
+    explanation: "PUT and DELETE are defined as idempotent: PUT-ing the same representation twice leaves the resource in the same final state as doing it once, and DELETE-ing an already-deleted resource still results in it being gone; POST is generally NOT idempotent, since repeating it typically creates a second, separate resource."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Is the HTTP GET method idempotent, and is it 'safe'?"
+    options:
+      - "It is both safe (no server state change) and idempotent (repeating it produces the same result)"
+      - "It is idempotent but not safe"
+      - "It is safe but not idempotent"
+      - "It is neither safe nor idempotent"
+    answer: 0
+    explanation: "GET is defined as both safe (it shouldn't modify server-side state) and idempotent (repeated identical GETs return the same resource state, assuming nothing else changed it in the meantime) — these are related but distinct properties: safety is about side effects, idempotency is about the effect of repetition."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the HTTP status code 200 mean?"
+    options:
+      - "OK — the request succeeded"
+      - "The requested resource was not found"
+      - "The server encountered an unexpected error"
+      - "The request requires authentication"
+    answer: 0
+    explanation: "200 is the general-purpose success status for most methods; more specific 2xx codes exist for particular situations, such as 201 for successful creation and 204 for success with no response body."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does HTTP status code 201 conventionally indicate, and when is it typically returned?"
+    options:
+      - "Created — the request succeeded and resulted in a new resource being created, commonly returned by a successful POST"
+      - "The client must authenticate before proceeding"
+      - "The resource was permanently moved to a new URL"
+      - "The server refuses to process the request due to something perceived as a client error"
+    answer: 0
+    explanation: "201 is more specific than a generic 200, explicitly signaling that a new resource now exists; a well-designed API returning 201 typically also includes a 'Location' header pointing to the newly created resource's URL."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does HTTP status code 204 mean, and what is notable about its response body?"
+    options:
+      - "No Content — the request succeeded, but there is deliberately no response body"
+      - "The resource has been permanently deleted and can never be recreated"
+      - "The request was accepted but will be processed asynchronously later"
+      - "The server is temporarily unavailable"
+    answer: 0
+    explanation: "204 is commonly returned by successful DELETE requests, or updates where there's nothing meaningful to return — a response with status 204 should not include a body, since the status code itself communicates that there is intentionally nothing further to return."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does HTTP status code 404 mean?"
+    options:
+      - "Not Found — the server cannot find the requested resource"
+      - "The request was successful"
+      - "The client is not authorized to view the resource"
+      - "The server encountered an internal error"
+    answer: 0
+    explanation: "404 indicates the requested URL doesn't correspond to any resource the server recognizes — it's distinct from 401/403 (which imply the resource might exist but access is denied) and from 500 (which implies a server-side failure processing an otherwise valid request)."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the difference between HTTP status codes 401 and 403?"
+    options:
+      - "401 means the client isn't authenticated at all; 403 means the client is authenticated but not authorized to access this specific resource"
+      - "401 is used only for GET requests, 403 only for POST requests"
+      - "They are exact synonyms with no distinction"
+      - "403 always implies a server-side bug, 401 never does"
+    answer: 0
+    explanation: "401 Unauthorized (a somewhat confusingly named status) actually means 'you need to authenticate' — typically returned when credentials are missing or invalid; 403 Forbidden means the server recognizes who you are but you still don't have permission to perform this particular action or access this particular resource."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does HTTP status code 422 conventionally indicate, as distinct from 400?"
+    options:
+      - "Unprocessable Entity — the request is syntactically well-formed, but semantically invalid (e.g. fails validation rules)"
+      - "The requested resource has been permanently deleted"
+      - "The client must retry the request over a different protocol"
+      - "The server does not support the requested HTTP method at all"
+    answer: 0
+    explanation: "400 Bad Request typically signals the request itself is malformed (e.g. invalid JSON syntax); 422 is used when the request is well-formed and parseable, but the data it contains fails validation rules (e.g. a required field is missing, or an email field doesn't look like an email) — some APIs use 400 for both cases, but 422 gives clients a more specific signal when this distinction is made deliberately."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does HTTP status code 429 mean?"
+    options:
+      - "Too Many Requests — the client has sent too many requests in a given time frame (rate limiting)"
+      - "The request timed out waiting for the server"
+      - "The requested resource requires payment before access"
+      - "The server is currently undergoing scheduled maintenance"
+    answer: 0
+    explanation: "429 is the standard status for signaling that rate limiting has been triggered; APIs commonly pair it with a 'Retry-After' header telling the client how long to wait before making another attempt."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the general difference between a 4xx and a 5xx HTTP status code?"
+    options:
+      - "4xx indicates a problem with the client's request; 5xx indicates the server failed to fulfill an otherwise valid request"
+      - "4xx is used only for GET requests, 5xx only for POST requests"
+      - "5xx always means the request succeeded but slowly"
+      - "There is no meaningful distinction between the two ranges"
+    answer: 0
+    explanation: "The HTTP status code ranges broadly categorize the outcome: 4xx puts the responsibility on the client (bad input, missing auth, requesting something that doesn't exist), while 5xx signals that something went wrong on the server's side even though the client's request was reasonable."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the difference between HTTP status codes 502 and 503?"
+    options:
+      - "502 (Bad Gateway) means an upstream server returned an invalid response to a gateway/proxy; 503 (Service Unavailable) means the server is temporarily unable to handle requests, often due to overload or maintenance"
+      - "They are exact synonyms with no distinction"
+      - "502 is a client error and 503 is a server error"
+      - "503 means the request succeeded, just slowly"
+    answer: 0
+    explanation: "502 typically appears when a reverse proxy or load balancer couldn't get a valid response from a backend server it forwarded the request to; 503 signals the server itself is deliberately or temporarily not accepting requests (e.g. it's overloaded, or down for maintenance), often paired with a 'Retry-After' header."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'Content-Type' HTTP header specify?"
+    options:
+      - "The media type (format) of the request or response body, such as application/json or text/html"
+      - "The total number of bytes allowed in the response"
+      - "The specific HTTP version being used"
+      - "The exact server software handling the request"
+    answer: 0
+    explanation: "Content-Type tells the receiving end how to interpret the body — e.g. 'application/json' means the body should be parsed as JSON — and mismatches between the declared Content-Type and the actual body format are a common source of parsing errors."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does the 'Authorization' HTTP header typically carry?"
+    options:
+      - "Credentials proving the client's identity, such as a Bearer token or Basic auth credentials"
+      - "The list of HTTP methods the server supports"
+      - "The exact expiration date of the requested resource"
+      - "A list of every intermediate proxy the request passed through"
+    answer: 0
+    explanation: "The Authorization header is where most authentication schemes place their credentials — e.g. 'Authorization: Bearer <token>' for token-based auth, or 'Authorization: Basic <base64(username:password)>' for Basic authentication."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What does the HTTP 'Accept' header let a client do?"
+    options:
+      - "Indicate which media type(s) it prefers the response to be in, letting the server choose an appropriate representation (content negotiation)"
+      - "Force the server to always respond in plain text regardless of what's requested"
+      - "Specify the maximum number of redirects the client will follow"
+      - "Grant the server permission to cache the request indefinitely"
+    answer: 0
+    explanation: "A client sending 'Accept: application/json' is telling the server it prefers a JSON response; if a resource is available in multiple formats (JSON, XML, HTML), the server can use this header to decide which representation to return — this mechanism is called content negotiation."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of the 'ETag' response header combined with the 'If-None-Match' request header?"
+    options:
+      - "They enable conditional caching: the server sends a version identifier (ETag) for a resource, and the client can send it back to ask the server to only send a full response if the resource has actually changed"
+      - "ETag encrypts the response body so only the intended client can decrypt it"
+      - "If-None-Match forces the server to always send a fresh response, bypassing any cache"
+      - "They are used exclusively for authentication, not caching"
+    answer: 0
+    explanation: "A client that already has a cached copy of a resource (along with its previous ETag) can send 'If-None-Match: <etag>'; if the resource hasn't changed, the server responds with 304 Not Modified (no body), letting the client reuse its cached copy and saving bandwidth compared to re-sending the full response every time."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does HTTP status code 304 mean, in the context of conditional requests?"
+    options:
+      - "Not Modified — the resource hasn't changed since the client's cached version, so the client should reuse its cache instead of receiving a new body"
+      - "The resource has been permanently deleted"
+      - "The request method is not supported for this resource"
+      - "The server requires additional authentication before responding"
+    answer: 0
+    explanation: "304 is returned in response to a conditional request (using If-None-Match or If-Modified-Since) when the resource is confirmed unchanged, deliberately omitting the response body since the client already has an up-to-date copy cached locally."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What do the 'Cache-Control: max-age=3600' directive tell a client or intermediate cache?"
+    options:
+      - "The response can be considered fresh and reused from cache for up to 3600 seconds without re-checking with the server"
+      - "The server will delete the resource in exactly 3600 seconds"
+      - "The response must never be cached under any circumstances"
+      - "The client must wait 3600 seconds before making its next request"
+    answer: 0
+    explanation: "max-age specifies, in seconds, how long a response may be considered fresh and served from cache without revalidating with the origin server; after that time expires, a cache should revalidate (e.g. via a conditional request) or fetch a fresh copy before serving it again."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'Cache-Control: no-store' instruct caches to do?"
+    options:
+      - "Do not store any part of the request or response in any cache at all, even temporarily"
+      - "Cache the response forever, with no expiration"
+      - "Store the response, but only on the client, never on any intermediate proxy"
+      - "It has no actual effect and is purely advisory documentation"
+    answer: 0
+    explanation: "no-store is the strictest caching directive, appropriate for genuinely sensitive responses (e.g. containing personal or financial data) that should never persist in any cache anywhere along the path, unlike 'no-cache' (which still allows storage, but requires revalidation before reuse)."
+  - type: multiple_choice
+    difficulty: 1
+    text: "What does it mean for an HTTP API to be 'stateless'?"
+    options:
+      - "Each request from a client must contain all the information the server needs to process it, without relying on stored server-side session state from previous requests"
+      - "The API never returns any data in its responses"
+      - "The API can only be called exactly once per client"
+      - "The server must restart after every single request"
+    answer: 0
+    explanation: "Statelessness (a core REST constraint) means the server doesn't need to remember anything about a client between requests — any needed context (like an auth token) is included in each request itself, which simplifies scaling since any server instance can handle any request without needing shared session state."
+  - type: multiple_choice
+    difficulty: 2
+    text: "In REST terminology, what is a 'resource'?"
+    options:
+      - "Any object or concept that can be named and addressed via a URL, such as a user, an order, or a collection of orders"
+      - "A synonym specifically for a database table"
+      - "Only files stored on the server's disk"
+      - "A term exclusively for authentication tokens"
+    answer: 0
+    explanation: "REST models an API as a set of addressable resources (e.g. /users/42, /orders) manipulated through a uniform set of operations (the HTTP methods); the resource concept is deliberately abstract — it doesn't have to map directly onto any specific database structure."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which URL is more consistent with typical REST API naming conventions for retrieving a specific user?"
+    options:
+      - "GET /users/42"
+      - "GET /getUser?id=42"
+      - "POST /user/retrieve/42"
+      - "GET /api/do-get-user-action/42"
+    answer: 0
+    explanation: "REST convention favors nouns (resources) in the URL path with the HTTP method conveying the action, so '/users/42' (GET to retrieve, DELETE to remove, PUT/PATCH to update) is preferred over embedding a verb like 'getUser' into the path, which duplicates what the HTTP method itself already expresses."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why do REST APIs conventionally use plural nouns for collection endpoints (e.g. /users rather than /user)?"
+    options:
+      - "It reads naturally as 'the collection of users', with individual resources addressed by appending an identifier (e.g. /users/42), keeping the naming pattern consistent"
+      - "Plural nouns are required by the HTTP specification itself"
+      - "Singular nouns cause a measurable performance penalty"
+      - "There is no actual convention around this in practice"
+    answer: 0
+    explanation: "This is purely a widely-adopted convention (not an HTTP requirement) that keeps naming predictable: GET /users lists the collection, GET /users/42 retrieves one member of it, POST /users creates a new member — consistently pluralizing collection names avoids inconsistent, harder-to-guess endpoint naming."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a common approach for versioning a REST API by embedding the version in the URL path?"
+    options:
+      - "Prefixing routes with a version segment, e.g. /api/v1/users, /api/v2/users"
+      - "Changing the server's IP address for each new version"
+      - "Requiring clients to recompile their entire application for every API change"
+      - "Renaming every resource randomly with each release"
+    answer: 0
+    explanation: "URL-path versioning (e.g. /v1/, /v2/) is simple and highly visible, letting multiple API versions be served simultaneously so existing clients aren't broken by changes made for a newer version; the alternative is versioning via a request header (e.g. a custom 'Accept' media type or a dedicated version header), which keeps URLs version-agnostic but is less immediately visible."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'offset-based' pagination, and what is a common drawback of it for frequently-changing data?"
+    options:
+      - "Clients request a page via a numeric offset and limit (e.g. ?offset=100&limit=20); if items are added or removed while paginating, the offset can skip or duplicate items across pages"
+      - "Offset-based pagination guarantees perfectly consistent results even if the underlying data changes constantly"
+      - "It is the only pagination approach that works with SQL databases"
+      - "It requires the client to download the entire dataset before displaying any of it"
+    answer: 0
+    explanation: "Offset-based pagination is simple to implement and understand, but if a row is inserted or deleted before the current offset while a client is paging through results, the fixed numeric offset can cause the next page to skip an item or repeat one already seen, since the offset no longer lines up with a stable position in the underlying, now-changed dataset."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What is 'cursor-based' (or 'keyset') pagination, and how does it avoid offset-based pagination's consistency problem?"
+    options:
+      - "Each page's response includes an opaque cursor (typically derived from the last item's own sort key/ID) that the client passes back to fetch the next page, anchoring position to actual data rather than a shifting numeric offset"
+      - "It requires downloading and caching the entire dataset locally before paging through it"
+      - "It is functionally identical to offset-based pagination, just using a different parameter name"
+      - "It only works for data that never changes at all"
+    answer: 0
+    explanation: "Because the cursor is derived from an actual item in the data (e.g. 'give me items after ID 517') rather than a raw positional count, inserting or deleting items elsewhere in the dataset doesn't shift what 'the next page' means relative to where the client already left off, avoiding the skip/duplicate problem that a numeric offset is prone to."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a common convention for letting API clients filter a collection endpoint's results using query parameters?"
+    options:
+      - "Query parameters matching field names, e.g. GET /orders?status=shipped&customer_id=42"
+      - "Requiring a completely separate URL path for every possible combination of filters"
+      - "Filtering can only be expressed by changing the HTTP method used"
+      - "APIs cannot support filtering; it must always be done entirely on the client"
+    answer: 0
+    explanation: "Using query parameters named after the fields being filtered (status, customer_id, etc.) is a widely understood, simple convention that keeps the URL path itself focused on identifying the resource/collection, with query parameters expressing how to narrow down or shape the results."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is 'Basic' HTTP authentication, and what is its main practical weakness?"
+    options:
+      - "Credentials (username:password) are base64-encoded and sent in the Authorization header on every request; base64 is trivially reversible, so Basic auth is only safe over HTTPS"
+      - "It requires a multi-step handshake involving a separate authorization server"
+      - "It cannot be used over HTTPS under any circumstances"
+      - "It encrypts credentials strongly enough to be safe even over plain HTTP"
+    answer: 0
+    explanation: "Base64 encoding is not encryption — it's trivially decodable by anyone who intercepts the header — so Basic auth relies entirely on the transport layer (HTTPS/TLS) to keep credentials confidential in transit; using Basic auth over plain HTTP would expose the username and password to anyone able to observe the traffic."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'Bearer' authentication (e.g. 'Authorization: Bearer <token>') mean, conceptually?"
+    options:
+      - "Whoever presents ('bears') the token is granted access, without needing to separately prove their identity beyond possessing the valid token"
+      - "The token must always be a username and password combined together"
+      - "It requires a new token to be generated for every single request"
+      - "It only works for requests originating from a web browser"
+    answer: 0
+    explanation: "A bearer token (such as a JWT or an opaque API token) is presented as proof of authorization; the server trusts whoever holds a valid token, which is why bearer tokens must be protected carefully in transit (HTTPS) and at rest (not logged or exposed), since possession alone is sufficient to use them."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a JWT (JSON Web Token), structurally?"
+    options:
+      - "A compact, URL-safe token consisting of a header, a payload (claims), and a signature, all base64url-encoded and concatenated with dots"
+      - "A binary file format used exclusively for image compression"
+      - "A synonym for an HTTP cookie with no structural distinction"
+      - "A token that always requires a database lookup on the server to validate"
+    answer: 0
+    explanation: "A JWT's three parts (header.payload.signature) let a server issue a token containing claims (like a user ID and expiration) that can be verified using the signature, often without needing a server-side lookup for every request — the payload itself is only base64-encoded (readable by anyone), not encrypted, which is why sensitive data generally shouldn't be placed directly in a JWT's claims."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is it important that a JWT's payload is only encoded, not encrypted, by default?"
+    options:
+      - "Anyone who obtains the token (even without knowing the signing key) can decode and read its contents, so sensitive information should not be placed directly in the claims"
+      - "This means a JWT can never be tampered with under any circumstances"
+      - "It means JWTs cannot be used for authentication at all"
+      - "It has no practical implication for how JWTs should be used"
+    answer: 0
+    explanation: "The signature protects the token's integrity (detecting tampering) but does not hide its contents — base64url is trivially decodable, so a JWT should be treated as readable by anyone who has it, meaning things like plaintext passwords or highly sensitive personal data should not be embedded directly in its claims."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What problem does OAuth2 primarily solve?"
+    options:
+      - "Letting a user grant a third-party application limited access to their resources on another service, without sharing their actual password with that third-party application"
+      - "Encrypting all HTTP traffic between a client and server"
+      - "Guaranteeing a web page loads within a specific time limit"
+      - "Replacing HTTP entirely with a new protocol"
+    answer: 0
+    explanation: "OAuth2 lets a user authorize, say, a photo-printing app to access their photos stored on a separate photo-hosting service, without ever giving the printing app the user's actual photo-service password — instead, the user authenticates directly with the photo service, which then issues a limited-scope access token to the printing app."
+  - type: multiple_choice
+    difficulty: 4
+    text: "In OAuth2's Authorization Code flow, why does the client typically receive a short-lived 'authorization code' first, rather than the access token directly?"
+    options:
+      - "The authorization code is exchanged for the actual access token in a separate, server-to-server step, keeping the long-lived access token from ever passing through the user's browser (a less trusted, more exposed channel)"
+      - "It has no real security benefit; it exists purely for historical/legacy reasons"
+      - "Authorization codes are required only when using HTTP, never HTTPS"
+      - "It allows the access token to be issued without the user ever needing to authenticate at all"
+    answer: 0
+    explanation: "Redirecting the authorization code back through the user's browser is less risky than redirecting the actual access token that way, since a short-lived, single-use code is less valuable if intercepted; the real access token exchange happens directly between the client's backend and the authorization server, over a channel not exposed to the browser or any redirect chain."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a common, simple alternative to OAuth2/JWT for authenticating machine-to-machine or internal API calls?"
+    options:
+      - "A static API key sent in a header (e.g. 'X-API-Key: ...'), validated against a list of known valid keys"
+      - "Requiring the caller to solve a CAPTCHA on every request"
+      - "Sending credentials as plain text in the URL's query string"
+      - "There is no valid alternative; OAuth2 is mandatory for any API"
+    answer: 0
+    explanation: "API keys are simpler than full OAuth2 flows and are commonly used for server-to-server integrations where there's no interactive user to redirect through an authorization flow; they typically don't expire or carry fine-grained scopes the way OAuth2 tokens can, which is a tradeoff of simplicity versus flexibility/security granularity."
+  - type: multiple_choice
+    difficulty: 4
+    text: "Why is putting sensitive credentials or tokens directly in a URL's query string generally discouraged?"
+    options:
+      - "URLs are commonly logged by web servers, proxies, and browser history, potentially exposing the sensitive value in multiple places outside the original request"
+      - "Query strings have a hard technical limit of exactly 10 characters"
+      - "Query strings are always transmitted completely unencrypted, even over HTTPS"
+      - "This is purely a stylistic preference with no real security implication"
+    answer: 0
+    explanation: "Even over HTTPS (which encrypts the URL in transit), URLs frequently end up logged in places like web server access logs, browser history, and proxy logs — placing a sensitive token or credential in the query string risks it being persisted in plaintext in any of these logs, whereas the same value in a header (like Authorization) is less commonly logged by default."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does 'rate limiting' on an API primarily protect against?"
+    options:
+      - "A single client (or an attacker) overwhelming the server with an excessive volume of requests in a short time"
+      - "Users typing invalid JSON in a request body"
+      - "The server running out of disk space"
+      - "Clients using an outdated version of the API"
+    answer: 0
+    explanation: "Rate limiting caps how many requests a given client (identified by API key, IP, or user account) can make in a given time window, protecting the service from being overwhelmed — whether by a genuine traffic spike, a buggy client retrying too aggressively, or a deliberate denial-of-service attempt."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of an 'idempotency key' that some APIs let clients send on POST requests (e.g. for payment processing)?"
+    options:
+      - "It lets the server recognize and safely ignore a retried request that already succeeded, preventing the same non-idempotent action (like charging a payment) from being performed twice"
+      - "It permanently identifies which user created the resource"
+      - "It replaces the need for any authentication on the request"
+      - "It is only used to improve the readability of server logs"
+    answer: 0
+    explanation: "POST is not idempotent by default, which is a real problem for actions like charging a credit card if a network issue causes a client to retry a request that may have already succeeded server-side; by including a unique idempotency key with the original request (and any retries of it), the server can detect a retry of an already-processed request and return the original result instead of performing the action again."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does CORS (Cross-Origin Resource Sharing) exist to control?"
+    options:
+      - "Whether a web page's JavaScript, running on one origin, is allowed by the browser to make requests to a server on a different origin"
+      - "Whether two different servers are allowed to physically share the same data center"
+      - "The maximum number of cookies a website can set"
+      - "Whether HTTP or HTTPS is used for a given request"
+    answer: 0
+    explanation: "By default, browsers block a web page's script from making requests to a different origin (different scheme, domain, or port) than the one the page was loaded from, as a security measure; CORS is the mechanism by which a server can explicitly opt in and tell the browser 'requests from this other origin are allowed', via response headers like Access-Control-Allow-Origin."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a CORS 'preflight' request?"
+    options:
+      - "An automatic OPTIONS request the browser sends before certain cross-origin requests, asking the server whether the actual request will be permitted"
+      - "A request that always precedes any HTTPS connection, even for same-origin requests"
+      - "A manual request the developer must send before every single API call"
+      - "A request used only to check the server's current uptime"
+    answer: 0
+    explanation: "For cross-origin requests that aren't considered 'simple' (e.g. using methods like PUT/DELETE, or custom headers), the browser automatically sends an OPTIONS request first, asking the server which origins/methods/headers are allowed; only if the server's response permits it does the browser go ahead and send the actual intended request."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the key architectural difference between REST and RPC-style APIs?"
+    options:
+      - "REST models the API around resources manipulated via a uniform, small set of operations (HTTP methods); RPC-style APIs typically expose specific named procedures/actions the client calls directly"
+      - "RPC APIs cannot use HTTP as a transport at all"
+      - "REST APIs cannot return anything other than plain text"
+      - "There is no meaningful architectural difference; the terms are interchangeable"
+    answer: 0
+    explanation: "A REST API tends to look like 'nouns plus a small set of verbs' (GET /orders/42, DELETE /orders/42), while an RPC-style API tends to look like 'named actions' (POST /getOrderDetails, POST /cancelOrder) — REST leans on HTTP's own semantics for the 'verb' part, while RPC-style APIs often encode the action directly in the endpoint name or payload."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a key structural difference between a typical REST API and a GraphQL API?"
+    options:
+      - "REST typically exposes multiple fixed endpoints each returning a predetermined shape of data; GraphQL exposes a single endpoint where clients specify exactly which fields they want in the query itself"
+      - "GraphQL can only be used for read-only operations, never for writes"
+      - "REST requires exactly one HTTP request per client application, ever"
+      - "GraphQL cannot be transported over HTTP under any circumstances"
+    answer: 0
+    explanation: "In REST, the server decides what shape of data each endpoint returns, which can lead to over-fetching (extra unused fields) or under-fetching (needing multiple requests to assemble what's needed); GraphQL instead lets the client describe precisely which fields it wants across potentially related resources in a single query, at the cost of more complexity on the server side to support that flexibility."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a common criticism of GraphQL regarding HTTP caching, compared to REST?"
+    options:
+      - "Because most GraphQL requests use the same single POST endpoint regardless of what's being queried, typical HTTP-level caching (which keys on URL and method) doesn't work as easily as it does with REST's many distinct GET endpoints"
+      - "GraphQL cannot be used with any caching mechanism whatsoever, including at the application level"
+      - "GraphQL requests cannot be logged by any server"
+      - "This is not actually a real tradeoff; caching works identically in both approaches"
+    answer: 0
+    explanation: "REST's convention of distinct URLs per resource (GET /users/42) maps naturally onto standard HTTP/CDN caching, which keys on the request URL; GraphQL's single endpoint and flexible query shapes make that kind of straightforward URL-based caching much less effective, often requiring GraphQL-aware caching strategies (like normalized client-side caches) instead."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is gRPC, and what does it use as its underlying transport and interface definition mechanism?"
+    options:
+      - "A high-performance RPC framework that uses HTTP/2 as transport and Protocol Buffers for defining and serializing structured messages"
+      - "A synonym for REST with a different name"
+      - "A protocol that can only be used within a single programming language, never across languages"
+      - "A replacement for TCP/IP at the network layer"
+    answer: 0
+    explanation: "gRPC defines services and message types in .proto files (Protocol Buffers), generating strongly-typed client/server code in multiple languages, and takes advantage of HTTP/2 features like multiplexed streams for efficient, low-latency communication — commonly used for internal service-to-service communication where performance and strict typing matter more than human-readability."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Why is gRPC generally less suited than REST/JSON for a public-facing API consumed directly by third-party web browsers?"
+    options:
+      - "Browsers have limited native support for gRPC's underlying HTTP/2 trailer-based mechanics, and its binary Protocol Buffers format is not human-readable like JSON, making ad-hoc debugging and casual third-party integration harder"
+      - "gRPC cannot run over any network connection at all"
+      - "REST cannot be used for internal service-to-service communication"
+      - "There is no practical difference in suitability between the two for this use case"
+    answer: 0
+    explanation: "gRPC excels at internal, high-throughput service-to-service communication where both ends are known and controlled, but JSON-over-HTTP's human-readability and near-universal tooling/browser support make REST (or REST-like JSON APIs) generally more convenient for public APIs meant to be explored, debugged, and integrated with by many different third parties using many different tools."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a webhook?"
+    options:
+      - "A mechanism where a server proactively sends an HTTP request to a URL you provide when a specific event occurs, instead of you repeatedly polling for updates"
+      - "A special kind of HTML tag used only for embedding videos"
+      - "A synonym for a REST API's root endpoint"
+      - "A tool that hooks into a browser to block ads"
+    answer: 0
+    explanation: "Instead of a client repeatedly polling 'has anything changed yet?', a webhook lets the client register a callback URL; when a relevant event occurs (a payment completes, a file finishes processing), the server makes an outbound HTTP request (usually a POST) to that URL, notifying the client immediately without any polling."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why do webhook consumers typically need to implement signature verification on incoming webhook requests?"
+    options:
+      - "Since a webhook endpoint is a publicly reachable URL, anyone could send a fake request to it claiming to be the legitimate event source unless the consumer verifies a cryptographic signature proving the request actually came from the expected sender"
+      - "Signature verification is only needed to make the payload smaller"
+      - "It is required by the HTTP specification for every request, not specific to webhooks"
+      - "It has nothing to do with security; it is purely for logging purposes"
+    answer: 0
+    explanation: "Because a webhook endpoint must be publicly reachable to receive the incoming callback, without some form of authentication anyone who discovers the URL could send fabricated requests pretending to be a legitimate event; most webhook providers sign their payloads (often via an HMAC computed with a shared secret) so the receiver can verify the request genuinely originated from the expected source before trusting its contents."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the main practical difference between HTTP/1.1 and HTTP/2 regarding how multiple requests are handled over a single connection?"
+    options:
+      - "HTTP/2 supports multiplexing multiple requests/responses concurrently over a single connection; HTTP/1.1 generally processes requests on a connection largely sequentially, or requires multiple parallel connections to achieve concurrency"
+      - "HTTP/2 removed support for the GET method entirely"
+      - "HTTP/1.1 is always faster than HTTP/2 in every scenario"
+      - "There is no practical difference between the two versions"
+    answer: 0
+    explanation: "HTTP/1.1 without pipelining largely processes one request-response at a time per connection (browsers historically worked around this by opening several parallel connections to the same host); HTTP/2 introduces multiplexed streams over a single TCP connection, letting many requests and responses be in flight concurrently without needing separate connections, reducing overhead and improving performance especially for pages/APIs with many small requests."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a key motivation behind HTTP/3's use of QUIC instead of TCP as its transport?"
+    options:
+      - "QUIC avoids TCP's 'head-of-line blocking', where a single lost packet can stall all multiplexed streams on a connection, letting HTTP/3 streams progress independently even if one experiences packet loss"
+      - "QUIC removes the need for any encryption in HTTP traffic"
+      - "HTTP/3 does not support any of HTTP's existing methods (GET, POST, etc.)"
+      - "QUIC is simply a renamed version of TCP with no functional differences"
+    answer: 0
+    explanation: "Even with HTTP/2's stream multiplexing, all streams still share one underlying TCP connection, so a single lost TCP packet blocks every multiplexed stream until it's retransmitted (head-of-line blocking at the transport layer); QUIC (built on UDP) tracks loss per-stream instead, so one stream's packet loss doesn't stall the others sharing the same connection."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does HTTPS add on top of plain HTTP?"
+    options:
+      - "Encryption (and integrity/authentication) of the connection via TLS, protecting data in transit from eavesdropping and tampering"
+      - "A completely different set of HTTP methods not available in plain HTTP"
+      - "Automatic caching of every response, with no way to disable it"
+      - "A guarantee that the server never returns an error status code"
+    answer: 0
+    explanation: "HTTPS is HTTP layered on top of TLS, which encrypts the traffic between client and server (so intermediaries can't read or tamper with it unnoticed) and, via certificates, lets the client verify it's actually talking to the server it intended to — plain HTTP has none of these protections, sending everything (including credentials, if present) as readable plaintext."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the Richardson Maturity Model used to describe?"
+    options:
+      - "A set of levels describing how fully an HTTP API embraces REST principles, from a single RPC-style endpoint up to full use of resources, HTTP verbs, and hypermedia (HATEOAS)"
+      - "A model for measuring a server's physical hardware reliability"
+      - "A grading system for how quickly an API responds to requests"
+      - "A framework specifically for testing GraphQL APIs"
+    answer: 0
+    explanation: "The model describes a progression: Level 0 (a single endpoint, everything via POST, RPC-style), Level 1 (multiple resource-based URLs, but still one HTTP method for everything), Level 2 (proper use of HTTP methods and status codes per resource — where most 'REST' APIs in practice actually sit), and Level 3 (full HATEOAS, where responses include links describing available next actions) — most real-world 'RESTful' APIs stop at Level 2."
+  - type: multiple_choice
+    difficulty: 4
+    text: "What does HATEOAS ('Hypermedia As The Engine Of Application State') mean for an API response?"
+    options:
+      - "Responses include links describing what related actions/resources are available next, letting a client navigate the API dynamically rather than hardcoding every URL structure in advance"
+      - "It means the API can only ever return HTML, never JSON"
+      - "It is a synonym for HTTPS"
+      - "It means the API has no defined endpoints at all"
+    answer: 0
+    explanation: "A fully HATEOAS-compliant response to GET /orders/42 might include links like 'cancel' and 'pay' pointing to the relevant related actions, letting clients discover what they can do next from the response itself rather than needing prior out-of-band knowledge of the full URL structure — this is the least commonly implemented REST constraint in practice, since most real-world APIs document fixed URL patterns instead."
+  - type: multiple_choice
+    difficulty: 2
+    text: "Which HTTP method is generally considered safe to retry automatically after a network failure, without risking unintended side effects, assuming it's implemented according to convention?"
+    options:
+      - "GET (since it's defined as safe and idempotent)"
+      - "POST (since it always creates exactly one resource, regardless of how many times it's sent)"
+      - "Any method is always safe to blindly retry with no consideration"
+      - "None of the standard HTTP methods are ever safe to retry"
+    answer: 0
+    explanation: "Because GET is safe (no side effects) and idempotent (repeating it doesn't change the outcome), automatically retrying a failed GET is low-risk; retrying POST automatically is risky specifically because POST is not guaranteed idempotent — a retried POST after an ambiguous network failure could create a duplicate resource if the original request had actually succeeded server-side before the failure."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why is DELETE considered idempotent even though calling it a second time on an already-deleted resource might return a 404 instead of a 204?"
+    options:
+      - "Idempotency is about the resulting server-side state, not necessarily the exact response returned — after either the first or a repeated DELETE, the resource ends up (and stays) deleted, which is the same end state"
+      - "DELETE is not actually idempotent under any interpretation"
+      - "This only applies if the client sends the exact same headers both times"
+      - "Idempotency requires the response body to be byte-for-byte identical every time"
+    answer: 0
+    explanation: "Idempotency is formally defined in terms of the resource's state after the request, not the literal HTTP response code returned — whether the second DELETE returns 204 (treating 'already gone' as success) or 404 (treating it as 'nothing to delete'), the resource's actual state (deleted) is identical to what it was after the first successful DELETE, satisfying the idempotency guarantee."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is 'API contract-first' design (writing an OpenAPI/Swagger specification before writing implementation code)?"
+    options:
+      - "Designing and agreeing on the API's request/response shapes and behavior upfront in a specification document, which can then generate documentation, client SDKs, and server stubs, before or alongside implementation"
+      - "A rule that forbids ever changing an API once it's been implemented"
+      - "A synonym for writing unit tests after the API is fully built"
+      - "A requirement that only applies to GraphQL, never REST APIs"
+    answer: 0
+    explanation: "Contract-first design lets frontend and backend teams (or multiple services) agree on and start working against a shared API definition before the actual implementation exists, and tooling can generate interactive documentation, mock servers, and even client/server code scaffolding directly from that specification, reducing the risk of the actual implementation drifting silently from what was agreed."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does HTTP status code 301 mean, and how does it typically differ from 302 in intent?"
+    options:
+      - "301 (Moved Permanently) signals a resource has permanently moved to a new URL and clients/search engines should update their references; 302 (Found) signals a temporary redirect that shouldn't be treated as permanent"
+      - "301 and 302 are exact synonyms with no distinction"
+      - "301 means the resource was deleted, 302 means it was created"
+      - "302 is only valid for POST requests, 301 only for GET requests"
+    answer: 0
+    explanation: "The permanent-versus-temporary distinction matters for caching and SEO: a 301 tells clients/search engines it's safe to update bookmarks and links to the new URL going forward, while a 302 implies the original URL should still be considered the canonical one, since the redirect is only temporary."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What does HTTP status code 405 mean?"
+    options:
+      - "Method Not Allowed — the requested HTTP method isn't supported for this particular resource, even though the resource itself exists"
+      - "The resource has been permanently deleted"
+      - "The client must authenticate before proceeding"
+      - "The server is currently overloaded and cannot respond"
+    answer: 0
+    explanation: "405 is returned when, for example, a client sends a DELETE request to an endpoint that only supports GET and POST — the resource is recognized, but that specific method isn't a valid operation on it; a well-behaved 405 response often includes an 'Allow' header listing the methods that are actually supported."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is the purpose of the HTTP 'Location' header, commonly returned alongside a 201 Created response?"
+    options:
+      - "It points to the URL of the newly created resource, letting the client know where to find/retrieve it"
+      - "It specifies the physical geographic location of the server"
+      - "It lists every intermediate proxy the request passed through"
+      - "It indicates the client's own IP address as seen by the server"
+    answer: 0
+    explanation: "After successfully creating a resource via POST, returning 201 with a Location header pointing to the new resource's URL (e.g. /orders/501) lets the client immediately know how to fetch, update, or delete that specific newly-created resource without needing to guess or parse an ID out of the response body."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is a typical convention for expressing sorting behavior via query parameters on a REST collection endpoint?"
+    options:
+      - "A query parameter like ?sort=created_at or ?sort=-created_at (with a prefix or suffix indicating direction), specifying which field to sort by and in which order"
+      - "Sorting must always be performed exclusively on the client after fetching all data"
+      - "A dedicated HTTP method (SORT) must be used instead of GET"
+      - "Sorting cannot be expressed through the URL under any circumstances"
+    answer: 0
+    explanation: "There's no single official standard, but a common convention uses a 'sort' query parameter naming the field, often with a leading '-' (or a separate '?order=desc' parameter) to indicate descending order — e.g. GET /orders?sort=-created_at for newest first."
+  - type: multiple_choice
+    difficulty: 3
+    text: "Why might an API choose to return validation errors as a structured list (each with a field name and message) rather than a single generic error message?"
+    options:
+      - "It lets the client (e.g. a web form) map each error back to the specific input field it relates to, showing targeted, actionable feedback instead of one vague message covering multiple problems"
+      - "Structured error lists are required by the HTTP specification for every 4xx response"
+      - "A single generic message is always more useful to end users than field-specific detail"
+      - "This only matters for APIs that don't use JSON"
+    answer: 0
+    explanation: "A response like {'errors': [{'field': 'email', 'message': 'must be a valid email'}, {'field': 'age', 'message': 'must be positive'}]} lets a client-side form highlight exactly which fields are problematic and why, which is significantly more useful for both end users and developers debugging an integration than a single combined string describing multiple unrelated problems."
+  - type: multiple_choice
+    difficulty: 3
+    text: "What is a common reason an API might choose to always return 200 with an 'error' field in the JSON body, instead of using proper HTTP status codes for errors?"
+    options:
+      - "This is generally considered an anti-pattern; it's usually a symptom of not fully embracing HTTP semantics rather than a deliberate, well-justified design choice, and it breaks standard tooling that relies on status codes"
+      - "It is required whenever an API uses JSON as its response format"
+      - "It is the officially recommended REST convention for error handling"
+      - "It allows the response to be cached more effectively than a proper error status code would"
+    answer: 0
+    explanation: "Relying only on a body field to signal errors defeats standard HTTP-aware tooling (caching layers, monitoring/alerting based on status codes, generic HTTP client error handling) that expects errors to be reflected in the status code itself; while some APIs do this historically or for legacy reasons, it's widely considered a design smell rather than a best practice."
+  - type: multiple_choice
+    difficulty: 2
+    text: "What is the benefit of an API returning a consistent envelope/shape for all error responses (e.g. always {'error': {'code': ..., 'message': ...}})?"
+    options:
+      - "Client code can handle errors generically across every endpoint with one shared parsing/handling path, rather than needing bespoke logic per endpoint"
+      - "It makes the API automatically faster to respond"
+      - "It is required for the API to support HTTPS"
+      - "It has no practical benefit over an inconsistent, ad-hoc error shape per endpoint"
+    answer: 0
+    explanation: "If every endpoint's error responses share the same predictable structure, a client (or a shared SDK) can write one generic error-handling routine that works everywhere, instead of needing custom parsing logic for each individual endpoint's own particular error format."
+  - type: completion
+    difficulty: 1
+    text: "The HTTP status code that means 'Not Found' is ____."
+    answer: "404"
+    explanation: "404 indicates the server has no resource matching the requested URL; it's one of the most widely recognized HTTP status codes even outside of technical contexts."
+  - type: completion
+    difficulty: 2
+    text: "The HTTP status code range that indicates a client-side error (e.g. bad input, missing authentication) generally starts with the digit ____."
+    answer: "4"
+    explanation: "The 4xx range (400-499) covers client errors like 400 Bad Request, 401 Unauthorized, 403 Forbidden, and 404 Not Found, distinguishing them from 5xx server errors."
+  - type: completion
+    difficulty: 2
+    text: "The HTTP header used to send authentication credentials (such as a Bearer token) is called '____'."
+    answer: "Authorization"
+    explanation: "Most authentication schemes (Basic, Bearer/JWT, and many API-key setups) place their credentials in this single, standardized header, e.g. 'Authorization: Bearer <token>'."
+  - type: completion
+    difficulty: 3
+    text: "The response header that lets a server tell caches how long a response can be considered fresh, e.g. 'Cache-Control: max-age=3600', is called '____-____'."
+    answer: "Cache-Control"
+    explanation: "Cache-Control carries directives (max-age, no-store, no-cache, public/private, etc.) that govern how a response may be cached and for how long, by both browsers and intermediate caches/CDNs."
+  - type: completion
+    difficulty: 2
+    text: "The HTTP status code returned when rate limiting rejects a request for sending too many requests too quickly is ____."
+    answer: "429"
+    explanation: "429 Too Many Requests signals the client has exceeded a rate limit; a well-designed API pairs it with a 'Retry-After' header indicating how long to wait before trying again."
+  - type: completion
+    difficulty: 3
+    text: "The mechanism that lets a server proactively push an HTTP request to a client-provided URL when an event occurs, instead of the client polling, is called a ____."
+    answer: "webhook"
+    explanation: "Webhooks invert the usual client-initiated request model: the event source calls out to a URL the consumer registered in advance, notifying it immediately rather than requiring repeated polling for changes."
+  - type: completion
+    difficulty: 2
+    text: "The browser security mechanism that restricts which cross-origin requests a web page's JavaScript is allowed to make is called ____."
+    answer: "CORS"
+    explanation: "CORS (Cross-Origin Resource Sharing) lets a server explicitly opt in, via response headers, to allow requests from specific other origins that the browser would otherwise block by default."
+  - type: completion
+    difficulty: 2
+    text: "The HTTP response header that tells a client where to find a resource that was just successfully created (commonly alongside status 201) is called '____'."
+    answer: "Location"
+    explanation: "Location gives the client the URL of the newly created resource, so it can immediately fetch, update, or delete it without needing to parse an identifier out of the response body first."
+  - type: single_word
+    difficulty: 2
+    text: "What HTTP method conventionally retrieves a resource without any side effects?"
+    answer: "GET"
+    explanation: "GET is defined as both 'safe' (no server state change) and idempotent, and is the method browsers use by default when navigating to a URL."
+  - type: single_word
+    difficulty: 2
+    text: "What HTTP method conventionally removes a specified resource?"
+    answer: "DELETE"
+    explanation: "DELETE is idempotent — deleting an already-deleted resource still results in the same end state (the resource being gone), even if the exact status code returned might differ between the first and a repeated call."
+  - type: single_word
+    difficulty: 3
+    text: "What is the one-word name for the process by which a server and client agree on which representation format (e.g. JSON vs XML) to use for a response?"
+    answer: "negotiation"
+    explanation: "Content negotiation typically works via the client's 'Accept' header expressing preferred media types, and the server choosing (or being unable to satisfy) that preference among the representations it can produce."
+  - type: single_word
+    difficulty: 2
+    text: "What is the one-word term for a compact, self-contained, signed token commonly used for stateless authentication, often abbreviated JWT?"
+    answer: "token"
+    explanation: "A JSON Web Token packages claims (like a user ID and expiration) plus a signature into a compact string that can be verified without necessarily needing a server-side session lookup, which is why it's called a (bearer) token."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word term describes an HTTP method whose repeated identical execution has the same effect as executing it once?"
+    answer: "idempotent"
+    explanation: "PUT and DELETE are defined as idempotent by the HTTP specification, while POST is generally not — repeating an identical POST typically creates an additional, separate resource rather than leaving things exactly as they were after the first call."
+  - type: single_word
+    difficulty: 2
+    text: "What is the one-word term for an API design style built around named remote procedures/actions that a client calls directly, as opposed to REST's resource-oriented style?"
+    answer: "RPC"
+    explanation: "RPC (Remote Procedure Call) style APIs expose specific action names (like 'cancelOrder') as the primary interface, whereas REST expresses actions through a combination of resource URLs and standard HTTP methods."
+  - type: single_word
+    difficulty: 3
+    text: "What one-word term names the HTTP-based Google-originated framework built on Protocol Buffers and HTTP/2, widely used for high-performance service-to-service communication?"
+    answer: "gRPC"
+    explanation: "gRPC generates strongly-typed client/server code from .proto service definitions and takes advantage of HTTP/2's multiplexed streams, commonly favored for internal microservice communication over REST/JSON when performance and strict typing matter more than human readability."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between PUT and PATCH, and describe what would go wrong if a client used PUT to update just one field of a resource, sending only that one field in the request body."
+    answer: "PUT is conventionally expected to replace the entire resource with the representation provided in the request body; any field of the existing resource not included in that body is conventionally treated as absent/reset to a default, since PUT means 'this is now the complete, full state of the resource'. If a client sent PUT with only one field populated, a server implementing PUT correctly according to this convention would likely wipe out every other field of the resource that wasn't included in that request, unintentionally destroying existing data. PATCH is the correct choice for partial updates, since it's specifically defined to apply only the changes included in the request, leaving every other existing field untouched."
+    explanation: "This is a common real-world API design bug: implementing an endpoint that behaves like PATCH (partial update) but naming/documenting it as PUT, which sets an incorrect expectation and can cause serious, unintended data loss for clients that (correctly, per HTTP semantics) assume PUT-ing a partial body means everything else is being explicitly cleared."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why POST is generally not considered idempotent, and describe the concrete risk this creates if a client automatically retries a POST request after a network timeout, without any additional safeguard."
+    answer: "POST is typically used to create a new resource (or trigger some other non-idempotent action), and repeating an identical POST request normally performs that creation/action again, resulting in a second, separate effect (e.g. a second order, a second payment charge) rather than leaving things in the same state as a single call. If a client's POST request times out due to a network issue, the client cannot actually know whether the server processed the request successfully before the response was lost, or whether it failed entirely; blindly retrying in this ambiguous situation risks performing the same action twice, since the original request may well have already succeeded server-side even though the client never received confirmation of that."
+    explanation: "This is precisely the problem idempotency keys solve: attaching a unique key to the original request (and any retries of it) lets the server recognize a retry of an already-processed request and return the original result instead of performing the action a second time, making it safe to retry POST requests even in genuinely ambiguous network-failure situations."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between HTTP status codes 401 and 403, and give a concrete example scenario for each."
+    answer: "401 Unauthorized means the client hasn't successfully authenticated at all — for example, a request to a protected endpoint with no Authorization header, or with an expired/invalid token, should return 401, since the server doesn't yet know who is making the request. 403 Forbidden means the server does know who the client is (they authenticated successfully), but that identity simply isn't permitted to perform the requested action or access the requested resource — for example, a logged-in regular user attempting to access an admin-only endpoint should get 403, since their identity is known and valid, but insufficient in terms of permissions for this specific request."
+    explanation: "A common mistake is returning 401 for both cases; distinguishing them gives clients (and developers debugging an integration) a clearer signal about whether the fix is 'authenticate/re-authenticate' (401) or 'this identity will never be allowed to do this, regardless of re-authenticating' (403)."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what problem cursor-based (keyset) pagination solves compared to offset-based pagination, using a concrete example of items being inserted while a client pages through results."
+    answer: "With offset-based pagination (e.g. ?offset=20&limit=20), if a new item is inserted into the dataset (at a position before the current offset) while a client is midway through paging, everything after that insertion point shifts by one position; the client's next request for offset=40 would now return a dataset that has shifted, causing it to either skip an item it hadn't seen yet, or see an item again that it already saw on a previous page — the fixed numeric offset no longer lines up with a stable position in the now-changed dataset. Cursor-based pagination avoids this by anchoring each page's request to an actual value from the data itself (e.g. 'items with an ID greater than 517, limit 20') rather than a raw positional count; inserting a new item elsewhere in the dataset doesn't change what 'the next 20 items after ID 517' means, since that boundary is defined in terms of real data rather than a shifting numeric position."
+    explanation: "This makes cursor-based pagination particularly well suited to frequently-changing datasets (like a live feed or an actively-updated table), at the cost of losing the ability to jump directly to an arbitrary page number the way offset-based pagination allows."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain, at a conceptual level, how OAuth2's Authorization Code flow lets a third-party application access a user's data on another service without ever seeing that user's actual password for the other service."
+    answer: "The user is redirected to the resource-owning service's own login page (not the third-party application's), where they authenticate directly with that service and approve the specific access the third-party app is requesting. The resource service then redirects back to the third-party app with a short-lived authorization code (not the actual credentials, and not yet the access token). The third-party app's backend then exchanges that authorization code, directly and privately (server-to-server, not through the user's browser), for an actual access token from the resource service. At no point does the third-party application ever see or handle the user's actual password for the resource service — it only ever receives a limited-scope access token after the user has explicitly approved that specific access on the resource service's own trusted login page."
+    explanation: "This design specifically protects the user's real credentials from ever being exposed to (or even seen by) the third-party application, while still letting that application act on the user's behalf within whatever scope of access the user explicitly approved."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what CORS is protecting against, and describe what happens (from the browser's perspective) when a page's JavaScript tries to call a different-origin API that hasn't configured CORS to allow it."
+    answer: "CORS exists because, by default, browsers block a web page's JavaScript from making requests to a different origin (different domain, scheme, or port) than the one the page itself was loaded from, as a security measure preventing a malicious page from silently making authenticated requests to other sites on a visitor's behalf using their existing cookies/session. If a page's script tries to call a different-origin API that hasn't returned the appropriate CORS headers (like Access-Control-Allow-Origin) permitting that specific origin, the browser blocks the response from being accessible to the calling script (the request may still technically reach the server, but the browser refuses to hand the response back to the JavaScript that made the call), typically surfacing as a CORS-related error in the browser's developer console."
+    explanation: "This is enforced entirely by the browser as a client-side protection for the end user — it is not something the requesting server or its network traffic is prevented from sending; a non-browser client (like a backend service, or a tool like curl) making the exact same cross-origin request is not subject to CORS restrictions at all, since CORS is specifically a browser security mechanism protecting the person browsing the web page."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why GraphQL's flexible, client-defined queries make traditional HTTP/CDN caching (which keys on URL) less straightforward than it is for a typical REST API, and describe one common workaround used in practice."
+    answer: "A REST API typically exposes many distinct URLs, each corresponding to a specific, predictable shape of data (GET /users/42 always returns the same kind of representation for that resource), which maps naturally onto standard HTTP caching that keys entries by URL (and method). GraphQL instead usually exposes a single endpoint (often reached via POST), where the actual query — describing exactly which fields and related data the client wants — lives in the request body rather than the URL, so two very different GraphQL requests can hit the exact same URL, making simple URL-based caching unable to distinguish between them. A common workaround is normalized client-side caching (as used by libraries like Apollo Client or Relay), which caches individual entities by their own ID (independent of which specific query fetched them) and intelligently merges/reuses cached entity data across different queries that happen to reference the same underlying objects."
+    explanation: "Some GraphQL setups also move to using GET with a hashed/persisted query ID in the URL specifically to regain some of that URL-based cacheability, trading away some of GraphQL's per-request query flexibility in exchange for more traditional HTTP caching behavior."
+  - type: open_answer
+    difficulty: 3
+    text: "Design (in words) a simple rate-limiting strategy for a public API that allows each API key up to 100 requests per minute, and describe what response the API should return once a client exceeds that limit."
+    answer: "For each API key, maintain a counter of requests made within the current rolling (or fixed) one-minute window — commonly implemented with a fast in-memory store like Redis, incrementing a per-key counter and setting it to expire after 60 seconds. Each incoming request first checks and increments this counter; if it exceeds 100 for that key within the current window, the API rejects the request with HTTP status 429 Too Many Requests, and should include a 'Retry-After' header (or similar rate-limit headers indicating the limit, remaining requests, and reset time) telling the client how long to wait before its next request is likely to succeed."
+    explanation: "Many production APIs also expose the current rate-limit state proactively via response headers on every request (not just when the limit is exceeded) — e.g. X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset — so well-behaved clients can throttle themselves proactively rather than needing to hit 429 first to discover the limit."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why a webhook endpoint needs to verify a signature on incoming requests, and describe at a high level how HMAC-based signature verification typically works for this purpose."
+    answer: "A webhook endpoint is, by necessity, a publicly reachable URL, since the external event source needs to be able to reach it over the internet; without any verification, anyone who discovers or guesses that URL could send a fabricated request pretending to be a legitimate event, potentially tricking the receiving application into acting on fake data. HMAC-based signature verification typically works by both the event source and the receiver sharing a secret key established in advance (out of band, e.g. during webhook registration); the sender computes a cryptographic hash (HMAC) of the request payload using that shared secret and includes it in a request header (e.g. X-Signature). The receiver independently computes the same HMAC over the payload it received, using its own copy of the shared secret, and compares the two — if they match, the receiver can be confident the payload genuinely came from the expected sender and hasn't been tampered with in transit, since producing a matching signature without knowing the shared secret is computationally infeasible."
+    explanation: "This is a practical, widely-used application of HMAC as a message authentication code: it doesn't hide the payload's contents (the payload itself may well be sent in plaintext alongside the signature), but it does let the receiver verify both the authenticity (it came from someone who knows the shared secret) and integrity (it wasn't altered after signing) of the message."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between an HTTP API being 'stateless' versus one that relies on server-side session state, and describe one practical benefit statelessness provides for scaling an API across multiple server instances."
+    answer: "A stateless API requires every request to carry all the information the server needs to process it (e.g. an auth token identifying the caller), with the server not relying on anything remembered from previous requests from that same client. A session-based (stateful) approach instead has the server store context about a client (e.g. in an in-memory session store) after an initial login, which subsequent requests implicitly rely on being available. The practical scaling benefit of statelessness: since no server-side memory of a specific client is required, any request from any client can be handled by any available server instance behind a load balancer, with no need to route a given client's requests back to the exact same server instance that handled their previous request, or to replicate session state across every server in a cluster."
+    explanation: "This is precisely why token-based (e.g. JWT) authentication is popular in horizontally-scaled systems: since the token itself carries what's needed to identify/authorize the caller on every request, any server instance can validate it independently, without needing shared, synchronized session storage across the whole server fleet."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain why returning HTTP status 200 with an 'error' field embedded in the JSON body (instead of an actual 4xx/5xx status code) is generally considered a design mistake for an API's error handling."
+    answer: "HTTP status codes are the standard, protocol-level signal that clients, proxies, load balancers, monitoring tools, and generic HTTP client libraries already understand and act on automatically (e.g. treating 2xx as success and 4xx/5xx as failure) without needing to know anything about a specific API's custom JSON shape. If an API always returns 200 regardless of whether the operation actually succeeded, all of that generic tooling incorrectly treats every response as successful, and every single client integration must manually inspect the response body on every call just to find out whether it actually worked — duplicating logic that proper status codes would have handled automatically, and breaking generic error-handling/retry/alerting logic that reasonably assumes status codes reflect actual outcomes."
+    explanation: "This is a common real-world anti-pattern, sometimes seen in older or poorly-designed APIs; using status codes as intended (2xx for success, 4xx for client errors, 5xx for server errors) lets an enormous amount of existing HTTP-aware infrastructure and tooling work correctly with zero extra effort."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between HTTP status codes 301 and 302, and describe a concrete situation where using the wrong one could cause a problem (e.g. for search engine indexing)."
+    answer: "301 (Moved Permanently) tells the client (and search engines) that a resource has permanently relocated to a new URL, and that references/bookmarks/search index entries should be updated to point to the new location going forward. 302 (Found) signals only a temporary redirect, implying the original URL is still the canonical one and should continue to be used/indexed going forward. If a permanent URL change is mistakenly implemented with a 302 instead of a 301, search engines may continue indexing and ranking the old URL as canonical rather than transferring that ranking/authority to the new URL, since a 302 explicitly signals 'this is temporary, don't treat the new location as the permanent replacement'."
+    explanation: "This 301-vs-302 distinction is a classic real-world SEO pitfall: using the semantically wrong redirect type for a permanent move can measurably hurt a site's search ranking during a URL migration, even though both redirect types work identically from a purely functional 'does the browser end up at the right page' perspective."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain the difference between 401 and 405 status codes, using an example of a client sending a DELETE request to an endpoint that only supports GET, without any authentication provided."
+    answer: "401 Unauthorized would be the correct response if the endpoint requires authentication and the client didn't provide valid credentials at all — the server can't yet determine who is making the request. 405 Method Not Allowed would be the correct response if the endpoint recognizes the resource but simply doesn't support the DELETE method on it (only GET is implemented), regardless of whether the caller is authenticated. In the specific example given (DELETE sent to a GET-only endpoint, with no authentication provided), a well-designed API would likely need to decide which check to perform first — some APIs check authentication before method support (returning 401), others check method support first regardless of auth status (returning 405) — but conceptually the two status codes represent genuinely different problems: 'who are you' (401) versus 'that action isn't supported on this resource' (405)."
+    explanation: "This highlights that HTTP status codes aren't just arbitrary labels — each is meant to communicate a specific, distinct category of problem, and conflating them (e.g. always returning 401 for any request problem) loses information that would otherwise help a client (or a developer debugging an integration) understand exactly what went wrong and how to fix it."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why a well-designed REST API should generally avoid encoding actions as verbs in the URL path (e.g. POST /createOrder) in favor of resource-oriented URLs with the HTTP method conveying the action (e.g. POST /orders)."
+    answer: "Encoding the action directly in the URL path duplicates information that the HTTP method already conveys, and tends to lead to an ever-growing, inconsistent list of ad-hoc endpoint names (createOrder, cancelOrder, getOrderDetails, updateOrderStatus...) that don't follow any predictable pattern, making the API harder to learn and to keep consistent as it grows. A resource-oriented design instead treats /orders as a consistent noun, with the small, fixed set of HTTP methods (GET to retrieve, POST to create, PUT/PATCH to update, DELETE to remove) expressing the action — so once a client understands this pattern for one resource, the same pattern predictably applies to every other resource in the API, without needing to learn a new, uniquely-named endpoint for every possible action."
+    explanation: "Not every action fits neatly into CRUD-style HTTP verbs (e.g. 'cancel an order' isn't cleanly a DELETE, since the order record itself isn't being removed) — a common resolution is modeling the action itself as a sub-resource or state transition, e.g. POST /orders/42/cancellations, keeping the resource-oriented, noun-based pattern rather than falling back to a bare verb in the path."
+  - type: open_answer
+    difficulty: 4
+    text: "Explain why an idempotency key needs to be generated by the client (not the server) and sent with the original request, rather than being something the server assigns after the fact."
+    answer: "The entire purpose of an idempotency key is to let the server recognize that a retried request is the same logical attempt as a previous one, specifically in the ambiguous case where the client never received a response to the original request (e.g. due to a network timeout) and therefore doesn't know whether it succeeded or not. If the server were the one to generate this key (e.g. only after successfully processing a request), the client would have no way to include that same key on a retry, since it never received the original response containing it — the client needs to decide on and send the identifying key upfront, before knowing the outcome, precisely so that if the same request is sent again (with the same key) after a failure to receive a response, the server can recognize it as a retry of the exact same logical operation rather than as a brand-new one."
+    explanation: "In practice, this is usually implemented by having the client generate a unique key (e.g. a UUID) once per logical operation attempt, sending it as a header (like 'Idempotency-Key') on both the original request and any retries of that same operation, letting the server store the outcome keyed by that value and return the cached result for any subsequent request bearing the same key rather than re-executing the action."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the difference between authentication and authorization, using a concrete API example that illustrates both."
+    answer: "Authentication is the process of verifying who is making a request — for example, checking that a submitted username/password combination, or a bearer token, is valid and corresponds to a real, known user account; this answers 'who are you'. Authorization is the separate process of determining what that now-identified user is actually allowed to do — for example, checking whether that specific authenticated user has permission to delete a particular order, or view another user's private data; this answers 'are you allowed to do this'. A concrete example: a logged-in regular user (successfully authenticated) tries to access an admin-only endpoint to view all users' data — the request correctly identifies who they are, but authorization correctly denies the request (typically with 403 Forbidden) because that identity, while valid, doesn't have permission for this particular action."
+    explanation: "This distinction is exactly why 401 (an authentication failure — the server doesn't know who you are) and 403 (an authorization failure — the server knows who you are, but denies the specific action) are separate, meaningfully different status codes rather than being interchangeable."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain why placing an API's version number in the URL path (e.g. /v1/users, /v2/users) makes it easier to introduce breaking changes without disrupting existing clients."
+    answer: "By keeping the old version's routes (e.g. /v1/users) fully intact and unchanged while introducing a new version's routes (e.g. /v2/users) alongside them, existing clients that were built against v1 continue working exactly as before, completely unaffected by whatever breaking changes were introduced in v2 (different field names, removed fields, different validation rules, etc.). New clients (or existing clients that have been updated to handle the changes) can opt into the new version by simply changing which URL prefix they call, at their own pace, rather than every client being forced to adapt to breaking changes simultaneously the moment they're deployed."
+    explanation: "The tradeoff is that the API provider now needs to maintain (and eventually deprecate/sunset) multiple versions of the API simultaneously for some transition period, which is real ongoing maintenance cost — but it's often considered worthwhile compared to the alternative of breaking every existing client's integration all at once with no migration window."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain why an API returning validation errors as a structured list of {field, message} objects is more useful to a client building a web form than a single string error message."
+    answer: "A single string message (e.g. 'Invalid input: email and age are both wrong') gives the client nothing to work with programmatically — it would have to try to parse or guess which specific form fields the message refers to, which is fragile and error-prone if the message wording ever changes. A structured list like [{'field': 'email', 'message': 'must be a valid email'}, {'field': 'age', 'message': 'must be positive'}] lets the client directly map each error to the specific input field it concerns, highlighting exactly that field in the UI and showing the specific, relevant message right next to it, rather than showing one vague, combined error banner that doesn't clearly indicate which of possibly several problems apply to which input."
+    explanation: "This structured approach also scales cleanly to forms with many fields and multiple simultaneous validation failures, where a single combined string message would quickly become unwieldy and hard for a user to act on."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain the tradeoff between designing an API to expose fine-grained resources (many small endpoints) versus coarser-grained resources (fewer, larger endpoints returning more embedded/nested data), in terms of the number of requests a typical client needs to make."
+    answer: "Fine-grained resources (e.g. separate endpoints for /orders/42, /orders/42/items, /orders/42/customer) keep each response small and focused, but a client that needs the full picture of an order — its items and its customer's details — may need to make several separate requests and assemble the result itself, increasing total round-trip latency, especially over a slow or high-latency connection. Coarser-grained resources (e.g. a single /orders/42 endpoint that embeds the items and customer details directly in one response) reduce the number of round trips needed for that specific use case, but risk over-fetching data that isn't always needed (increasing response size for cases where the caller only wanted the order's basic details) and can make the embedded data structure less flexible to reuse for other different use cases that want a different combination of related data."
+    explanation: "This exact tradeoff (many small round trips versus fewer, larger, less flexible responses) is one of the core motivations behind GraphQL, which lets each client specify exactly the fields and nested relations it wants in a single request, rather than the API provider having to pick one fixed granularity that can't perfectly satisfy every possible client use case."
+  - type: open_answer
+    difficulty: 3
+    text: "Explain what a 'breaking change' means in the context of API versioning, and give two concrete examples of changes to an existing endpoint's response that would be considered breaking versus non-breaking."
+    answer: "A breaking change is any modification to an API's existing contract that could cause an existing, unmodified client to malfunction when calling it, as opposed to a change a well-behaved existing client can simply ignore without any problem. A breaking example: renaming or removing an existing JSON field that clients were already reading (e.g. renaming 'user_id' to 'userId', or removing a field entirely) — any client code expecting the old field name would suddenly get null/undefined instead of the value it relied on. A non-breaking example: adding a brand-new, optional field to a response that wasn't there before — existing clients that don't know about (and don't look for) that new field simply continue working exactly as they did before, unaffected by its presence."
+    explanation: "This distinction is exactly why API versioning strategies (URL path versioning, header versioning) exist specifically for the breaking case: purely additive, non-breaking changes can generally be rolled out to an existing API version without needing a whole new version, while genuinely breaking changes (renaming/removing fields, changing a field's data type, changing required parameters) typically warrant introducing a new version so existing clients aren't disrupted."
+  - type: open_answer
+    difficulty: 3
+    text: "Write an example HTTP request (method, path, and one relevant header) that a client would send to conditionally check whether a cached resource has changed, using an ETag it previously received, and explain what response it should expect if the resource is unchanged."
+    answer: |
+      ```http
+      GET /articles/42 HTTP/1.1
+      Host: api.example.com
+      If-None-Match: "a1b2c3d4"
+      ```
+      If the resource identified by /articles/42 still has the ETag "a1b2c3d4" (i.e. it hasn't changed since the client last fetched it), the server should respond with status 304 Not Modified and no response body, telling the client its existing cached copy is still valid and can be reused. If the resource has changed (and now has a different ETag), the server instead responds normally with status 200 and the full, updated resource body along with its new ETag.
+    explanation: "This conditional GET pattern lets a client avoid re-downloading a resource's full body when nothing has actually changed, saving bandwidth and server processing time compared to always fetching and re-transmitting the complete representation on every request."
+  - type: open_answer
+    difficulty: 2
+    text: "Explain what 'over-fetching' and 'under-fetching' mean in the context of REST API design, giving a brief example of each."
+    answer: "Over-fetching happens when a response includes more data than the client actually needs for its current use case — for example, a mobile app's list screen only needs each user's name and avatar, but the /users endpoint always returns every field (address, phone number, account settings, etc.), wasting bandwidth transferring data that will just be discarded. Under-fetching happens when a single endpoint doesn't return enough related data, forcing the client to make additional follow-up requests to assemble what it actually needs — for example, fetching /orders/42 returns only basic order fields, requiring a second request to /orders/42/customer just to display the customer's name alongside the order."
+    explanation: "Both are natural consequences of REST's fixed, server-defined response shapes per endpoint — a single shape can rarely be perfectly right for every client and every use case simultaneously, which is part of the motivation behind GraphQL's client-specified field selection, letting each query request exactly what it needs, no more and no less."
