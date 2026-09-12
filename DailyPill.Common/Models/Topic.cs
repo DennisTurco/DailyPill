@@ -37,4 +37,5 @@ public class Topic
     public List<TopicContextDocument> Documents { get; set; } = [];
 
     public List<Question> Questions { get; set; } = [];
+    public List<InfoFact> Facts { get; set; } = [];
 }

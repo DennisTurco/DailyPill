@@ -123,6 +123,25 @@ public class QuestionService(AppDbContext context) : IQuestionService
         return true;
     }
 
+    public async Task<bool> DeleteAllByTopicIdAsync(int topicId)
+    {
+        var questions = await context.Questions
+            .Where(q => q.TopicId == topicId && !q.IsDeleted)
+            .ToListAsync();
+
+        if (questions.Count == 0) return false;
+
+        var now = DateTime.UtcNow;
+        foreach (var question in questions)
+        {
+            question.IsDeleted = true;
+            question.DeletedAt = now;
+        }
+
+        await context.SaveChangesAsync();
+        return true;
+    }
+
     private static void ValidateDifficulty(int difficulty)
     {
         if (difficulty is < 1 or > 5)

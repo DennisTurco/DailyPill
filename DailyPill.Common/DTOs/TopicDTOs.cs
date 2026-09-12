@@ -25,5 +25,7 @@ public record TopicResponseDTO(
     bool IsInformational,
     DateTime CreatedAt,
     bool IsDeleted,
-    List<TopicScheduleResponseDTO> Schedules,
-    List<TopicContextDocumentResponseDTO> Documents);
+    List<QuestionResponseDTO>? Questions,
+    List<InfoFactResponseDTO>? Facts,
+    List<TopicScheduleResponseDTO>? Schedules,
+    List<TopicContextDocumentResponseDTO>? Documents);

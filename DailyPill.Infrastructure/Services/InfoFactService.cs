@@ -92,6 +92,25 @@ public class InfoFactService(AppDbContext context) : IInfoFactService
         return true;
     }
 
+    public async Task<bool> DeleteAllByTopicIdAsync(int topicId)
+    {
+        var facts = await context.InfoFacts
+            .Where(f => f.TopicId == topicId && !f.IsDeleted)
+            .ToListAsync();
+
+        if (facts.Count == 0) return false;
+
+        var now = DateTime.UtcNow;
+        foreach (var fact in facts)
+        {
+            fact.IsDeleted = true;
+            fact.DeletedAt = now;
+        }
+
+        await context.SaveChangesAsync();
+        return true;
+    }
+
     private static InfoFactResponseDTO MapToDto(InfoFact f) => new(
         f.Id, f.TopicId, f.Title, f.Description, f.Link, f.CreatedAt, f.LastShownAt, f.IsDeleted);
 }

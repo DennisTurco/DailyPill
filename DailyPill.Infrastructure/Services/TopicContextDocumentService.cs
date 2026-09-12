@@ -44,9 +44,26 @@ public class TopicContextDocumentService(AppDbContext context) : ITopicContextDo
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var contextDocument = await context.TopicContextDocument.FirstOrDefaultAsync(d => d.Id == id);
+        var contextDocument = await context.TopicContextDocument
+            .FirstOrDefaultAsync(d => d.Id == id);
+
         if (contextDocument is null) return false;
         context.Remove(contextDocument);
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteAllByTopicIdAsync(int id)
+    {
+        var documents = await context.TopicContextDocument
+            .Where(d => d.TopicId == id)
+            .ToListAsync();
+
+        if (documents is null || documents.Count == 0)
+            return false;
+
+        context.RemoveRange(documents);
+
         await context.SaveChangesAsync();
         return true;
     }

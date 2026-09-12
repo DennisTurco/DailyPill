@@ -12,6 +12,42 @@ async function getBaseUrl(): Promise<string> {
   return cachedBaseUrl;
 }
 
+function extractErrorMessage(body: string): string {
+  try {
+    const parsed = JSON.parse(body);
+    if (typeof parsed?.detail === "string") return parsed.detail;
+    if (typeof parsed?.title === "string") return parsed.title;
+  } catch {
+    // Not JSON (e.g. an ASP.NET Core dev-exception-page dump) — fall through.
+  }
+  return body.split("\n")[0].trim();
+}
+
+export interface DownloadedFile {
+  blob: Blob;
+  filename: string;
+}
+
+function filenameFromContentDisposition(header: string | null, fallback: string): string {
+  if (!header) return fallback;
+  const utf8Match = header.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match) return decodeURIComponent(utf8Match[1]);
+  const plainMatch = header.match(/filename="?([^";]+)"?/i);
+  return plainMatch ? plainMatch[1] : fallback;
+}
+
+async function downloadFile(path: string): Promise<DownloadedFile> {
+  const baseUrl = await getBaseUrl();
+  const response = await fetch(`${baseUrl}${path}`, { method: "POST" });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`API error ${response.status}: ${extractErrorMessage(body)}`);
+  }
+  const blob = await response.blob();
+  const filename = filenameFromContentDisposition(response.headers.get("Content-Disposition"), "export.yaml");
+  return { blob, filename };
+}
+
 async function uploadRequest<T>(path: string, formData: FormData): Promise<T> {
   const baseUrl = await getBaseUrl();
   const response = await fetch(`${baseUrl}${path}`, {
@@ -20,7 +56,7 @@ async function uploadRequest<T>(path: string, formData: FormData): Promise<T> {
   });
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`API error ${response.status}: ${body}`);
+    throw new Error(`API error ${response.status}: ${extractErrorMessage(body)}`);
   }
   return response.json() as Promise<T>;
 }
@@ -33,7 +69,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   });
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(`API error ${response.status}: ${body}`);
+    throw new Error(`API error ${response.status}: ${extractErrorMessage(body)}`);
   }
   if (response.status === 204) {
     return undefined as T;
@@ -49,4 +85,5 @@ export const api = {
     request<T>(path, { method: "PUT", body: body ? JSON.stringify(body) : undefined }),
   del: <T>(path: string) => request<T>(path, { method: "DELETE" }),
   upload: <T>(path: string, formData: FormData) => uploadRequest<T>(path, formData),
+  downloadFile: (path: string) => downloadFile(path),
 };

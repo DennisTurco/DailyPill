@@ -1,0 +1,36 @@
+# DailyPill topic template — informational facts
+#
+# Fill in the fields below and import this file from Settings > Data > Import from YAML.
+# Delete these comment lines if you want, they are ignored on import.
+#
+# Use this template for a topic that shows a daily informational fact instead of quizzes
+# (e.g. "did you know" style content). For a quiz topic, use topic-questions-template.yaml.
+
+# Required. Must be unique — importing a topic whose name already exists will fail.
+name: My Informational Topic Name
+
+# Optional. Free text, shown as a badge in the Topics list.
+category: Computer Science
+
+# Optional. One of: easy | medium | hard. Not used for informational topics, but kept for
+# consistency with the quiz-topic schema.
+difficulty: medium
+
+# Optional. Free text shown as the topic's description.
+content: A short description of what this topic covers.
+
+# Must be true for an informational topic (no quizzes, just daily facts).
+is_informational: true
+
+manual_facts:
+  # title: short heading shown for the fact.
+  # description: the fact's body text.
+  # link: optional URL shown as "Learn more" — omit or leave blank if not needed.
+
+  - title: "Example fact title"
+    description: "A short, interesting fact about this topic."
+    link: "https://en.wikipedia.org/wiki/Example"
+
+  - title: "Another example fact"
+    description: "Facts don't need a link — this field is optional."
+    link:

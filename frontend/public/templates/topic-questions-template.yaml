@@ -1,0 +1,59 @@
+# DailyPill topic template — quiz questions
+#
+# Fill in the fields below and import this file from Settings > Data > Import from YAML.
+# Delete these comment lines if you want, they are ignored on import.
+
+# Required. Must be unique — importing a topic whose name already exists will fail.
+name: My Topic Name
+
+# Optional. Free text, shown as a badge in the Topics list.
+category: Computer Science
+
+# Optional. One of: easy | medium | hard. Used as the default difficulty (2/3/5) for any
+# question below that omits its own "difficulty".
+difficulty: medium
+
+# Optional. Free text shown as the topic's description.
+content: A short description of what this topic covers.
+
+# Must be false for a quiz topic (use topic-facts-template.yaml instead for an
+# informational-only topic that shows daily facts rather than quizzes).
+is_informational: false
+
+manual_questions:
+  # type: one of multiple_choice | completion | open_answer | single_word
+  # difficulty: 1 (very easy) to 5 (very hard) — overrides the topic default above.
+  # options: only for multiple_choice — the list of choices shown to the user.
+  # answer:
+  #   - for multiple_choice: the 0-based index into "options" of the correct choice.
+  #   - for every other type: the literal correct answer text.
+  # explanation: shown to the user after answering, explaining the correct answer.
+
+  - type: multiple_choice
+    difficulty: 2
+    text: "Example multiple-choice question — what is 2 + 2?"
+    options:
+      - "3"
+      - "4"
+      - "5"
+      - "6"
+    answer: 1
+    explanation: "2 + 2 = 4, which is options[1]."
+
+  - type: completion
+    difficulty: 2
+    text: "Example completion question — fill in the blank: the capital of France is ____."
+    answer: "Paris"
+    explanation: "Paris is the capital of France."
+
+  - type: single_word
+    difficulty: 2
+    text: "Example single-word question — what is the chemical symbol for gold?"
+    answer: "Au"
+    explanation: "Au comes from the Latin \"aurum\"."
+
+  - type: open_answer
+    difficulty: 3
+    text: "Example open-answer question — explain briefly why the sky appears blue."
+    answer: "Because of Rayleigh scattering: shorter (blue) wavelengths of sunlight are scattered more than longer (red) wavelengths by the atmosphere."
+    explanation: "This is reviewed by the local AI when you take the quiz, not matched exactly against the answer above."

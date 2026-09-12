@@ -8,4 +8,5 @@ public interface ITopicContextDocumentService
     Task<List<string>> GetAllContextByTopicIdAsync(int topicId);
     Task<TopicContextDocumentResponseDTO> UploadAsync(int id, Stream stream, string filename);
     Task<bool> DeleteAsync(int id);
+    Task<bool> DeleteAllByTopicIdAsync(int id);
 }

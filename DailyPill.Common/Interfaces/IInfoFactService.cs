@@ -10,4 +10,5 @@ public interface IInfoFactService
     Task<InfoFactResponseDTO?> GetByIdAsync(int id);
     Task<InfoFactResponseDTO?> UpdateAsync(int id, InfoFactRequestDTO dto);
     Task<bool> DeleteAsync(int id);
+    Task<bool> DeleteAllByTopicIdAsync(int topicId);
 }

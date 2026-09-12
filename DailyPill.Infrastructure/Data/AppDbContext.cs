@@ -70,7 +70,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.Entity<InfoFact>()
             .HasOne(f => f.Topic)
-            .WithMany()
+            .WithMany(t => t.Facts)
             .HasForeignKey(f => f.TopicId)
             .OnDelete(DeleteBehavior.Restrict);
 

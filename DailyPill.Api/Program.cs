@@ -40,6 +40,7 @@ builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<ITopicContextDocumentService, TopicContextDocumentService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
+builder.Services.AddScoped<IImportExportService, ImportExportService>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -51,7 +52,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // with ASP.NET Core's AllowAnyOrigin(), which cannot be combined with AllowCredentials()).
 builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
-        policy.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod().AllowCredentials()));
+        policy.SetIsOriginAllowed(_ => true).AllowAnyHeader().AllowAnyMethod().AllowCredentials()
+            .WithExposedHeaders("Content-Disposition")));
 
 builder.WebHost.UseUrls($"http://localhost:{appSettings.ApiPort}");
 

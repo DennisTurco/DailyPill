@@ -6,7 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DailyPill.Infrastructure.Services;
 
-public class TopicService(AppDbContext context) : ITopicService
+public class TopicService(
+    AppDbContext context,
+    ITopicContextDocumentService topicContextDocumentService,
+    IQuestionService questionService,
+    IInfoFactService infoFactService) : ITopicService
 {
     public async Task<List<TopicResponseDTO>> GetAllAsync()
     {
@@ -20,6 +24,18 @@ public class TopicService(AppDbContext context) : ITopicService
         return topics.Select(MapToDto).ToList();
     }
 
+    public async Task<TopicResponseDTO?> GetTopicWithQuestionsOrFactsAsync(int id)
+    {
+        var topic = await context.Topics
+            .AsNoTracking()
+            .Include(t => t.Schedules)
+            .Include(t => t.Facts)
+            .Include(t => t.Questions)
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
+        if (topic is null) return null;
+        return MapToDto(topic);
+    }
+
     public async Task<TopicResponseDTO?> GetByIdAsync(int id)
     {
         var topic = await context.Topics
@@ -27,6 +43,14 @@ public class TopicService(AppDbContext context) : ITopicService
             .Include(t => t.Schedules)
             .Include(t => t.Documents)
             .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
+        return topic is null ? null : MapToDto(topic);
+    }
+
+    public async Task<TopicResponseDTO?> GetByNameAsync(string name)
+    {
+        var topic = await context.Topics
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Name == name && !t.IsDeleted);
         return topic is null ? null : MapToDto(topic);
     }
 
@@ -91,11 +115,16 @@ public class TopicService(AppDbContext context) : ITopicService
         topic.IsDeleted = true;
         topic.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();
+        await topicContextDocumentService.DeleteAllByTopicIdAsync(id);
+        await questionService.DeleteAllByTopicIdAsync(id);
+        await infoFactService.DeleteAllByTopicIdAsync(id);
         return true;
     }
 
     private static TopicResponseDTO MapToDto(Topic t) => new(
         t.Id, t.Name, t.Category, t.Description, t.Color, t.Icon, t.IsInformational, t.CreatedAt, t.IsDeleted,
+        t.Questions.Select(q => new QuestionResponseDTO(q.Id, q.TopicId, q.Type, q.Text, q.Options, q.CorrectAnswer, q.Difficulty, q.Explanation, q.CreatedAt, q.IsDeleted)).ToList(),
+        t.Facts.Select(i => new InfoFactResponseDTO(i.Id, i.TopicId, i.Title, i.Description, i.Link, i.CreatedAt, i.LastShownAt, i.IsDeleted)).ToList(),
         t.Schedules.Select(s => new TopicScheduleResponseDTO(s.Id, s.TopicId, s.DayOfWeek, s.TimeOfDay, s.IsActive)).ToList(),
         t.Documents.Select(d => new TopicContextDocumentResponseDTO(d.Id, d.TopicId, d.Filename)).ToList());
 }
