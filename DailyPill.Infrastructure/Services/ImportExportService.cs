@@ -46,12 +46,10 @@ public class ImportExportService(
             : await PopulateQuestions(created.Id, questions.ManualQuestions);
     }
 
-    public async Task<(string? Yaml, string? FileName)> ExportTopicAndQuestionsAsync(int topicId)
+    public async Task<(string Yaml, string FileName)> ExportTopicAndQuestionsAsync(int topicId)
     {
-        var topicAndQuestions = await topicService.GetTopicWithQuestionsOrFactsAsync(topicId);
-
-        if (topicAndQuestions is null)
-            return (null, null);
+        var topicAndQuestions = await topicService
+            .GetTopicWithQuestionsOrFactsAsync(topicId);
 
         var deserializedObject = new QuestionAndTopicDeserialized
         {
@@ -64,8 +62,6 @@ public class ImportExportService(
             deserializedObject.ManualFacts = ToManualFacts(topicAndQuestions.Facts.Where(f => !f.IsDeleted).ToList());
         else if (topicAndQuestions.Questions is not null)
             deserializedObject.ManualQuestions = ToManualQuestions(topicAndQuestions.Questions.Where(q => !q.IsDeleted).ToList());
-        else
-            return (null, null);
 
         var yaml = new SerializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)

@@ -13,10 +13,8 @@ public class TopicContextDocumentController(ITopicContextDocumentService topicCo
 
     [HttpGet("get/{id:int}")]
     public async Task<IActionResult> GetById(int id)
-    {
-        var document = await topicContextDocumentService.GetByIdAsync(id);
-        return document is null ? NotFound(new { detail = "Document not found" }) : Ok(document);
-    }
+        => Ok(await topicContextDocumentService.GetByIdAsync(id));
+
 
     [HttpPost("upload/{id}")]
     [Consumes("multipart/form-data")]
@@ -30,8 +28,5 @@ public class TopicContextDocumentController(ITopicContextDocumentService topicCo
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await topicContextDocumentService.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound(new { detail = "Document not found" });
-    }
+        => Ok(await topicContextDocumentService.DeleteAsync(id));
 }

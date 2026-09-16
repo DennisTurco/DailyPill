@@ -8,5 +8,6 @@ namespace DailyPill.Api.Controllers;
 public class SchedulesController(IScheduleService scheduleService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetActive() => Ok(await scheduleService.GetActiveAsync());
+    public async Task<IActionResult> GetActive()
+        => Ok(await scheduleService.GetActiveAsync());
 }

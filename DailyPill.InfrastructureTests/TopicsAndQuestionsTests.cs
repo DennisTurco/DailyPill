@@ -10,12 +10,15 @@ public class TopicsAndQuestionsTests
     public async Task CreateAndListTopic_NewTopic_AppearsInList()
     {
         await using var context = TestDbContextFactory.Create();
-        var service = new TopicService(context);
+        var topicContextService = new TopicContextDocumentService(context);
+        var questionService = new QuestionService(context);
+        var infoFactService = new InfoFactService(context);
+        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
 
-        var created = await service.CreateAsync(new TopicRequestDTO("Test Topic", null, null, null, null, false, []));
+        var created = await topicService.CreateAsync(new TopicRequestDTO("Test Topic", null, null, null, null, false, []));
         Assert.Equal("Test Topic", created.Name);
 
-        var all = await service.GetAllAsync();
+        var all = await topicService.GetAllAsync();
         Assert.Contains(all, t => t.Id == created.Id);
     }
 
@@ -23,13 +26,16 @@ public class TopicsAndQuestionsTests
     public async Task SoftDeleteTopic_ExcludesFromList()
     {
         await using var context = TestDbContextFactory.Create();
-        var service = new TopicService(context);
+        var topicContextService = new TopicContextDocumentService(context);
+        var questionService = new QuestionService(context);
+        var infoFactService = new InfoFactService(context);
+        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
 
-        var created = await service.CreateAsync(new TopicRequestDTO("To Delete", null, null, null, null, false, []));
-        var deleted = await service.DeleteAsync(created.Id);
+        var created = await topicService.CreateAsync(new TopicRequestDTO("To Delete", null, null, null, null, false, []));
+        var deleted = await topicService.DeleteAsync(created.Id);
         Assert.True(deleted);
 
-        var all = await service.GetAllAsync();
+        var all = await topicService.GetAllAsync();
         Assert.DoesNotContain(all, t => t.Id == created.Id);
     }
 
@@ -37,8 +43,10 @@ public class TopicsAndQuestionsTests
     public async Task CreateQuestionAndRandomPull_ReturnsExactlyOne_WhenOnlyOneExists()
     {
         await using var context = TestDbContextFactory.Create();
-        var topicService = new TopicService(context);
+        var topicContextService = new TopicContextDocumentService(context);
         var questionService = new QuestionService(context);
+        var infoFactService = new InfoFactService(context);
+        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
 
         var topic = await topicService.CreateAsync(new TopicRequestDTO("Topic", null, null, null, null, false, []));
         await questionService.CreateAsync(new QuestionRequestDTO(
@@ -52,8 +60,10 @@ public class TopicsAndQuestionsTests
     public async Task QuestionSoftDelete_NeverHardDeletes()
     {
         await using var context = TestDbContextFactory.Create();
-        var topicService = new TopicService(context);
+        var topicContextService = new TopicContextDocumentService(context);
         var questionService = new QuestionService(context);
+        var infoFactService = new InfoFactService(context);
+        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
 
         var topic = await topicService.CreateAsync(new TopicRequestDTO("Topic", null, null, null, null, false, []));
         var question = await questionService.CreateAsync(new QuestionRequestDTO(
@@ -70,8 +80,10 @@ public class TopicsAndQuestionsTests
     public async Task DailyInfoFact_IsIdempotentWithinSameDay()
     {
         await using var context = TestDbContextFactory.Create();
-        var topicService = new TopicService(context);
+        var topicContextService = new TopicContextDocumentService(context);
+        var questionService = new QuestionService(context);
         var infoFactService = new InfoFactService(context);
+        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
 
         var topic = await topicService.CreateAsync(new TopicRequestDTO("Facts Topic", null, null, null, null, true, []));
         await infoFactService.CreateAsync(new InfoFactRequestDTO(topic.Id, "Title", "Description", null));

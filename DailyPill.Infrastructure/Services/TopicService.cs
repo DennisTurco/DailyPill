@@ -1,4 +1,5 @@
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 using DailyPill.Common.Models;
 using DailyPill.Infrastructure.Data;
@@ -31,8 +32,8 @@ public class TopicService(
             .Include(t => t.Schedules)
             .Include(t => t.Facts)
             .Include(t => t.Questions)
-            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-        if (topic is null) return null;
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted)
+            ?? throw new NotFoundException("Topic not found");
         return MapToDto(topic);
     }
 
@@ -42,16 +43,18 @@ public class TopicService(
             .AsNoTracking()
             .Include(t => t.Schedules)
             .Include(t => t.Documents)
-            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-        return topic is null ? null : MapToDto(topic);
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted)
+            ?? throw new NotFoundException("Topic not found");
+        return MapToDto(topic);
     }
 
     public async Task<TopicResponseDTO?> GetByNameAsync(string name)
     {
         var topic = await context.Topics
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Name == name && !t.IsDeleted);
-        return topic is null ? null : MapToDto(topic);
+            .FirstOrDefaultAsync(t => t.Name == name && !t.IsDeleted)
+            ?? throw new NotFoundException("Topic not found");
+        return MapToDto(topic);
     }
 
     public async Task<TopicResponseDTO> CreateAsync(TopicRequestDTO dto)
@@ -84,8 +87,8 @@ public class TopicService(
         var topic = await context.Topics
             .Include(t => t.Schedules)
             .Include(t => t.Documents)
-            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-        if (topic is null) return null;
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted)
+            ?? throw new NotFoundException("Topic not found");
 
         topic.Name = dto.Name;
         topic.Category = dto.Category;
@@ -110,8 +113,10 @@ public class TopicService(
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var topic = await context.Topics.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted);
-        if (topic is null) return false;
+        var topic = await context.Topics
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted)
+            ?? throw new NotFoundException("Topic not found");
+
         topic.IsDeleted = true;
         topic.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();

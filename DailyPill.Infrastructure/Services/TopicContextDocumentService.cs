@@ -1,4 +1,5 @@
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 using DailyPill.Common.Models;
 using DailyPill.Infrastructure.Data;
@@ -13,7 +14,8 @@ public class TopicContextDocumentService(AppDbContext context) : ITopicContextDo
             .AsNoTracking()
             .Where(d => d.Id == id)
             .Select(d => MapToDTO(d))
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync()
+            ?? throw new NotFoundException("Document not found");
 
     public async Task<List<string>> GetAllContextByTopicIdAsync(int topicId)
         => await context.TopicContextDocument
@@ -45,9 +47,9 @@ public class TopicContextDocumentService(AppDbContext context) : ITopicContextDo
     public async Task<bool> DeleteAsync(int id)
     {
         var contextDocument = await context.TopicContextDocument
-            .FirstOrDefaultAsync(d => d.Id == id);
+            .FirstOrDefaultAsync(d => d.Id == id)
+            ?? throw new NotFoundException("Document not found");
 
-        if (contextDocument is null) return false;
         context.Remove(contextDocument);
         await context.SaveChangesAsync();
         return true;
@@ -59,7 +61,7 @@ public class TopicContextDocumentService(AppDbContext context) : ITopicContextDo
             .Where(d => d.TopicId == id)
             .ToListAsync();
 
-        if (documents is null || documents.Count == 0)
+        if (documents.Count == 0)
             return false;
 
         context.RemoveRange(documents);

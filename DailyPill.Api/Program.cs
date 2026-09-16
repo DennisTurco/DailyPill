@@ -1,4 +1,5 @@
 using System.Text.Json;
+using DailyPill.Api.ExceptionHandling;
 using DailyPill.Common.Interfaces;
 using DailyPill.Common.Json;
 using DailyPill.Infrastructure.Config;
@@ -42,6 +43,9 @@ builder.Services.AddScoped<ITopicContextDocumentService, TopicContextDocumentSer
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<IImportExportService, ImportExportService>();
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
@@ -74,6 +78,7 @@ app.Logger.LogInformation("NVIDIA GPU detected: {GpuAvailable}", gpuService.Dete
 var ollamaService = app.Services.GetRequiredService<IOllamaService>();
 ollamaService.Bootstrap();
 
+app.UseExceptionHandler();
 app.UseCors();
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", app = appSettings.AppName }));

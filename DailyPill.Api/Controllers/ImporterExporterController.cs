@@ -22,9 +22,6 @@ public class ImporterExporterController(IImportExportService importExportService
     public async Task<IActionResult> ExportTopicAndQuestions(int topicId)
     {
         var (yaml, fileName) = await importExportService.ExportTopicAndQuestionsAsync(topicId);
-        if (yaml is null || fileName is null)
-            return NotFound();
-
         var safeFileName = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
         return File(Encoding.UTF8.GetBytes(yaml), "application/x-yaml", $"{safeFileName}.yaml");
     }

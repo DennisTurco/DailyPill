@@ -207,6 +207,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
                 var random = GetRandomQuestionWithFewestAnswers(questions, d);
                 if (random != null)
                 {
+                    questions.Remove(random); // to avoid duplications
                     selected.Add(random);
                 }
             }

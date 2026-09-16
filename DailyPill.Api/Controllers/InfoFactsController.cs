@@ -22,35 +22,17 @@ public class InfoFactsController(IInfoFactService infoFactService) : ControllerB
 
     [HttpGet("daily")]
     public async Task<IActionResult> GetDaily()
-    {
-        try
-        {
-            return Ok(await infoFactService.GetDailyAsync());
-        }
-        catch (NotFoundException exc)
-        {
-            return NotFound(new { detail = exc.Message });
-        }
-    }
+        => Ok(await infoFactService.GetDailyAsync());
 
     [HttpGet("{id:int}")]
     public async Task<IActionResult> GetById(int id)
-    {
-        var fact = await infoFactService.GetByIdAsync(id);
-        return fact is null ? NotFound(new { detail = "Info fact not found" }) : Ok(fact);
-    }
+        => Ok(await infoFactService.GetByIdAsync(id));
 
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] InfoFactRequestDTO dto)
-    {
-        var updated = await infoFactService.UpdateAsync(id, dto);
-        return updated is null ? NotFound(new { detail = "Info fact not found" }) : Ok(updated);
-    }
+        => Ok(await infoFactService.UpdateAsync(id, dto));
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
-    {
-        var deleted = await infoFactService.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound(new { detail = "Info fact not found" });
-    }
+        => Ok(await infoFactService.DeleteAsync(id));
 }

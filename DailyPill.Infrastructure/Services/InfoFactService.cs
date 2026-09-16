@@ -64,14 +64,17 @@ public class InfoFactService(AppDbContext context) : IInfoFactService
 
     public async Task<InfoFactResponseDTO?> GetByIdAsync(int id)
     {
-        var fact = await context.InfoFacts.FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted);
-        return fact is null ? null : MapToDto(fact);
+        var fact = await context.InfoFacts
+            .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted)
+            ?? throw new NotFoundException("Info fact not found");
+        return MapToDto(fact);
     }
 
     public async Task<InfoFactResponseDTO?> UpdateAsync(int id, InfoFactRequestDTO dto)
     {
-        var fact = await context.InfoFacts.FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted);
-        if (fact is null) return null;
+        var fact = await context.InfoFacts
+            .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted)
+            ?? throw new NotFoundException("Info fact not found");
 
         fact.TopicId = dto.TopicId;
         fact.Title = dto.Title;
@@ -84,8 +87,9 @@ public class InfoFactService(AppDbContext context) : IInfoFactService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var fact = await context.InfoFacts.FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted);
-        if (fact is null) return false;
+        var fact = await context.InfoFacts
+            .FirstOrDefaultAsync(f => f.Id == id && !f.IsDeleted)
+            ?? throw new NotFoundException("Info fact not found");
         fact.IsDeleted = true;
         fact.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();

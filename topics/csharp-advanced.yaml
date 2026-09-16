@@ -160,11 +160,6 @@ manual_questions:
     text: "Explain the difference between Task and Task<T> in C# async programming."
     answer: "Task represents an asynchronous operation that does not return a value, while Task<T> represents an asynchronous operation that returns a value of type T."
     explanation: "Task is the async equivalent of a void-returning method — it represents the operation's completion but carries no result; Task<T> additionally exposes a Result property (or awaited value) of type T once the operation finishes."
-  - type: open_answer
-    difficulty: 5
-    text: "Explain why 'async void' methods should generally be avoided in C#, except for event handlers."
-    answer: "async void methods cannot be awaited, so exceptions thrown inside them cannot be caught by the caller and can crash the application; they should only be used for event handlers, where the framework requires a void signature."
-    explanation: "Because there's no Task to await, the caller has no way to observe completion or catch exceptions from an async void method — unhandled exceptions instead propagate to the SynchronizationContext and can crash the process; event handlers are the sole exception because their delegate signature is fixed to void."
   - type: multiple_choice
     difficulty: 3
     text: "What does 'await' do at the point it is called?"

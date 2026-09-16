@@ -1,4 +1,5 @@
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 using DailyPill.Common.Models;
 using DailyPill.Infrastructure.Data;
@@ -18,15 +19,17 @@ public class SettingsService(AppDbContext context) : ISettingsService
     {
         var setting = await context.Settings
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Code.Equals(code));
+            .FirstOrDefaultAsync(s => s.Code.Equals(code))
+            ?? throw new NotFoundException("Setting not found");
 
-        return setting is null ? null : MapToDto(setting);
+        return MapToDto(setting);
     }
 
     public async Task<SettingsResponseDTO> UpdateAsync(string code, SettingsRequestDTO dto)
     {
         var setting = await context.Settings
-            .FirstOrDefaultAsync(s => s.Code == code) ?? throw new ArgumentException("Setting not found");
+            .FirstOrDefaultAsync(s => s.Code == code)
+            ?? throw new NotFoundException("Setting not found");
 
         setting.Value = dto.Value;
         setting.LastUpdateDate = DateTime.UtcNow;

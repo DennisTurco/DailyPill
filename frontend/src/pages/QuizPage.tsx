@@ -169,7 +169,7 @@ export default function QuizPage() {
         {result.session.ai_review_summary && (
           <div className="card">
             <h3><i className="fa-solid fa-robot"/> AI recap</h3>
-            <p>{result.session.ai_review_summary}</p>
+            <MarkdownContent text={result.session.ai_review_summary} />
           </div>
         )}
         <div className="card">
@@ -185,7 +185,11 @@ export default function QuizPage() {
                   borderTop: i === 0 ? undefined : "1px solid var(--border)",
                 }}
               >
-                {question && <div style={{ fontWeight: 600 }}> {getIconAndColorByAnswer(a.is_correct)} {question.text}</div>}
+                {question && (
+                  <div style={{ fontWeight: 600 }}>
+                    {getIconAndColorByAnswer(a.is_correct)} <MarkdownContent text={question.text} />
+                  </div>
+                )}
                 <div style={{ marginLeft: 16, marginTop: 4 }}>
                   <div className={a.is_correct === null ? "" : a.is_correct ? "success" : "error"}>
                     {a.is_correct === null ? "Pending review" : a.is_correct ? "Correct" : "Incorrect"} — you answered:
@@ -298,7 +302,9 @@ function QuestionCard({
       <div style={{ marginBottom: 8 }}>
         <span className="badge">{difficultyLabel(question.difficulty)}</span>
       </div>
-      <div style={{ marginBottom: 10, fontWeight: 600 }}>{question.text}</div>
+      <div style={{ marginBottom: 10, fontWeight: 600 }}>
+        <MarkdownContent text={question.text} />
+      </div>
       {question.type === "multiple_choice" && question.options ? (
         <div>
           {question.options.map((opt) => (
@@ -310,7 +316,7 @@ function QuestionCard({
                 onChange={() => onChange(opt)}
                 style={{ width: "auto" }}
               />
-              <span>{opt}</span>
+              <MarkdownContent text={opt} />
             </label>
           ))}
         </div>

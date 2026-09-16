@@ -1,5 +1,6 @@
 using DailyPill.Common.DTOs;
 using DailyPill.Common.Enums;
+using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 using DailyPill.Common.Models;
 using DailyPill.Infrastructure.Data;
@@ -72,8 +73,10 @@ public class QuestionService(AppDbContext context) : IQuestionService
 
     public async Task<QuestionResponseDTO?> GetByIdAsync(int id)
     {
-        var question = await context.Questions.FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted);
-        return question is null ? null : MapToDto(question);
+        var question = await context.Questions
+            .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted)
+            ?? throw new NotFoundException("Question not found");
+        return MapToDto(question);
     }
 
     public async Task<QuestionResponseDTO> CreateAsync(QuestionRequestDTO dto)
@@ -97,8 +100,9 @@ public class QuestionService(AppDbContext context) : IQuestionService
 
     public async Task<QuestionResponseDTO?> UpdateAsync(int id, QuestionRequestDTO dto)
     {
-        var question = await context.Questions.FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted);
-        if (question is null) return null;
+        var question = await context.Questions
+            .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted)
+            ?? throw new NotFoundException("Question not found");
 
         // Mirrors the Python backend: difficulty is validated on create but NOT on update.
         question.TopicId = dto.TopicId;
@@ -115,8 +119,9 @@ public class QuestionService(AppDbContext context) : IQuestionService
 
     public async Task<bool> DeleteAsync(int id)
     {
-        var question = await context.Questions.FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted);
-        if (question is null) return false;
+        var question = await context.Questions
+            .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted)
+            ?? throw new NotFoundException("Question not found");
         question.IsDeleted = true;
         question.DeletedAt = DateTime.UtcNow;
         await context.SaveChangesAsync();

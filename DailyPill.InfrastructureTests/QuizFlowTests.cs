@@ -9,8 +9,10 @@ public class QuizFlowTests
 {
     private static async Task<(int TopicId, int QuestionId)> MakeTopicWithQuestionAsync(AppDbContext context)
     {
-        var topicService = new TopicService(context);
+        var topicContextService = new TopicContextDocumentService(context);
         var questionService = new QuestionService(context);
+        var infoFactService = new InfoFactService(context);
+        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
 
         var topic = await topicService.CreateAsync(new TopicRequestDTO("Quiz Topic", null, null, null, null, false, []));
         var question = await questionService.CreateAsync(new QuestionRequestDTO(
