@@ -104,7 +104,6 @@ public class QuestionService(AppDbContext context) : IQuestionService
             .FirstOrDefaultAsync(q => q.Id == id && !q.IsDeleted)
             ?? throw new NotFoundException("Question not found");
 
-        // Mirrors the Python backend: difficulty is validated on create but NOT on update.
         question.TopicId = dto.TopicId;
         question.Type = dto.Type;
         question.Text = dto.Text;

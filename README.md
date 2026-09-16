@@ -209,7 +209,25 @@ npm run build           # renderer + electron main/preload compiled to dist/ and
 npm run build:backend   # publishes DailyPill.Api as a self-contained single-file exe into backend-dist/win-x64
 npm run build:electron  # runs both of the above, then packages via electron-builder
                          # (bundles the published backend + topics/*.yaml + .env into the app's resources)
+                         # electron-builder's Windows target is "dir" — this produces an unpacked
+                         # app tree at frontend/release/win-unpacked/, not an installer by itself.
 ```
+
+### Windows installer
+
+The actual installer `.exe` is built separately with [Inno Setup](https://jrsoftware.org/isinfo.php)
+(mirrors how the sibling GestioPro project is packaged), from `installer/DailyPill.iss`:
+
+```powershell
+# after npm run build:electron has produced frontend/release/win-unpacked/
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\DailyPill.iss
+# output: installer\Output\DailyPill_Setup_<version>.exe
+```
+
+Bump `AppVersion` in `installer/DailyPill.iss` (and `version` in `frontend/package.json`) before
+cutting a new release. The `.iss` script also handles cleanup of the Windows autostart registry
+entry (created at runtime by the `auto-launch` package, not by the installer) and force-closes
+`DailyPill.exe`/`DailyPill.Api.exe` on uninstall.
 
 ## Troubleshooting
 

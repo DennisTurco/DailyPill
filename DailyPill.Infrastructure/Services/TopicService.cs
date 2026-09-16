@@ -25,7 +25,7 @@ public class TopicService(
         return topics.Select(MapToDto).ToList();
     }
 
-    public async Task<TopicResponseDTO?> GetTopicWithQuestionsOrFactsAsync(int id)
+    public async Task<TopicResponseDTO> GetTopicWithQuestionsOrFactsAsync(int id)
     {
         var topic = await context.Topics
             .AsNoTracking()
@@ -37,7 +37,7 @@ public class TopicService(
         return MapToDto(topic);
     }
 
-    public async Task<TopicResponseDTO?> GetByIdAsync(int id)
+    public async Task<TopicResponseDTO> GetByIdAsync(int id)
     {
         var topic = await context.Topics
             .AsNoTracking()
@@ -71,10 +71,7 @@ public class TopicService(
 
         if (dto.Schedules is not null)
         {
-            foreach (var s in dto.Schedules)
-            {
-                topic.Schedules.Add(new TopicSchedule { DayOfWeek = s.DayOfWeek, TimeOfDay = s.TimeOfDay, IsActive = s.IsActive });
-            }
+            topic.Schedules = BuildSchedules(dto.Schedules);
         }
 
         context.Topics.Add(topic);
@@ -100,11 +97,7 @@ public class TopicService(
         if (dto.Schedules is not null)
         {
             context.TopicSchedules.RemoveRange(topic.Schedules);
-            topic.Schedules.Clear();
-            foreach (var s in dto.Schedules)
-            {
-                topic.Schedules.Add(new TopicSchedule { DayOfWeek = s.DayOfWeek, TimeOfDay = s.TimeOfDay, IsActive = s.IsActive });
-            }
+            topic.Schedules = BuildSchedules(dto.Schedules);
         }
 
         await context.SaveChangesAsync();
@@ -125,6 +118,9 @@ public class TopicService(
         await infoFactService.DeleteAllByTopicIdAsync(id);
         return true;
     }
+
+    private static List<TopicSchedule> BuildSchedules(List<TopicScheduleDTO> schedules)
+        => schedules.Select(s => new TopicSchedule { DayOfWeek = s.DayOfWeek, TimeOfDay = s.TimeOfDay, IsActive = s.IsActive }).ToList();
 
     private static TopicResponseDTO MapToDto(Topic t) => new(
         t.Id, t.Name, t.Category, t.Description, t.Color, t.Icon, t.IsInformational, t.CreatedAt, t.IsDeleted,

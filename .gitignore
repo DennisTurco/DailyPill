@@ -18,6 +18,9 @@ frontend/dist-electron/
 frontend/release/
 frontend/.vite/
 
+# Installer output
+installer/Output/
+
 # Env
 .env
 

@@ -60,7 +60,7 @@ public class ProgressService(AppDbContext context) : IProgressService
                 .ToListAsync();
             var graded = answers.Where(a => a.IsCorrect is not null).ToList();
             var total = graded.Count;
-            var correct = graded.Count(a => a.IsCorrect == true);
+            var correct = graded.Count(a => a.IsCorrect is true);
 
             result.Add(new DifficultyProgressDTO(difficulty, total, correct, total > 0 ? (double)correct / total : 0.0));
         }

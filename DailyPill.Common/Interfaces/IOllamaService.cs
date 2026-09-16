@@ -19,9 +19,9 @@ public interface IOllamaService
     /// <summary>Fire-and-forget: ensures Ollama is running and the configured model is present.</summary>
     void Bootstrap();
 
-    Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, List<string> contextDocuments);
-    Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, List<string> contextDocuments);
-    Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, List<string> contextDocuments);
-    Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, List<string> contextDocuments);
-    Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results, List<string> contextDocuments);
+    Task<IEnumerable<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, IEnumerable<string> contextDocuments);
+    Task<IEnumerable<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, IEnumerable<string> contextDocuments);
+    Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments);
+    Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments);
+    Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments);
 }

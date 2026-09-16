@@ -292,7 +292,7 @@ public class OllamaService : IOllamaService
         }
     }
 
-    public async Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, List<string> contextDocuments)
+    public async Task<IEnumerable<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, IEnumerable<string> contextDocuments)
     {
         var difficultyHint = difficulty is > 0
             ? $"target difficulty {difficulty} (1=easiest, 5=hardest)"
@@ -309,11 +309,11 @@ public class OllamaService : IOllamaService
 
         var userPrompt = $"Topic: {topicName}\nInstructions: {prompt}\nGenerate exactly {count} questions, {difficultyHint}.";
 
-        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments);
+        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList());
         return ExtractArray(raw, "questions");
     }
 
-    public async Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, List<string> contextDocuments)
+    public async Task<IEnumerable<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, IEnumerable<string> contextDocuments)
     {
         const string system =
             "You are writing short, accurate educational facts for a daily-learning app. Respond ONLY with valid JSON: " +
@@ -324,11 +324,11 @@ public class OllamaService : IOllamaService
 
         var userPrompt = $"Topic: {topicName}\nInstructions: {prompt}\nGenerate exactly {count} distinct facts.";
 
-        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments);
+        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList());
         return ExtractArray(raw, "facts");
     }
 
-    private static List<JsonElement> ExtractArray(string raw, string key)
+    private static IEnumerable<JsonElement> ExtractArray(string raw, string key)
     {
         JsonElement parsed;
         try
@@ -347,7 +347,7 @@ public class OllamaService : IOllamaService
         return [];
     }
 
-    public async Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, List<string> contextDocuments)
+    public async Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments)
     {
         const string system =
             "You are grading a quiz answer. Respond ONLY with valid JSON: " +
@@ -356,7 +356,7 @@ public class OllamaService : IOllamaService
 
         var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nUser's answer: {givenAnswer}";
 
-        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments);
+        var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList());
         JsonElement parsed;
         try
         {
@@ -372,7 +372,7 @@ public class OllamaService : IOllamaService
         return (isCorrect, feedback);
     }
 
-    private static string BuildResultLines(List<QuizResultLine> results)
+    private static string BuildResultLines(IEnumerable<QuizResultLine> results)
         => string.Join(
             "\n",
             results.Select(r => $"- Q: {r.Text} | given: {r.GivenAnswer} | correct: {r.CorrectAnswer} | was_correct: {(r.IsCorrect is { } b ? (b ? "True" : "False") : "None")}"));
@@ -389,7 +389,7 @@ public class OllamaService : IOllamaService
         return contextText.ToString();
     }
 
-    public async Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, List<string> contextDocuments)
+    public async Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments)
     {
         const string system =
             "You are a friendly tutor helping a student review a quiz they just completed. " +
@@ -404,16 +404,16 @@ public class OllamaService : IOllamaService
         }
         parts.AddRange(["", $"Student's new question: {userMessage}"]);
 
-        return await GenerateAsync(string.Join("\n", parts), system, jsonMode: false, contextDocuments);
+        return await GenerateAsync(string.Join("\n", parts), system, jsonMode: false, contextDocuments.ToList());
     }
 
-    public async Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results, List<string> contextDocuments)
+    public async Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments)
     {
         const string system =
             "You are a friendly tutor writing a short end-of-quiz recap (3-6 sentences). " +
             "Summarize performance and explain the mistakes in plain language.";
 
         var userPrompt = $"Topic: {topicName}\nResults:\n{BuildResultLines(results)}";
-        return await GenerateAsync(userPrompt, system, jsonMode: false, contextDocuments);
+        return await GenerateAsync(userPrompt, system, jsonMode: false, contextDocuments.ToList());
     }
 }

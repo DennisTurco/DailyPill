@@ -58,6 +58,7 @@
       "buildResources": "build"
     },
     "win": {
+      "target": "dir",
       "icon": "build/icon.ico"
     },
     "linux": {

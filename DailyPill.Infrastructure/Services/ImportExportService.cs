@@ -42,8 +42,27 @@ public class ImportExportService(
         var created = await topicService.CreateAsync(topic);
 
         return topic.IsInformational
-            ? await PopulatePills(created.Id, questions.ManualFacts)
-            : await PopulateQuestions(created.Id, questions.ManualQuestions);
+            ? await PopulateItemsAsync(
+                questions.ManualFacts,
+                pill => new InfoFactRequestDTO(
+                    created.Id,
+                    pill.Title,
+                    pill.Description,
+                    pill.Link
+                   ),
+                infoFactService.CreateAsync)
+            : await PopulateItemsAsync(
+                questions.ManualQuestions,
+                question => new QuestionRequestDTO(
+                    created.Id,
+                    new QuestionDictionary().GetType(question.Type),
+                    question.Text,
+                    question.Options,
+                    ResolveCorrectAnswer(question.Options, question.Answer),
+                    question.Difficulty,
+                    question.Explanation
+                   ),
+                questionService.CreateAsync);
     }
 
     public async Task<(string Yaml, string FileName)> ExportTopicAndQuestionsAsync(int topicId)
@@ -59,9 +78,9 @@ public class ImportExportService(
         };
 
         if (topicAndQuestions.IsInformational && topicAndQuestions.Facts is not null)
-            deserializedObject.ManualFacts = ToManualFacts(topicAndQuestions.Facts.Where(f => !f.IsDeleted).ToList());
+            deserializedObject.ManualFacts = ToManualFacts(topicAndQuestions.Facts.Where(f => !f.IsDeleted));
         else if (topicAndQuestions.Questions is not null)
-            deserializedObject.ManualQuestions = ToManualQuestions(topicAndQuestions.Questions.Where(q => !q.IsDeleted).ToList());
+            deserializedObject.ManualQuestions = ToManualQuestions(topicAndQuestions.Questions.Where(q => !q.IsDeleted));
 
         var yaml = new SerializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)
@@ -71,72 +90,37 @@ public class ImportExportService(
         return (yaml, deserializedObject.Name);
     }
 
-    private async Task<int> PopulateQuestions(int topicId, List<ManualQuestion>? questions)
+    private static async Task<int> PopulateItemsAsync<TItem, TRequest>(List<TItem>? items, Func<TItem, TRequest> request, Func<TRequest, Task> create)
     {
-        if (questions is null) return 0;
-
-        foreach (var question in questions)
+        if (items is null) return 0;
+        foreach (var item in items)
         {
-            var questionRequest = new QuestionRequestDTO(
-                topicId,
-                QuestionHelper.GetQuestionTypeByString(question.Type),
-                question.Text,
-                question.Options,
-                ResolveCorrectAnswer(question.Options, question.Answer),
-                question.Difficulty,
-                question.Explanation
-            );
-            await questionService.CreateAsync(questionRequest);
+            var req = request(item);
+            await create(req);
         }
-        return questions.Count;
+        return items.Count;
     }
 
-    private async Task<int> PopulatePills(int topicId, List<ManualFacts>? pills)
-    {
-        if (pills is null) return 0;
+    private static List<ManualFacts> ToManualFacts(IEnumerable<InfoFactResponseDTO> facts)
+        => facts.Select(f => new ManualFacts()
+            { 
+                Title = f.Title,
+                Description = f.Description,
+                Link = f.Link
+            }
+        ).ToList();
 
-        foreach (var pill in pills)
-        {
-            var pillRequest = new InfoFactRequestDTO(topicId, pill.Title, pill.Description, pill.Link);
-            await infoFactService.CreateAsync(pillRequest);
-        }
-        return pills.Count;
-    }
-
-    private static List<ManualFacts> ToManualFacts(List<InfoFactResponseDTO> facts)
-    {
-        List<ManualFacts> manualFacts = new List<ManualFacts>();
-        foreach (var fact in facts)
-        {
-            var manualFact = new ManualFacts()
+    private static List<ManualQuestion> ToManualQuestions(IEnumerable<QuestionResponseDTO> questions)
+        => questions.Select(q => new ManualQuestion()
             {
-                Title = fact.Title,
-                Description = fact.Description,
-                Link = fact.Link
-            };
-            manualFacts.Add(manualFact);
-        }
-        return manualFacts;
-    }
-
-    private static List<ManualQuestion> ToManualQuestions(List<QuestionResponseDTO> questions)
-    {
-        List<ManualQuestion> manualQuestions = new List<ManualQuestion>();
-        foreach (var question in questions)
-        {
-            var manualQuestion = new ManualQuestion()
-            {
-                Type = QuestionHelper.GetCodeFromQuestionType(question.Type),
-                Difficulty = question.Difficulty,
-                Text = question.Text,
-                Options = question.Options,
-                Answer = question.CorrectAnswer,
-                Explanation = question.Explanation ?? ""
-            };
-            manualQuestions.Add(manualQuestion);
-        }
-        return manualQuestions;
-    }
+                Type = new QuestionDictionary().GetCode(q.Type),
+                Difficulty = q.Difficulty,
+                Text = q.Text,
+                Options = q.Options,
+                Answer = q.CorrectAnswer,
+                Explanation = q.Explanation ?? ""
+            }
+        ).ToList();
 
     private static string ResolveCorrectAnswer(List<string>? options, string answer)
     {
