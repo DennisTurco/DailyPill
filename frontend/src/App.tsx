@@ -113,7 +113,7 @@ export default function App() {
         style={{ width: collapsed ? SIDEBAR_COLLAPSED_WIDTH : sidebarWidth }}
       >
         <div className="brand" title="DailyPill">
-          <img src="/app-icon.png" alt="" width={24} height={24} />
+          <img src={`${import.meta.env.BASE_URL}app-icon.png`} alt="" width={24} height={24} />
           <span className="sidebar-label">DailyPill</span>
         </div>
         <NavLink to="/" end title="Dashboard"><i className="fa-solid fa-gauge-simple-high"/> <span className="sidebar-label">Dashboard</span></NavLink>

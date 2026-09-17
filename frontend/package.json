@@ -10,9 +10,9 @@
     "dev:vite": "vite",
     "dev:electron": "wait-on tcp:5173 && npm run build:electron-main && cross-env NODE_ENV=development electron dist-electron/main.js",
     "build:electron-main": "tsc -p electron/tsconfig.json && node -e \"require('fs').copyFileSync('electron/package.json','dist-electron/package.json')\" && node -e \"require('fs').cpSync('electron/assets','dist-electron/assets',{recursive:true})\"",
-    "build:backend": "dotnet publish ../DailyPill.Api -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ../backend-dist/win-x64",
+    "build:backend": "dotnet publish ../DailyPill.Api -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o ../backend-dist/win-x64",
     "build": "tsc -b && vite build && npm run build:electron-main",
-    "build:electron": "npm run build && npm run build:backend && electron-builder",
+    "build:electron": "npm run build && electron-builder",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p electron/tsconfig.json",
     "preview": "vite preview"
   },

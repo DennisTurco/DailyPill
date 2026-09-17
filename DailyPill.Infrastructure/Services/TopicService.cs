@@ -52,9 +52,8 @@ public class TopicService(
     {
         var topic = await context.Topics
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Name == name && !t.IsDeleted)
-            ?? throw new NotFoundException("Topic not found");
-        return MapToDto(topic);
+            .FirstOrDefaultAsync(t => t.Name == name && !t.IsDeleted);
+        return topic is null ? null : MapToDto(topic);
     }
 
     public async Task<TopicResponseDTO> CreateAsync(TopicRequestDTO dto)
