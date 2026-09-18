@@ -1,7 +1,7 @@
 ![logo](.github/banner.svg)
 
 A **Windows desktop app** that keeps your knowledge fresh with short daily quizzes and
-once-a-day "info facts" popups — powered entirely by a **local AI (Ollama)**, so nothing
+once-a-day "info facts" popups, powered entirely by a **local AI (Ollama)**, so nothing
 ever leaves your machine.
 
 ## Features

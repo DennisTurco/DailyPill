@@ -20,6 +20,11 @@ const SNOOZE_MINUTES = 30;
 
 const autoLauncher = new AutoLaunch({ name: "DailyPill" });
 
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) {
+  app.quit();
+}
+
 function loadRoute(window: BrowserWindow, hash: string): void {
   if (isDev) {
     window.loadURL(`http://localhost:5173/#${hash}`);
@@ -253,6 +258,10 @@ async function checkDailyFact(): Promise<void> {
     // Backend not reachable, or no facts exist yet; ignore and try again next tick.
   }
 }
+
+app.on("second-instance", () => {
+  showAndNavigate("/");
+});
 
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
