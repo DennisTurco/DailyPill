@@ -1,4 +1,5 @@
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Enums;
 using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 using DailyPill.Common.Models;
@@ -30,6 +31,12 @@ public class SettingsService(AppDbContext context) : ISettingsService
         var setting = await context.Settings
             .FirstOrDefaultAsync(s => s.Code == code)
             ?? throw new NotFoundException("Setting not found");
+
+        if (code == TutorStyles.SettingCode && !TutorStyles.IsValid(dto.Value))
+        {
+            throw new ArgumentException(
+                $"Invalid tutor style '{dto.Value}'. Allowed: {string.Join(", ", Enum.GetNames<TutorStyle>().Select(n => n.ToLowerInvariant()))}.");
+        }
 
         setting.Value = dto.Value;
         setting.LastUpdateDate = DateTime.UtcNow;

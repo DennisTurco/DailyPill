@@ -1,5 +1,6 @@
 using System.Text.Json;
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Enums;
 using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 
@@ -23,12 +24,12 @@ public class FakeOllamaService : IOllamaService
     public Task<IEnumerable<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments) =>
+    public Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments) =>
+    public Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments) =>
+    public Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 }

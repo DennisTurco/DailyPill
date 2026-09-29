@@ -891,6 +891,26 @@ a.btn-ghost {
   margin: 0;
 }
 
+.choice-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.choice-title i {
+  width: 16px;
+  text-align: center;
+  color: var(--accent-1);
+}
+
+.choice-description {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 .row {
   display: flex;
   gap: 8px;

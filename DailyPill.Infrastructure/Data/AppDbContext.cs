@@ -81,6 +81,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 Value = "5",
                 Description = "Question count per quiz",
                 LastUpdateDate = null
+            },
+            new Settings
+            {
+                Code = TutorStyles.SettingCode,
+                Value = "friendly",
+                Description = "Tone of the AI tutor: friendly, professional, strict, socratic or interviewer",
+                LastUpdateDate = null
             }
         );
     }

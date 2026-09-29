@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Enums;
 using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
 using DailyPill.Infrastructure.Config;
@@ -349,17 +350,19 @@ public partial class OllamaService : IOllamaService
         return [];
     }
 
-    public async Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments)
+    public async Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments, TutorStyle style)
     {
         // Correctness and language quality are graded by two separate calls: asked for both at once, an
         // 8B model marks correct-but-ungrammatical answers as wrong and mixes content remarks into the
         // language notes. The language check never sees the expected answer, so it can't judge content.
-        const string system =
+        var system =
             "You are grading a quiz answer. Respond ONLY with valid JSON: " +
             "{\"is_correct\": bool, \"feedback\": str}. Feedback should briefly explain why the answer " +
-            "is right or wrong, in a friendly tone. Judge ONLY the concepts: the answer is correct if it captures the key idea " +
+            "is right or wrong. Judge ONLY the concepts: the answer is correct if it captures the key idea " +
             "of the expected answer, even if it omits minor details or examples. Grammar, spelling and style never make an answer wrong. " +
-            "The answer may be a speech-to-text transcript: ignore misheard technical terms when the intended meaning is clear.";
+            "The answer may be a speech-to-text transcript: ignore misheard technical terms when the intended meaning is clear. " +
+            "The tone below only changes how the feedback is worded, never whether the answer is correct.\n" +
+            TutorStyles.ToneInstruction(style);
 
         var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nUser's answer: {givenAnswer}";
 
@@ -470,12 +473,13 @@ public partial class OllamaService : IOllamaService
         return contextText.ToString();
     }
 
-    public async Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments)
+    public async Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments, TutorStyle style)
     {
-        const string system =
-            "You are a friendly tutor helping a student review a quiz they just completed. " +
+        var system =
+            "You are a tutor helping a student review a quiz they just completed. " +
             "Answer their follow-up questions using the quiz context below. Be concise and clear. " +
-            "If they ask something unrelated to the quiz or its topic, gently steer them back.";
+            "If they ask something unrelated to the quiz or its topic, steer them back.\n" +
+            TutorStyles.ToneInstruction(style);
 
         var parts = new List<string> { $"Topic: {topicName}", "Quiz results:", BuildResultLines(results) };
         if (history.Count > 0)
@@ -488,11 +492,12 @@ public partial class OllamaService : IOllamaService
         return await GenerateAsync(string.Join("\n", parts), system, jsonMode: false, contextDocuments.ToList());
     }
 
-    public async Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments)
+    public async Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments, TutorStyle style)
     {
-        const string system =
-            "You are a friendly tutor writing a short end-of-quiz recap (3-6 sentences). " +
-            "Summarize performance and explain the mistakes in plain language.";
+        var system =
+            "You are a tutor writing a short end-of-quiz recap (3-6 sentences). " +
+            "Summarize performance and explain the mistakes in plain language.\n" +
+            TutorStyles.ToneInstruction(style);
 
         var userPrompt = $"Topic: {topicName}\nResults:\n{BuildResultLines(results)}";
         return await GenerateAsync(userPrompt, system, jsonMode: false, contextDocuments.ToList());

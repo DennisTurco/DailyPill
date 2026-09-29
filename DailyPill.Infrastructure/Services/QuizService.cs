@@ -13,6 +13,16 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     private static string Normalize(string text) => string.Join(" ", text.Trim().ToLowerInvariant().Split(
         (char[]?)null, StringSplitOptions.RemoveEmptyEntries));
 
+    private async Task<TutorStyle> GetTutorStyleAsync()
+    {
+        var value = await context.Settings
+            .AsNoTracking()
+            .Where(s => s.Code == TutorStyles.SettingCode)
+            .Select(s => s.Value)
+            .FirstOrDefaultAsync();
+        return TutorStyles.Parse(value);
+    }
+
     private static bool GradeObjective(Question question, string givenAnswer) =>
         Normalize(givenAnswer) == Normalize(question.CorrectAnswer);
 
@@ -101,6 +111,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
             .ToListAsync();
 
         var topicName = session.Topic?.Name ?? "Unknown";
+        var tutorStyle = await GetTutorStyleAsync();
 
         foreach (var answer in answers)
         {
@@ -117,7 +128,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
             try
             {
-                var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, contextDocuments);
+                var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, contextDocuments, tutorStyle);
                 answer.IsCorrect = review.IsCorrect;
                 answer.ScoreAwarded = review.IsCorrect ? 1.0 : 0.0;
                 answer.AiFeedback = review.Feedback;
@@ -134,7 +145,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
         string recap;
         try
         {
-            recap = await ollamaService.GenerateQuizRecapAsync(topicName, results, contextDocuments);
+            recap = await ollamaService.GenerateQuizRecapAsync(topicName, results, contextDocuments, tutorStyle);
         }
         catch (OllamaUnavailableException)
         {
@@ -169,9 +180,10 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
             .Where(a => a.QuizSessionId == sessionId)
             .ToListAsync();
         var topicName = session.Topic?.Name ?? "Unknown";
+        var tutorStyle = await GetTutorStyleAsync();
         var results = BuildResults(answers);
 
-        var reply = await ollamaService.ChatAboutQuizAsync(topicName, results, dto.History ?? [], dto.Message, contextDocuments);
+        var reply = await ollamaService.ChatAboutQuizAsync(topicName, results, dto.History ?? [], dto.Message, contextDocuments, tutorStyle);
         return new QuizChatResponseDTO(reply);
     }
 

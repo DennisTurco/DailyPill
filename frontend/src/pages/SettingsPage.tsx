@@ -6,6 +6,17 @@ import { triggerOnboarding } from "../lib/onboarding";
 import { Toast, ToastMessage } from "../components/Toast";
 import { Modal } from "../components/Modal";
 
+type TutorStyle = "friendly" | "professional" | "strict" | "socratic" | "interviewer";
+
+// Mirrors DailyPill.Common.Enums.TutorStyle on the backend.
+const TUTOR_STYLES: { value: TutorStyle; label: string; icon: string; description: string }[] = [
+  { value: "friendly", label: "Friendly", icon: "fa-solid fa-face-smile", description: "Warm and encouraging, celebrates what you got right." },
+  { value: "professional", label: "Professional", icon: "fa-solid fa-briefcase", description: "Neutral and precise, like a senior colleague." },
+  { value: "strict", label: "Strict", icon: "fa-solid fa-ruler", description: "Direct and demanding, points out every weakness." },
+  { value: "socratic", label: "Socratic", icon: "fa-solid fa-lightbulb", description: "Guides you with hints and questions instead of giving the answer away." },
+  { value: "interviewer", label: "Interviewer", icon: "fa-solid fa-user-tie", description: "Talks like a technical interviewer and asks follow-up questions." },
+];
+
 interface AIStatus {
   available: boolean;
   model: string;
@@ -18,7 +29,8 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [questionCount, setQuestionCount] = useState("5");
-  const [savingQuestionCount, setSavingQuestionCount] = useState(false);
+  const [tutorStyle, setTutorStyle] = useState<TutorStyle>("friendly");
+  const [savingPreferences, setSavingPreferences] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -43,6 +55,8 @@ export default function SettingsPage() {
       .then((settings) => {
         const value = getSettingValue(settings, "QuestionCount");
         if (value !== null) setQuestionCount(value);
+        const style = getSettingValue(settings, "TutorStyle");
+        if (TUTOR_STYLES.some((s) => s.value === style)) setTutorStyle(style as TutorStyle);
       })
       .catch((err) => setSettingsError(String(err)));
   }
@@ -115,17 +129,18 @@ export default function SettingsPage() {
     }
   }
 
-  async function saveQuestionCount() {
+  async function savePreferences() {
     setSettingsError(null);
     setSettingsSaved(false);
-    setSavingQuestionCount(true);
+    setSavingPreferences(true);
     try {
       await api.put("/settings/QuestionCount", { value: questionCount });
+      await api.put("/settings/TutorStyle", { value: tutorStyle });
       setSettingsSaved(true);
     } catch (err) {
       setSettingsError(String(err));
     } finally {
-      setSavingQuestionCount(false);
+      setSavingPreferences(false);
     }
   }
 
@@ -151,11 +166,43 @@ export default function SettingsPage() {
           }}
           placeholder="5"
         />
-        <div>
-          <button onClick={saveQuestionCount} disabled={savingQuestionCount}>
-            {savingQuestionCount ? "Saving..." : "Save"}
+
+        <label>AI tutor style</label>
+        <p className="text-muted text-sm" style={{ margin: "0 0 8px" }}>
+          How the AI talks to you in answer feedback, the end-of-quiz recap and the quiz chat. It never changes how answers
+          are graded.
+        </p>
+        <div className="choice-list">
+          {TUTOR_STYLES.map((style) => (
+            <label key={style.value} className={`choice ${tutorStyle === style.value ? "selected" : ""}`}>
+              <input
+                type="radio"
+                name="tutor-style"
+                checked={tutorStyle === style.value}
+                onChange={() => {
+                  setTutorStyle(style.value);
+                  setSettingsSaved(false);
+                }}
+              />
+              <span>
+                <span className="choice-title">
+                  <i className={style.icon} /> {style.label}
+                </span>
+                <span className="choice-description">{style.description}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+
+        <div className="row" style={{ marginTop: 16 }}>
+          <button onClick={savePreferences} disabled={savingPreferences}>
+            {savingPreferences ? "Saving..." : "Save"}
           </button>
-          {settingsSaved && <span className="success"> Saved</span>}
+          {settingsSaved && (
+            <span className="success">
+              <i className="fa-solid fa-check" /> Saved
+            </span>
+          )}
         </div>
       </div>
 
