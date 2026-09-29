@@ -25,7 +25,7 @@ export default function DashboardPage() {
 
       <div className="stat-grid">
         <Stat icon="fa-solid fa-circle-play" label="Quiz sessions" value={progress.total_quiz_sessions} />
-        <Stat icon="fa-solid fa-reply" label="Answers given" value={progress.total_answers} />
+        <Stat icon="fa-solid fa-reply" label="Questions answered" value={progress.total_answers} />
         <Stat icon="fa-solid fa-check-double" label="Overall accuracy" value={`${Math.round(progress.overall_accuracy * 100)}%`} />
         <Stat
           icon="fa-solid fa-fire"
@@ -43,7 +43,7 @@ export default function DashboardPage() {
                 <tr>
                   <th>Topic</th>
                   <th>Questions</th>
-                  <th>Answers</th>
+                  <th>Answered</th>
                   <th>Accuracy</th>
                 </tr>
               </thead>
@@ -69,7 +69,7 @@ export default function DashboardPage() {
               <thead>
                 <tr>
                   <th>Difficulty</th>
-                  <th>Answers</th>
+                  <th>Answered</th>
                   <th>Accuracy</th>
                 </tr>
               </thead>

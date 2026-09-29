@@ -58,4 +58,31 @@ public class QuizFlowTests
         Assert.True(summary.TotalAnswers >= 1);
         Assert.Contains(summary.ByTopic, t => t.TopicId == topicId);
     }
+
+    [Fact]
+    public async Task PracticeRetry_ReusesQuestions_AndLatestAnswerDrivesAccuracy()
+    {
+        await using var context = TestDbContextFactory.Create();
+        var (topicId, questionId) = await MakeTopicWithQuestionAsync(context);
+        var topicContextDocumentService = new TopicContextDocumentService(context);
+        var quizService = new QuizService(context, new FakeOllamaService(), topicContextDocumentService);
+        var progressService = new ProgressService(context);
+
+        var first = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5));
+        await quizService.SubmitAsync(first.SessionId, new QuizSubmitRequestDTO([new AnswerSubmitDTO(questionId, "wrong")]));
+        await quizService.FinishAsync(first.SessionId);
+
+        var retry = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5, [questionId]));
+        Assert.Equal(questionId, Assert.Single(retry.Questions).Id);
+        await quizService.SubmitAsync(retry.SessionId, new QuizSubmitRequestDTO([new AnswerSubmitDTO(questionId, "4")]));
+        var finished = await quizService.FinishAsync(retry.SessionId);
+        Assert.True(finished.Session.IsPractice);
+
+        var summary = await progressService.GetSummaryAsync();
+        var topic = Assert.Single(summary.ByTopic, t => t.TopicId == topicId);
+        Assert.Equal(1, topic.TotalAnswers);
+        Assert.Equal(1, topic.CorrectAnswers);
+        Assert.Equal(1.0, summary.OverallAccuracy);
+        Assert.Equal(1, summary.TotalQuizSessions);
+    }
 }

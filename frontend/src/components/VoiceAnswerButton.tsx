@@ -8,7 +8,15 @@ type RecordingState = "idle" | "recording" | "transcribing";
  * Records a spoken answer and hands back the Whisper transcript. The prompt (usually the
  * question text) helps Whisper spell technical terms the way the question does.
  */
-export function VoiceAnswerButton({ prompt, onTranscript }: { prompt: string; onTranscript: (text: string) => void }) {
+export function VoiceAnswerButton({
+  prompt,
+  onTranscript,
+  label = "Answer by voice",
+}: {
+  prompt: string;
+  onTranscript: (text: string) => void;
+  label?: string;
+}) {
   const [state, setState] = useState<RecordingState>("idle");
   const [error, setError] = useState<string | null>(null);
   const recordingRef = useRef<VoiceRecording | null>(null);
@@ -53,7 +61,7 @@ export function VoiceAnswerButton({ prompt, onTranscript }: { prompt: string; on
         </button>
       ) : (
         <button className="secondary" disabled={state === "transcribing"} onClick={start}>
-          <i className="fa-solid fa-microphone" /> {state === "transcribing" ? "Transcribing..." : "Answer by voice"}
+          <i className="fa-solid fa-microphone" /> {state === "transcribing" ? "Transcribing..." : label}
         </button>
       )}
       {error && <span className="error">{error}</span>}

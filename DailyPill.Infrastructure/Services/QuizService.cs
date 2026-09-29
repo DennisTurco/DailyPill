@@ -36,12 +36,13 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     {
         var questionCount = Math.Clamp(dto.QuestionCount, 1, 50);
         var aiAvailable = ollamaService.IsAvailable();
+        var isPractice = dto.QuestionIds is { Count: > 0 };
 
-        var candidates = await context.Questions
+        var query = context.Questions
             .AsNoTracking()
-            .Where(q => q.TopicId == dto.TopicId && !q.IsDeleted)
-            .Include(q => q.Answers)
-            .ToListAsync();
+            .Where(q => q.TopicId == dto.TopicId && !q.IsDeleted);
+        if (isPractice) query = query.Where(q => dto.QuestionIds!.Contains(q.Id));
+        var candidates = await query.Include(q => q.Answers).ToListAsync();
 
         if (!aiAvailable)
         {
@@ -54,12 +55,14 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
         var shuffled = candidates.OrderBy(_ => Random.Shared.Next()).ToList();
 
-        var selected = shuffled.Count >= questionCount
-            ? GetRandomQuestionsWithMixedDifficulty(shuffled, questionCount)
-            : shuffled.Take(questionCount).OrderBy(s => s.Difficulty).ToList();
+        var selected = isPractice
+            ? shuffled
+            : shuffled.Count >= questionCount
+                ? GetRandomQuestionsWithMixedDifficulty(shuffled, questionCount)
+                : shuffled.Take(questionCount).ToList();
         selected = selected.OrderBy(q => q.Difficulty).ToList();
 
-        var session = new QuizSession { TopicId = dto.TopicId };
+        var session = new QuizSession { TopicId = dto.TopicId, IsPractice = isPractice };
         context.QuizSessions.Add(session);
         await context.SaveChangesAsync();
 
@@ -247,7 +250,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     }
 
     private static QuizSessionResponseDTO MapToDto(QuizSession s) => new(
-        s.Id, s.TopicId, s.StartedAt, s.CompletedAt, s.AiReviewSummary,
+        s.Id, s.TopicId, s.StartedAt, s.CompletedAt, s.AiReviewSummary, s.IsPractice,
         s.Answers.Select(a => new UserAnswerResponseDTO(
             a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.LanguageFeedback, a.AnsweredAt)).ToList());
 }

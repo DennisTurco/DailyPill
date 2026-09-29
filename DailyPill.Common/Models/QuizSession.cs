@@ -18,6 +18,9 @@ public class QuizSession
 
     public string? AiReviewSummary { get; set; }
 
+    /// <summary>A retry of questions already seen; not counted as a quiz session in progress stats.</summary>
+    public bool IsPractice { get; set; }
+
     public Topic? Topic { get; set; }
 
     public List<UserAnswer> Answers { get; set; } = [];

@@ -24,6 +24,7 @@ export default function QuizPage() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [settings, setSettings] = useState<Setting[]>([]);
   const [voiceReady, setVoiceReady] = useState(false);
+  const [isPractice, setIsPractice] = useState(false);
 
   useEffect(() => {
     api.get<Topic[]>("/topics").then(setTopics).catch((err) => setError(String(err)));
@@ -50,7 +51,8 @@ export default function QuizPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  async function startQuiz(id: number) {
+  // Passing questionIds starts a practice retry of those questions; it isn't counted as a quiz session.
+  async function startQuiz(id: number, questionIds?: number[]) {
     setError(null);
     setLoading(true);
     try {
@@ -58,10 +60,14 @@ export default function QuizPage() {
       const response = await api.post<QuizStartResponse>("/quiz/start", {
         topic_id: id,
         question_count: questionCount,
+        question_ids: questionIds,
       });
       setSession(response);
       setAnswers({});
+      setResult(null);
+      setIsPractice(!!questionIds?.length);
       setStage("in_progress");
+      window.scrollTo(0, 0);
       // Checked per quiz: the Whisper model may still be downloading when the app starts.
       api
         .get<TranscriptionStatus>("/ai/transcription-status")
@@ -149,9 +155,12 @@ export default function QuizPage() {
       <div>
         <Toast toast={toast} onDismiss={() => setToast(null)} />
         <div className="row" style={{ justifyContent: "space-between" }}>
-          <h1><i className="fa-solid fa-circle-play"/> Quiz in progress</h1>
+          <h1><i className="fa-solid fa-circle-play"/> {isPractice ? "Practice round" : "Quiz in progress"}</h1>
           <span className="badge badge-lg"><i className="fa-regular fa-clock" /> {formatElapsed(elapsedSeconds)}</span>
         </div>
+        {isPractice && (
+          <p className="page-subtitle">Retrying questions you've already seen. Your new answers replace the previous ones in your accuracy stats.</p>
+        )}
         {session.questions.map((q, i) => (
           <QuestionCard
             key={q.id}
@@ -172,13 +181,30 @@ export default function QuizPage() {
 
   if (stage === "finished" && result) {
     const questionById = new Map((session?.questions ?? []).map((q) => [q.id, q]));
+    const allQuestionIds = (session?.questions ?? []).map((q) => q.id);
+    // Ungraded answers (AI review unavailable) are retried too — the user couldn't get feedback on them.
+    const wrongQuestionIds = result.session.answers.filter((a) => a.is_correct !== true).map((a) => a.question_id);
+    const retry = (ids: number[]) => startQuiz(result.session.topic_id, ids);
 
     return (
       <div>
-        <h1><i className="fa-solid fa-square-poll-vertical"/> Results</h1>
+        <h1><i className="fa-solid fa-square-poll-vertical"/> {result.session.is_practice ? "Practice results" : "Results"}</h1>
         <div className="card">
           <div style={{ fontSize: 22, fontWeight: 700 }}>
             {result.total_score} / {result.max_score}
+          </div>
+          {result.session.is_practice && (
+            <div style={{ color: "var(--text-muted)" }}>Practice round — your latest answers now count toward accuracy.</div>
+          )}
+          <div className="row" style={{ marginTop: 12 }}>
+            {wrongQuestionIds.length > 0 && (
+              <button disabled={loading} onClick={() => retry(wrongQuestionIds)}>
+                <i className="fa-solid fa-rotate-right" /> Retry wrong answers ({wrongQuestionIds.length})
+              </button>
+            )}
+            <button className="secondary" disabled={loading} onClick={() => retry(allQuestionIds)}>
+              <i className="fa-solid fa-repeat" /> Retry whole quiz
+            </button>
           </div>
         </div>
         {result.session.ai_review_summary && (
@@ -237,7 +263,11 @@ export default function QuizPage() {
             );
           })}
         </div>
-        <QuizChat sessionId={result.session.id} />
+        <QuizChat
+          sessionId={result.session.id}
+          voiceReady={voiceReady}
+          voicePrompt={(session?.questions ?? []).map((q) => q.text).join("\n")}
+        />
         <button onClick={() => setStage("select")}>Take another quiz</button>
       </div>
     );
@@ -246,7 +276,7 @@ export default function QuizPage() {
   return <div>Loading...</div>;
 }
 
-function QuizChat({ sessionId }: { sessionId: number }) {
+function QuizChat({ sessionId, voiceReady, voicePrompt }: { sessionId: number; voiceReady: boolean; voicePrompt: string }) {
   const [messages, setMessages] = useState<QuizChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -304,7 +334,14 @@ function QuizChat({ sessionId }: { sessionId: number }) {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a question about this quiz..."
         />
-        <button disabled={loading || !input.trim()} onClick={send}>
+        {voiceReady && (
+          <VoiceAnswerButton
+            prompt={voicePrompt}
+            label="Ask by voice"
+            onTranscript={(text) => setInput((prev) => (prev.trim() ? `${prev.trimEnd()}\n${text}` : text))}
+          />
+        )}
+        <button disabled={loading || !input.trim()} onClick={send} style={{ marginTop: 8 }}>
           <i className="fa-solid fa-paper-plane"/> Send
         </button>
     </div>

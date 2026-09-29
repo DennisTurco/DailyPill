@@ -1,6 +1,7 @@
 namespace DailyPill.Common.DTOs;
 
-public record QuizStartRequestDTO(int TopicId, int QuestionCount = 5);
+/// <param name="QuestionIds">When set, starts a practice retry of exactly these questions instead of a random pick.</param>
+public record QuizStartRequestDTO(int TopicId, int QuestionCount = 5, List<int>? QuestionIds = null);
 
 public record QuizStartResponseDTO(int SessionId, int TopicId, List<QuestionResponseDTO> Questions, bool AiAvailable);
 
@@ -24,6 +25,7 @@ public record QuizSessionResponseDTO(
     DateTime StartedAt,
     DateTime? CompletedAt,
     string? AiReviewSummary,
+    bool IsPractice,
     List<UserAnswerResponseDTO> Answers);
 
 public record QuizFinishResponseDTO(QuizSessionResponseDTO Session, double TotalScore, double MaxScore);

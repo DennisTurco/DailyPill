@@ -65,6 +65,7 @@ export interface QuizSession {
   started_at: string;
   completed_at: string | null;
   ai_review_summary: string | null;
+  is_practice: boolean;
   answers: UserAnswer[];
 }
 
