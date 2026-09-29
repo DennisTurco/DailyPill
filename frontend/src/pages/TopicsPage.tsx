@@ -142,6 +142,7 @@ export default function TopicsPage() {
   return (
     <div>
       <h1><i className="fa-solid fa-layer-group"/> Topics</h1>
+      <p className="page-subtitle">Organize what you study, schedule quiz pop-ups and attach context documents.</p>
       {error && <div className="error">{error}</div>}
 
       <Collapsible
@@ -268,7 +269,7 @@ export default function TopicsPage() {
                   <td>
                     <div><strong>{topic.name}</strong></div>
                     {topic.description && (
-                      <div className="text-muted text-sm">{topic.description}</div>
+                      <div className="text-muted text-sm line-clamp-2" title={topic.description}>{topic.description}</div>
                     )}
                   </td>
                   <td>

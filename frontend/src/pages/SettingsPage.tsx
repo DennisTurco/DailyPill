@@ -133,6 +133,7 @@ export default function SettingsPage() {
     <div>
       <Toast toast={toast} onDismiss={() => setToast(null)} />
       <h1><i className="fa-solid fa-gear"/> Settings</h1>
+      <p className="page-subtitle">Preferences, data import/export and local AI status.</p>
 
       <div className="card">
         <h3>Preferences</h3>

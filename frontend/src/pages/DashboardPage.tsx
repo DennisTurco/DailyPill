@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { difficultyLabel } from "../lib/format";
+import { Accuracy } from "../components/Accuracy";
 import { ProgressSummary } from "../lib/types";
 
 export default function DashboardPage() {
@@ -17,23 +18,20 @@ export default function DashboardPage() {
   if (error) return <div className="error">{error}</div>;
   if (!progress) return <div>Loading...</div>;
 
-  function getIconAndColorByAccuracy(count: number, accuracyPercentage: number): React.JSX.Element | undefined {
-    if (count == 0) return undefined;
-    else if (accuracyPercentage >= 80) return <i className="fa-solid fa-circle-check" style={{color: "green"}}/>
-    else if (accuracyPercentage >= 70) return <i className="fa-solid fa-circle-check" style={{color: "#84e084"}}/>
-    else if (accuracyPercentage > 50) return <i className="fa-solid fa-circle-exclamation" style={{color: "yellow"}}/>
-    return <i className="fa-solid fa-circle-xmark" style={{color: "red"}}/>
-  }
-
   return (
     <div>
       <h1><i className="fa-solid fa-gauge-simple-high"/> Dashboard</h1>
+      <p className="page-subtitle">Your progress across all topics.</p>
 
       <div className="stat-grid">
         <Stat icon="fa-solid fa-circle-play" label="Quiz sessions" value={progress.total_quiz_sessions} />
         <Stat icon="fa-solid fa-reply" label="Answers given" value={progress.total_answers} />
         <Stat icon="fa-solid fa-check-double" label="Overall accuracy" value={`${Math.round(progress.overall_accuracy * 100)}%`} />
-        <Stat icon="fa-solid fa-fire" label="Current streak" value={`${progress.current_streak_days} days`} />
+        <Stat
+          icon="fa-solid fa-fire"
+          label="Current streak"
+          value={`${progress.current_streak_days} ${progress.current_streak_days === 1 ? "day" : "days"}`}
+        />
       </div>
 
       <div className="dashboard-grid">
@@ -55,7 +53,7 @@ export default function DashboardPage() {
                     <td>{t.topic_name}</td>
                     <td>{t.question_count}</td>
                     <td>{t.total_answers}</td>
-                    <td>{Math.round(t.accuracy * 100)}% {getIconAndColorByAccuracy(t.total_answers, t.accuracy * 100)}</td>
+                    <td><Accuracy accuracy={t.accuracy} answers={t.total_answers} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -63,41 +61,46 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="card">
-          <h3><i className="fa-solid fa-person-hiking"/> By difficulty</h3>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Difficulty</th>
-                <th>Answers</th>
-                <th>Accuracy</th>
-              </tr>
-            </thead>
-            <tbody>
-              {progress.by_difficulty.map((d) => (
-                <tr key={d.difficulty}>
-                  <td>{difficultyLabel(d.difficulty)}</td>
-                  <td>{d.total_answers}</td>
-                  <td>{Math.round(d.accuracy * 100)}% {getIconAndColorByAccuracy(d.total_answers, d.accuracy * 100)}</td>
+        {/* The difficulty table is short, so the weakest topics sit under it instead of in a full-width row. */}
+        <div className="dashboard-column">
+          <div className="card">
+            <h3><i className="fa-solid fa-person-hiking"/> By difficulty</h3>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Difficulty</th>
+                  <th>Answers</th>
+                  <th>Accuracy</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {progress.by_difficulty.map((d) => (
+                  <tr key={d.difficulty}>
+                    <td>{difficultyLabel(d.difficulty)}</td>
+                    <td>{d.total_answers}</td>
+                    <td><Accuracy accuracy={d.accuracy} answers={d.total_answers} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {progress.weakest_topics.length > 0 && (
+            <div className="card">
+              <h3><i className="fa-solid fa-bullseye"/> Weakest topics</h3>
+              <ol className="rank-list">
+                {progress.weakest_topics.map((t, i) => (
+                  <li key={t.topic_id}>
+                    <span className="rank-list-index">{i + 1}</span>
+                    <span className="rank-list-name">{t.topic_name}</span>
+                    <Accuracy accuracy={t.accuracy} answers={t.total_answers} />
+                  </li>
+                ))}
+              </ol>
+            </div>
+          )}
         </div>
       </div>
-
-      {progress.weakest_topics.length > 0 && (
-        <div className="card">
-          <h3>Weakest topics</h3>
-          <ul>
-            {progress.weakest_topics.map((t) => (
-              <li key={t.topic_id}>
-                {t.topic_name} — {Math.round(t.accuracy * 100)}% accuracy {getIconAndColorByAccuracy(t.total_answers, t.accuracy * 100)}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }

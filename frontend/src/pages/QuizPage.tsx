@@ -106,8 +106,8 @@ export default function QuizPage() {
     if (isCorrect == null)
         return undefined;
     return isCorrect
-        ? <i className="fa-solid fa-circle-check" style={{color: "green"}}/>
-        : <i className="fa-solid fa-circle-xmark" style={{color: "red"}}/>
+        ? <i className="fa-solid fa-circle-check" style={{color: "var(--success)"}}/>
+        : <i className="fa-solid fa-circle-xmark" style={{color: "var(--danger)"}}/>
   }
 
   if (error) return <div className="error">{error}</div>;
@@ -117,23 +117,28 @@ export default function QuizPage() {
       <div>
         <Toast toast={toast} onDismiss={() => setToast(null)} />
         <h1><i className="fa-solid fa-circle-play"/> Quiz</h1>
-        <div className="card">
-          <label>Choose a topic</label>
-          <select value={topicId ?? ""} onChange={(e) => setTopicId(Number(e.target.value))}>
-            <option value="" disabled>
-              Select...
-            </option>
-            {topics.filter((t) => !t.is_informational).map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-          <div style={{ marginTop: 12 }}>
-            <button disabled={!topicId || loading} onClick={() => topicId && startQuiz(topicId)}>
-              Start quiz
+        <p className="page-subtitle">Pick a topic to start a quiz.</p>
+        <div className="topic-grid">
+          {topics.filter((t) => !t.is_informational).map((t) => (
+            <button
+              key={t.id}
+              className={`topic-card ${loading && topicId === t.id ? "loading" : ""}`}
+              disabled={loading}
+              onClick={() => {
+                setTopicId(t.id);
+                startQuiz(t.id);
+              }}
+            >
+              <span className="topic-card-title">{t.name}</span>
+              {t.description && <span className="topic-card-description">{t.description}</span>}
+              <span className="topic-card-footer">
+                {t.category ? <span className="badge">{t.category}</span> : <span />}
+                <span className="topic-card-start">
+                  {loading && topicId === t.id ? "Starting..." : "Start"} <i className="fa-solid fa-arrow-right" />
+                </span>
+              </span>
             </button>
-          </div>
+          ))}
         </div>
       </div>
     );
@@ -144,12 +149,14 @@ export default function QuizPage() {
       <div>
         <Toast toast={toast} onDismiss={() => setToast(null)} />
         <div className="row" style={{ justifyContent: "space-between" }}>
-          <h1>Quiz in progress</h1>
-          <span className="badge">⏱ {formatElapsed(elapsedSeconds)}</span>
+          <h1><i className="fa-solid fa-circle-play"/> Quiz in progress</h1>
+          <span className="badge badge-lg"><i className="fa-regular fa-clock" /> {formatElapsed(elapsedSeconds)}</span>
         </div>
-        {session.questions.map((q) => (
+        {session.questions.map((q, i) => (
           <QuestionCard
             key={q.id}
+            index={i}
+            total={session.questions.length}
             question={q}
             value={answers[q.id] ?? ""}
             onChange={(value) => setAnswers((prev) => ({ ...prev, [q.id]: value }))}
@@ -309,24 +316,29 @@ function QuestionCard({
   value,
   onChange,
   voiceReady,
+  index,
+  total,
 }: {
   question: Question;
   value: string;
   onChange: (value: string) => void;
   voiceReady: boolean;
+  index: number;
+  total: number;
 }) {
   return (
     <div className="card">
-      <div style={{ marginBottom: 8 }}>
-        <span className="badge">{difficultyLabel(question.difficulty)}</span>
+      <div className="row" style={{ marginBottom: 10 }}>
+        <span className="question-number">Question {index + 1} of {total}</span>
+        <span className={`badge badge-difficulty-${question.difficulty}`}>{difficultyLabel(question.difficulty)}</span>
       </div>
-      <div style={{ marginBottom: 10, fontWeight: 600 }}>
+      <div className="question-text">
         <MarkdownContent text={question.text} />
       </div>
       {question.type === "multiple_choice" && question.options ? (
-        <div>
+        <div className="choice-list">
           {question.options.map((opt) => (
-            <label key={opt} className="row" style={{ marginTop: 6 }}>
+            <label key={opt} className={`choice ${value === opt ? "selected" : ""}`}>
               <input
                 type="radio"
                 name={`q-${question.id}`}

@@ -11,6 +11,8 @@
 
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.16);
+  --border-hover: rgba(255, 255, 255, 0.24);
+  --accent-soft: rgba(124, 156, 255, 0.12);
 
   --text-primary: #f0f1f7;
   --text-secondary: #a3aac2;
@@ -44,6 +46,8 @@
 
   --border: rgba(16, 18, 32, 0.09);
   --border-strong: rgba(16, 18, 32, 0.18);
+  --border-hover: rgba(16, 18, 32, 0.3);
+  --accent-soft: rgba(124, 156, 255, 0.14);
 
   --text-primary: #14151f;
   --text-secondary: #565f7a;
@@ -74,6 +78,8 @@ html, body, #root {
 body {
   margin: 0;
   font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   background:
@@ -233,7 +239,6 @@ body.resizing-sidebar {
 .sidebar a:hover {
   background: var(--bg-surface-2);
   color: var(--text-primary);
-  transform: translateX(2px);
 }
 
 .sidebar a:hover i {
@@ -264,6 +269,7 @@ body.resizing-sidebar {
 .sidebar-action-btn {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   width: 100%;
   background: none;
@@ -305,6 +311,17 @@ body.resizing-sidebar {
   overflow-y: auto;
   height: 100%;
   animation: fadeIn 0.25s ease-out;
+}
+
+/* Keep pages at a readable width on large monitors instead of stretching forms edge to edge. */
+.content > div {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.page-subtitle {
+  color: var(--text-secondary);
+  margin: -14px 0 20px;
 }
 
 @keyframes fadeIn {
@@ -353,26 +370,36 @@ h3 {
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   background: var(--accent-gradient);
   color: #0a0b12;
   border: none;
   border-radius: var(--radius-sm);
   padding: 9px 16px;
+  font-family: inherit;
   font-weight: 600;
   font-size: 13.5px;
+  line-height: 1.3;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+  transition: box-shadow 0.12s ease, filter 0.12s ease, background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 button:hover:not(:disabled) {
   filter: brightness(1.08);
   box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
 }
 
 button:active:not(:disabled) {
-  transform: translateY(0);
-  filter: brightness(0.98);
+  filter: brightness(0.96);
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-1);
+  outline-offset: 2px;
 }
 
 button.secondary {
@@ -389,6 +416,29 @@ button.secondary:hover:not(:disabled) {
 button.danger {
   background: linear-gradient(135deg, var(--danger), #ff8f6b);
   color: #1a0a0e;
+}
+
+/* Row actions: quiet by default so a column of Delete buttons doesn't dominate the table. */
+.data-table button {
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+.data-table button.secondary {
+  background: transparent;
+}
+
+.data-table button.danger {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+}
+
+.data-table button.danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border-color: var(--danger);
+  box-shadow: none;
+  filter: none;
 }
 
 button:disabled {
@@ -412,7 +462,7 @@ input, select, textarea {
 }
 
 input:hover, select:hover, textarea:hover {
-  border-color: rgba(255, 255, 255, 0.24);
+  border-color: var(--border-hover);
 }
 
 input:focus, select:focus, textarea:focus {
@@ -423,6 +473,23 @@ input:focus, select:focus, textarea:focus {
 
 textarea {
   resize: vertical;
+}
+
+input[type="number"] {
+  max-width: 180px;
+}
+
+input[type="radio"],
+input[type="checkbox"] {
+  accent-color: var(--accent-1);
+}
+
+/* Actions right after a stacked form field get breathing room without per-page margins
+   (not in inline .row layouts, and not after hidden file inputs). */
+:not(.row) > input:not([type="file"]) + button,
+:not(.row) > select + button,
+:not(.row) > textarea + button {
+  margin-top: 12px;
 }
 
 label {
@@ -525,7 +592,19 @@ tbody tr:last-child td {
 .btn:hover:not(:disabled) {
   filter: brightness(1.08);
   box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
+}
+
+a.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+a.btn-ghost {
+  color: var(--text-primary);
 }
 
 .btn-ghost {
@@ -556,14 +635,260 @@ tbody tr:last-child td {
 }
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 11.5px;
   font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
   background: var(--bg-surface-2);
   color: var(--text-secondary);
   border: 1px solid var(--border);
+}
+
+.badge-lg {
+  padding: 5px 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Difficulty 1-5 goes from calm to warm, tinted from the theme's status colors. */
+.badge-difficulty-1,
+.badge-difficulty-2 {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, transparent);
+  border-color: color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.badge-difficulty-3 {
+  color: var(--accent-1);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent-1) 30%, transparent);
+}
+
+.badge-difficulty-4 {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  border-color: color-mix(in srgb, var(--warning) 30%, transparent);
+}
+
+.badge-difficulty-5 {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Accuracy: percentage + mini bar, colored by tone */
+.accuracy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  --tone: var(--accent-1);
+  color: var(--tone);
+}
+
+.accuracy-good { --tone: var(--success); }
+.accuracy-ok { --tone: var(--warning); }
+.accuracy-bad { --tone: var(--danger); }
+
+.accuracy-bar {
+  width: 48px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-surface-2);
+  overflow: hidden;
+}
+
+.accuracy-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone);
+}
+
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rank-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.rank-list li:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rank-list-index {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-1);
+  background: var(--accent-soft);
+}
+
+.rank-list-name {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Quiz: topic picker */
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 6px;
+  text-align: left;
+  padding: 18px 20px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  font-weight: 400;
+  min-height: 150px;
+}
+
+.topic-card:hover:not(:disabled) {
+  filter: none;
+  border-color: color-mix(in srgb, var(--accent-1) 45%, transparent);
+  box-shadow: var(--shadow-glow);
+}
+
+.topic-card:disabled:not(.loading) {
+  opacity: 0.6;
+}
+
+.topic-card.loading {
+  opacity: 1;
+  border-color: var(--accent-1);
+}
+
+.topic-card-title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.topic-card-description {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.topic-card-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.topic-card-start {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-1);
+  white-space: nowrap;
+}
+
+.topic-card-start i {
+  transition: transform 0.15s ease;
+}
+
+.topic-card:hover .topic-card-start i {
+  transform: translateX(3px);
+}
+
+/* Quiz: question cards */
+.question-number {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.question-text {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.choice-list {
+  display: grid;
+  gap: 8px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.choice:hover {
+  border-color: var(--border-hover);
+}
+
+.choice.selected {
+  border-color: var(--accent-1);
+  background: var(--accent-soft);
+}
+
+.choice input {
+  width: auto;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.choice .chat-markdown p {
+  margin: 0;
 }
 
 .row {
@@ -621,11 +946,6 @@ tbody tr:last-child td {
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.stat-tile:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-glow);
-  border-color: rgba(124, 156, 255, 0.25);
-}
 
 .stat-tile-icon {
   flex-shrink: 0;
@@ -667,6 +987,16 @@ tbody tr:last-child td {
 }
 
 .dashboard-grid > .card {
+  margin-bottom: 0;
+}
+
+.dashboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-column > .card {
   margin-bottom: 0;
 }
 

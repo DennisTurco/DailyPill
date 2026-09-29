@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { Tabs } from "../components/Tabs";
-import { difficultyLabel } from "../lib/format";
+import { difficultyLabel, questionTypeLabel } from "../lib/format";
 import { AIGeneratedQuestion, Question, QuestionType, Topic } from "../lib/types";
 
 const TYPES: QuestionType[] = ["multiple_choice", "completion", "single_word", "open_answer"];
@@ -134,6 +134,7 @@ export default function QuestionsPage() {
   return (
     <div>
       <h1><i className="fa-solid fa-circle-question"/> Questions</h1>
+      <p className="page-subtitle">Generate questions with AI, add your own, and browse the question bank.</p>
       {error && <div className="error">{error}</div>}
 
       <Tabs
@@ -302,8 +303,8 @@ export default function QuestionsPage() {
           {paginated.map((q) => (
             <tr key={q.id}>
               <td>{q.text}</td>
-              <td>{q.type}</td>
-              <td>{difficultyLabel(q.difficulty)}</td>
+              <td><span className="badge">{questionTypeLabel(q.type)}</span></td>
+              <td><span className={`badge badge-difficulty-${q.difficulty}`}>{difficultyLabel(q.difficulty)}</span></td>
               <td>
                 <button className="danger" onClick={() => setDeleteTarget(q)}>
                   Delete
@@ -323,9 +324,9 @@ export default function QuestionsPage() {
             }}
           >
             <span className="text-muted text-sm">
-              {(currentPage - 1) * pageSize + 1}-
-              {Math.min(currentPage * pageSize, questions.length)} of{" "}
-              {questions.length} questions
+              {questions.length === 0
+                ? "0 questions"
+                : `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, questions.length)} of ${questions.length} questions`}
             </span>
             {totalPages > 1 && (
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

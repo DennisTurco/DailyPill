@@ -134,6 +134,7 @@ export default function InfoFactsPage() {
   return (
     <div>
       <h1><i className="fa-solid fa-tablets"/> Info facts</h1>
+      <p className="page-subtitle">Short facts shown once a day as a pop-up.</p>
       {error && <div className="error">{error}</div>}
 
       <Tabs
