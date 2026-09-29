@@ -10,4 +10,8 @@ public class ProgressController(IProgressService progressService) : ControllerBa
     [HttpGet]
     public async Task<IActionResult> Get()
         => Ok(await progressService.GetSummaryAsync());
+
+    [HttpGet("trend")]
+    public async Task<IActionResult> Trend([FromQuery] int weeks = 12)
+        => Ok(await progressService.GetTrendAsync(weeks));
 }

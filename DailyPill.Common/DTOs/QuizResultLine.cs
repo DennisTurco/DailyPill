@@ -1,3 +1,3 @@
 namespace DailyPill.Common.DTOs;
 
-public record QuizResultLine(string Text, string GivenAnswer, string CorrectAnswer, bool? IsCorrect);
+public record QuizResultLine(string Text, string GivenAnswer, string CorrectAnswer, bool? IsCorrect, string? Confidence = null, bool HintUsed = false);

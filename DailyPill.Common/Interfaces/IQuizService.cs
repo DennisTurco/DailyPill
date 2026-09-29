@@ -8,6 +8,7 @@ public interface IQuizService
     Task<QuizSessionResponseDTO> SubmitAsync(int sessionId, QuizSubmitRequestDTO dto);
     Task<QuizFinishResponseDTO> FinishAsync(int sessionId);
     Task<QuizChatResponseDTO> ChatAsync(int sessionId, QuizChatRequestDTO dto);
+    Task<QuizHintResponseDTO> HintAsync(int sessionId, QuizHintRequestDTO dto);
     Task<List<QuizSessionResponseDTO>> GetHistoryAsync(int? topicId);
     Task<QuizSessionResponseDTO?> GetByIdAsync(int sessionId);
 }

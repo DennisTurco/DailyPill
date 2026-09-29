@@ -24,6 +24,10 @@ public class QuizController(IQuizService quizService) : ControllerBase
     public async Task<IActionResult> Chat(int sessionId, [FromBody] QuizChatRequestDTO dto)
         => Ok(await quizService.ChatAsync(sessionId, dto));
 
+    [HttpPost("{sessionId:int}/hint")]
+    public async Task<IActionResult> Hint(int sessionId, [FromBody] QuizHintRequestDTO dto)
+        => Ok(await quizService.HintAsync(sessionId, dto));
+
     [HttpGet("history")]
     public async Task<IActionResult> History([FromQuery(Name = "topic_id")] int? topicId)
         => Ok(await quizService.GetHistoryAsync(topicId));

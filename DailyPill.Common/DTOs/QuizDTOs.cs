@@ -5,7 +5,7 @@ public record QuizStartRequestDTO(int TopicId, int QuestionCount = 5, List<int>?
 
 public record QuizStartResponseDTO(int SessionId, int TopicId, List<QuestionResponseDTO> Questions, bool AiAvailable);
 
-public record AnswerSubmitDTO(int QuestionId, string GivenAnswer);
+public record AnswerSubmitDTO(int QuestionId, string GivenAnswer, string? Confidence = null, bool HintUsed = false);
 
 public record QuizSubmitRequestDTO(List<AnswerSubmitDTO> Answers);
 
@@ -17,6 +17,8 @@ public record UserAnswerResponseDTO(
     double ScoreAwarded,
     string? AiFeedback,
     string? LanguageFeedback,
+    string? Confidence,
+    bool HintUsed,
     DateTime AnsweredAt);
 
 public record QuizSessionResponseDTO(
@@ -35,3 +37,7 @@ public record QuizChatMessageDTO(string Role, string Content);
 public record QuizChatRequestDTO(string Message, List<QuizChatMessageDTO>? History);
 
 public record QuizChatResponseDTO(string Reply);
+
+public record QuizHintRequestDTO(int QuestionId);
+
+public record QuizHintResponseDTO(string Hint);

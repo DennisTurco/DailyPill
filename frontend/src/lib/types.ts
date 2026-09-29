@@ -56,8 +56,12 @@ export interface UserAnswer {
   score_awarded: number;
   ai_feedback: string | null;
   language_feedback: string | null;
+  confidence: Confidence | null;
+  hint_used: boolean;
   answered_at: string;
 }
+
+export type Confidence = "sure" | "unsure" | "guess";
 
 export interface QuizSession {
   id: number;
@@ -102,6 +106,24 @@ export interface DifficultyProgress {
   total_answers: number;
   correct_answers: number;
   accuracy: number;
+}
+
+export interface TrendPoint {
+  week_start: string;
+  questions_answered: number;
+  answers_this_week: number;
+  accuracy: number | null;
+}
+
+export interface TopicTrend {
+  topic_id: number;
+  topic_name: string;
+  points: TrendPoint[];
+}
+
+export interface ProgressTrend {
+  overall: TrendPoint[];
+  by_topic: TopicTrend[];
 }
 
 export interface ProgressSummary {

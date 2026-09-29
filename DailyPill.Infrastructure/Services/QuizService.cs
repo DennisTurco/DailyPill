@@ -26,11 +26,16 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     private static bool GradeObjective(Question question, string givenAnswer) =>
         Normalize(givenAnswer) == Normalize(question.CorrectAnswer);
 
+    /// <summary>Score for a graded answer: getting it right with a hint earns half credit.</summary>
+    private static double Score(bool isCorrect, bool hintUsed) => !isCorrect ? 0.0 : hintUsed ? 0.5 : 1.0;
+
     private static List<QuizResultLine> BuildResults(List<UserAnswer> answers) => answers.Select(a => new QuizResultLine(
         a.Question?.Text ?? "",
         a.GivenAnswer,
         a.Question?.CorrectAnswer ?? "",
-        a.IsCorrect)).ToList();
+        a.IsCorrect,
+        a.Confidence,
+        a.HintUsed)).ToList();
 
     public async Task<QuizStartResponseDTO> StartAsync(QuizStartRequestDTO dto)
     {
@@ -83,7 +88,6 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
             var isOpen = question.Type == QuestionType.OpenAnswer;
             bool? isCorrect = isOpen ? null : GradeObjective(question, answer.GivenAnswer);
-            var score = isCorrect == true ? 1.0 : 0.0;
 
             context.UserAnswers.Add(new UserAnswer
             {
@@ -91,7 +95,9 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
                 QuestionId = question.Id,
                 GivenAnswer = answer.GivenAnswer,
                 IsCorrect = isCorrect,
-                ScoreAwarded = score,
+                ScoreAwarded = Score(isCorrect == true, answer.HintUsed),
+                Confidence = AnswerConfidences.Normalize(answer.Confidence),
+                HintUsed = answer.HintUsed,
             });
         }
 
@@ -133,7 +139,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
             {
                 var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, contextDocuments, tutorStyle);
                 answer.IsCorrect = review.IsCorrect;
-                answer.ScoreAwarded = review.IsCorrect ? 1.0 : 0.0;
+                answer.ScoreAwarded = Score(review.IsCorrect, answer.HintUsed);
                 answer.AiFeedback = review.Feedback;
                 answer.LanguageFeedback = review.LanguageFeedback;
             }
@@ -188,6 +194,23 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
         var reply = await ollamaService.ChatAboutQuizAsync(topicName, results, dto.History ?? [], dto.Message, contextDocuments, tutorStyle);
         return new QuizChatResponseDTO(reply);
+    }
+
+    public async Task<QuizHintResponseDTO> HintAsync(int sessionId, QuizHintRequestDTO dto)
+    {
+        var session = await context.QuizSessions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == sessionId)
+            ?? throw new NotFoundException("Quiz session not found");
+        var question = await context.Questions
+            .AsNoTracking()
+            .FirstOrDefaultAsync(q => q.Id == dto.QuestionId && q.TopicId == session.TopicId)
+            ?? throw new NotFoundException("Question not found");
+
+        var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(session.TopicId);
+        var tutorStyle = await GetTutorStyleAsync();
+        var hint = await ollamaService.GenerateHintAsync(question.Text, question.CorrectAnswer, contextDocuments, tutorStyle);
+        return new QuizHintResponseDTO(hint);
     }
 
     public async Task<List<QuizSessionResponseDTO>> GetHistoryAsync(int? topicId)
@@ -252,5 +275,5 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     private static QuizSessionResponseDTO MapToDto(QuizSession s) => new(
         s.Id, s.TopicId, s.StartedAt, s.CompletedAt, s.AiReviewSummary, s.IsPractice,
         s.Answers.Select(a => new UserAnswerResponseDTO(
-            a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.LanguageFeedback, a.AnsweredAt)).ToList());
+            a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.LanguageFeedback, a.Confidence, a.HintUsed, a.AnsweredAt)).ToList());
 }

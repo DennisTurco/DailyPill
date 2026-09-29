@@ -2,13 +2,19 @@ import { ReactNode, useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { difficultyLabel } from "../lib/format";
 import { Accuracy } from "../components/Accuracy";
-import { ProgressSummary } from "../lib/types";
+import { AccuracyTrendChart } from "../components/AccuracyTrendChart";
+import { ProgressSummary, ProgressTrend } from "../lib/types";
 
 export default function DashboardPage() {
   const [progress, setProgress] = useState<ProgressSummary | null>(null);
+  const [trend, setTrend] = useState<ProgressTrend | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    api
+      .get<ProgressTrend>("/progress/trend?weeks=12")
+      .then(setTrend)
+      .catch((err) => setError(String(err)));
     api
       .get<ProgressSummary>("/progress")
       .then(setProgress)
@@ -33,6 +39,8 @@ export default function DashboardPage() {
           value={`${progress.current_streak_days} ${progress.current_streak_days === 1 ? "day" : "days"}`}
         />
       </div>
+
+      {trend && <AccuracyTrendChart trend={trend} />}
 
       <div className="dashboard-grid">
         <div className="card">

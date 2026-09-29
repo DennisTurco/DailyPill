@@ -28,6 +28,12 @@ public class UserAnswer
     /// <summary>Grammar/phrasing notes on an open answer, independent of whether it was correct.</summary>
     public string? LanguageFeedback { get; set; }
 
+    /// <summary>Self-reported certainty: "sure", "unsure" or "guess" (see AnswerConfidences); null when not given.</summary>
+    public string? Confidence { get; set; }
+
+    /// <summary>The user asked for an AI hint before answering; a correct answer then earns reduced score.</summary>
+    public bool HintUsed { get; set; }
+
     public DateTime AnsweredAt { get; set; } = DateTime.UtcNow;
 
     public QuizSession? QuizSession { get; set; }

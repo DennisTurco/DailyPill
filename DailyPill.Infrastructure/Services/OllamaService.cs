@@ -459,7 +459,8 @@ public partial class OllamaService : IOllamaService
     private static string BuildResultLines(IEnumerable<QuizResultLine> results)
         => string.Join(
             "\n",
-            results.Select(r => $"- Q: {r.Text} | given: {r.GivenAnswer} | correct: {r.CorrectAnswer} | was_correct: {(r.IsCorrect is { } b ? (b ? "True" : "False") : "None")}"));
+            results.Select(r => $"- Q: {r.Text} | given: {r.GivenAnswer} | correct: {r.CorrectAnswer} | was_correct: {(r.IsCorrect is { } b ? (b ? "True" : "False") : "None")}" +
+                $" | confidence: {r.Confidence ?? "not given"} | used_hint: {(r.HintUsed ? "True" : "False")}"));
 
     private static string BuildContextDocuments(List<string> contexts)
     {
@@ -492,11 +493,27 @@ public partial class OllamaService : IOllamaService
         return await GenerateAsync(string.Join("\n", parts), system, jsonMode: false, contextDocuments.ToList());
     }
 
+    public async Task<string> GenerateHintAsync(string questionText, string correctAnswer, IEnumerable<string> contextDocuments, TutorStyle style)
+    {
+        var system =
+            "You are a tutor giving a student a hint for a quiz question they are stuck on. " +
+            "Write one or two short sentences that nudge them toward the key idea: a related concept, " +
+            "a guiding question, or what to think about. NEVER state the answer, never quote or paraphrase it, " +
+            "and never eliminate or name multiple-choice options. Reply with the hint only.\n" +
+            TutorStyles.ToneInstruction(style);
+
+        var userPrompt = $"Question: {questionText}\nExpected answer (secret, do NOT reveal it): {correctAnswer}";
+        return (await GenerateAsync(userPrompt, system, jsonMode: false, contextDocuments.ToList())).Trim();
+    }
+
     public async Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments, TutorStyle style)
     {
         var system =
             "You are a tutor writing a short end-of-quiz recap (3-6 sentences). " +
-            "Summarize performance and explain the mistakes in plain language.\n" +
+            "Summarize performance and explain the mistakes in plain language. " +
+            "Each result includes the student's self-reported confidence: point out correct answers that were only a guess " +
+            "(they still need review) and wrong answers the student was sure about (a misconception worth fixing). " +
+            "Treat answers that needed a hint as not yet mastered.\n" +
             TutorStyles.ToneInstruction(style);
 
         var userPrompt = $"Topic: {topicName}\nResults:\n{BuildResultLines(results)}";

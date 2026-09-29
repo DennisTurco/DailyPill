@@ -5,7 +5,7 @@ import { Toast, ToastMessage } from "../components/Toast";
 import { MarkdownContent } from "../components/MarkdownContent";
 import { VoiceAnswerButton } from "../components/VoiceAnswerButton";
 import { difficultyLabel, formatElapsed } from "../lib/format";
-import { Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic, TranscriptionStatus } from "../lib/types";
+import { Confidence, Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic, TranscriptionStatus, UserAnswer } from "../lib/types";
 import { getSettingValue } from "../settings";
 
 type Stage = "select" | "in_progress" | "finished";
@@ -17,6 +17,8 @@ export default function QuizPage() {
   const [stage, setStage] = useState<Stage>("select");
   const [session, setSession] = useState<QuizStartResponse | null>(null);
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [confidence, setConfidence] = useState<Record<number, Confidence>>({});
+  const [hints, setHints] = useState<Record<number, string>>({});
   const [result, setResult] = useState<QuizFinishResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,6 +66,8 @@ export default function QuizPage() {
       });
       setSession(response);
       setAnswers({});
+      setConfidence({});
+      setHints({});
       setResult(null);
       setIsPractice(!!questionIds?.length);
       setStage("in_progress");
@@ -95,6 +99,8 @@ export default function QuizPage() {
         answers: session.questions.map((q) => ({
           question_id: q.id,
           given_answer: answers[q.id] ?? "",
+          confidence: confidence[q.id] ?? null,
+          hint_used: q.id in hints,
         })),
       };
       await api.post(`/quiz/${session.session_id}/submit`, payload);
@@ -170,6 +176,12 @@ export default function QuizPage() {
             value={answers[q.id] ?? ""}
             onChange={(value) => setAnswers((prev) => ({ ...prev, [q.id]: value }))}
             voiceReady={voiceReady}
+            confidence={confidence[q.id] ?? null}
+            onConfidenceChange={(value) => setConfidence((prev) => ({ ...prev, [q.id]: value }))}
+            sessionId={session.session_id}
+            hintsAvailable={session.ai_available}
+            hint={hints[q.id] ?? null}
+            onHint={(hint) => setHints((prev) => ({ ...prev, [q.id]: hint }))}
           />
         ))}
         <button disabled={loading} onClick={submitQuiz}>
@@ -182,8 +194,10 @@ export default function QuizPage() {
   if (stage === "finished" && result) {
     const questionById = new Map((session?.questions ?? []).map((q) => [q.id, q]));
     const allQuestionIds = (session?.questions ?? []).map((q) => q.id);
-    // Ungraded answers (AI review unavailable) are retried too — the user couldn't get feedback on them.
-    const wrongQuestionIds = result.session.answers.filter((a) => a.is_correct !== true).map((a) => a.question_id);
+    // "Weak" = not solidly known: wrong, ungraded (no feedback was possible), a lucky guess, or needed a hint.
+    const weakQuestionIds = result.session.answers
+      .filter((a) => a.is_correct !== true || a.confidence === "guess" || a.hint_used)
+      .map((a) => a.question_id);
     const retry = (ids: number[]) => startQuiz(result.session.topic_id, ids);
 
     return (
@@ -197,9 +211,13 @@ export default function QuizPage() {
             <div style={{ color: "var(--text-muted)" }}>Practice round — your latest answers now count toward accuracy.</div>
           )}
           <div className="row" style={{ marginTop: 12 }}>
-            {wrongQuestionIds.length > 0 && (
-              <button disabled={loading} onClick={() => retry(wrongQuestionIds)}>
-                <i className="fa-solid fa-rotate-right" /> Retry wrong answers ({wrongQuestionIds.length})
+            {weakQuestionIds.length > 0 && (
+              <button
+                disabled={loading}
+                onClick={() => retry(weakQuestionIds)}
+                title="Wrong answers, lucky guesses and answers that needed a hint"
+              >
+                <i className="fa-solid fa-rotate-right" /> Retry weak answers ({weakQuestionIds.length})
               </button>
             )}
             <button className="secondary" disabled={loading} onClick={() => retry(allQuestionIds)}>
@@ -240,6 +258,7 @@ export default function QuizPage() {
                   ) : (
                     <div>{a.given_answer}</div>
                   )}
+                  <AnswerInsight answer={a} />
                   {a.is_correct === false && question && (
                     <>
                       <div className="success" style={{ marginTop: 6 }}>
@@ -348,6 +367,92 @@ function QuizChat({ sessionId, voiceReady, voicePrompt }: { sessionId: number; v
   );
 }
 
+const CONFIDENCE_OPTIONS: { value: Confidence; label: string; icon: string }[] = [
+  { value: "sure", label: "Sure", icon: "fa-solid fa-circle-check" },
+  { value: "unsure", label: "Unsure", icon: "fa-solid fa-circle-question" },
+  { value: "guess", label: "Guessing", icon: "fa-solid fa-dice" },
+];
+
+const CONFIDENCE_LABELS: Record<Confidence, string> = { sure: "Sure", unsure: "Unsure", guess: "Guessed" };
+
+/** Badges for how the answer was given, plus a nudge when confidence and correctness disagree. */
+function AnswerInsight({ answer }: { answer: UserAnswer }) {
+  const luckyGuess = answer.is_correct === true && answer.confidence === "guess";
+  const misconception = answer.is_correct === false && answer.confidence === "sure";
+  if (!answer.confidence && !answer.hint_used) return null;
+
+  return (
+    <div style={{ margin: "6px 0" }}>
+      <div className="row" style={{ flexWrap: "wrap" }}>
+        {answer.confidence && <span className="badge">{CONFIDENCE_LABELS[answer.confidence]}</span>}
+        {answer.hint_used && (
+          <span className="badge">
+            <i className="fa-solid fa-lightbulb" /> Used a hint{answer.is_correct ? " — half credit" : ""}
+          </span>
+        )}
+      </div>
+      {luckyGuess && (
+        <div style={{ color: "var(--warning)", marginTop: 4 }}>
+          <i className="fa-solid fa-dice" /> Right, but it was a guess — worth reviewing until you know why.
+        </div>
+      )}
+      {misconception && (
+        <div style={{ color: "var(--warning)", marginTop: 4 }}>
+          <i className="fa-solid fa-triangle-exclamation" /> You were sure about this one — likely a misconception worth fixing.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HintBox({
+  sessionId,
+  questionId,
+  hint,
+  onHint,
+}: {
+  sessionId: number;
+  questionId: number;
+  hint: string | null;
+  onHint: (hint: string) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function requestHint() {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.post<{ hint: string }>(`/quiz/${sessionId}/hint`, { question_id: questionId });
+      onHint(response.hint);
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (hint) {
+    return (
+      <div className="hint-box">
+        <div className="hint-box-title">
+          <i className="fa-solid fa-lightbulb" /> Hint <span className="text-muted">(a correct answer now earns half credit)</span>
+        </div>
+        <MarkdownContent text={hint} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="row" style={{ marginTop: 8 }}>
+      <button className="btn-ghost btn-sm" disabled={loading} onClick={requestHint} title="A correct answer after a hint earns half credit">
+        <i className="fa-solid fa-lightbulb" /> {loading ? "Thinking..." : "Get a hint"}
+      </button>
+      {error && <span className="error">{error}</span>}
+    </div>
+  );
+}
+
 function QuestionCard({
   question,
   value,
@@ -355,6 +460,12 @@ function QuestionCard({
   voiceReady,
   index,
   total,
+  confidence,
+  onConfidenceChange,
+  sessionId,
+  hintsAvailable,
+  hint,
+  onHint,
 }: {
   question: Question;
   value: string;
@@ -362,6 +473,12 @@ function QuestionCard({
   voiceReady: boolean;
   index: number;
   total: number;
+  confidence: Confidence | null;
+  onConfidenceChange: (value: Confidence) => void;
+  sessionId: number;
+  hintsAvailable: boolean;
+  hint: string | null;
+  onHint: (hint: string) => void;
 }) {
   return (
     <div className="card">
@@ -406,6 +523,21 @@ function QuestionCard({
       ) : (
         <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Your answer" />
       )}
+      {hintsAvailable && <HintBox sessionId={sessionId} questionId={question.id} hint={hint} onHint={onHint} />}
+      <div className="confidence-picker">
+        <span className="text-muted">How sure are you?</span>
+        {CONFIDENCE_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            className={`btn-sm ${confidence === opt.value ? "active" : "secondary"}`}
+            aria-pressed={confidence === opt.value}
+            onClick={() => onConfidenceChange(opt.value)}
+          >
+            <i className={opt.icon} /> {opt.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

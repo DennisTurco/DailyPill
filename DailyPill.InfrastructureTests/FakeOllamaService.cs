@@ -30,6 +30,9 @@ public class FakeOllamaService : IOllamaService
     public Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
+    public Task<string> GenerateHintAsync(string questionText, string correctAnswer, IEnumerable<string> contextDocuments, TutorStyle style) =>
+        throw new OllamaUnavailableException("Ollama unreachable (fake)");
+
     public Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 }

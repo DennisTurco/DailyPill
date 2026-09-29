@@ -84,5 +84,29 @@ public class QuizFlowTests
         Assert.Equal(1, topic.CorrectAnswers);
         Assert.Equal(1.0, summary.OverallAccuracy);
         Assert.Equal(1, summary.TotalQuizSessions);
+
+        var trend = await progressService.GetTrendAsync(4);
+        Assert.Equal(4, trend.Overall.Count);
+        Assert.Equal(1.0, trend.Overall[^1].Accuracy);
+        Assert.Equal(2, trend.Overall[^1].AnswersThisWeek);
+        Assert.Null(trend.Overall[0].Accuracy);
+        Assert.Single(trend.ByTopic, t => t.TopicId == topicId);
+    }
+
+    [Fact]
+    public async Task HintAndConfidence_AreStored_AndHintHalvesScore()
+    {
+        await using var context = TestDbContextFactory.Create();
+        var (topicId, questionId) = await MakeTopicWithQuestionAsync(context);
+        var quizService = new QuizService(context, new FakeOllamaService(), new TopicContextDocumentService(context));
+
+        var start = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5));
+        var submitted = await quizService.SubmitAsync(start.SessionId, new QuizSubmitRequestDTO(
+            [new AnswerSubmitDTO(questionId, "4", "Guess", HintUsed: true)]));
+
+        var answer = Assert.Single(submitted.Answers);
+        Assert.Equal("guess", answer.Confidence);
+        Assert.True(answer.HintUsed);
+        Assert.Equal(0.5, answer.ScoreAwarded);
     }
 }
