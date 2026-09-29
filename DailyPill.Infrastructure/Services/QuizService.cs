@@ -121,6 +121,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
                 answer.IsCorrect = review.IsCorrect;
                 answer.ScoreAwarded = review.IsCorrect ? 1.0 : 0.0;
                 answer.AiFeedback = review.Feedback;
+                answer.LanguageFeedback = review.LanguageFeedback;
             }
             catch (OllamaUnavailableException)
             {
@@ -236,5 +237,5 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     private static QuizSessionResponseDTO MapToDto(QuizSession s) => new(
         s.Id, s.TopicId, s.StartedAt, s.CompletedAt, s.AiReviewSummary,
         s.Answers.Select(a => new UserAnswerResponseDTO(
-            a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.AnsweredAt)).ToList());
+            a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.LanguageFeedback, a.AnsweredAt)).ToList());
 }

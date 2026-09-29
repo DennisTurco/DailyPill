@@ -17,6 +17,12 @@ public class AppSettings
     public string OllamaModel { get; init; } = "llama3.1";
     public int OllamaTimeoutSeconds { get; init; } = 60;
 
+    /// <summary>Whisper ggml model for voice answers (tiny, base, small, medium, large-v3-turbo, ...); "none" disables it.</summary>
+    public string WhisperModel { get; init; } = "base";
+
+    /// <summary>Spoken language code (en, it, ...) or "auto" to let Whisper detect it.</summary>
+    public string WhisperLanguage { get; init; } = "auto";
+
     /// <summary>Path to the topics/*.yaml seed directory, relative to the API content root.</summary>
     public string TopicsSeedDir { get; init; } = "../topics";
 
@@ -30,6 +36,8 @@ public class AppSettings
             OllamaBaseUrl = Environment.GetEnvironmentVariable("OLLAMA_BASE_URL") ?? "http://localhost:11434",
             OllamaModel = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.1",
             OllamaTimeoutSeconds = int.TryParse(Environment.GetEnvironmentVariable("OLLAMA_TIMEOUT_SECONDS"), out var t) ? t : 60,
+            WhisperModel = Environment.GetEnvironmentVariable("WHISPER_MODEL") ?? "base",
+            WhisperLanguage = Environment.GetEnvironmentVariable("WHISPER_LANGUAGE") ?? "auto",
             TopicsSeedDir = "../topics",
         };
     }

@@ -55,6 +55,7 @@ export interface UserAnswer {
   is_correct: boolean | null;
   score_awarded: number;
   ai_feedback: string | null;
+  language_feedback: string | null;
   answered_at: string;
 }
 
@@ -136,4 +137,12 @@ export interface AIGeneratedQuestion {
   correct_answer: string;
   difficulty: number;
   explanation: string | null;
+}
+
+export interface TranscriptionStatus {
+  enabled: boolean;
+  ready: boolean;
+  model: string;
+  downloading: boolean;
+  status: string | null;
 }

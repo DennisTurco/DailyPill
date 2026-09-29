@@ -25,6 +25,9 @@ public class UserAnswer
 
     public string? AiFeedback { get; set; }
 
+    /// <summary>Grammar/phrasing notes on an open answer, independent of whether it was correct.</summary>
+    public string? LanguageFeedback { get; set; }
+
     public DateTime AnsweredAt { get; set; } = DateTime.UtcNow;
 
     public QuizSession? QuizSession { get; set; }

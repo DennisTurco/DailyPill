@@ -6,6 +6,7 @@ DailyPill.Api/data/*.db
 DailyPill.Api/data/*.db-shm
 DailyPill.Api/data/*.db-wal
 DailyPill.Api/data/*.sqlite3
+DailyPill.Api/data/models/
 *.csproj.user
 
 # Visual Studio

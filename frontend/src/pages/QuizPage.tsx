@@ -3,8 +3,9 @@ import { useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { Toast, ToastMessage } from "../components/Toast";
 import { MarkdownContent } from "../components/MarkdownContent";
+import { VoiceAnswerButton } from "../components/VoiceAnswerButton";
 import { difficultyLabel, formatElapsed } from "../lib/format";
-import { Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic } from "../lib/types";
+import { Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic, TranscriptionStatus } from "../lib/types";
 import { getSettingValue } from "../settings";
 
 type Stage = "select" | "in_progress" | "finished";
@@ -22,6 +23,7 @@ export default function QuizPage() {
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [settings, setSettings] = useState<Setting[]>([]);
+  const [voiceReady, setVoiceReady] = useState(false);
 
   useEffect(() => {
     api.get<Topic[]>("/topics").then(setTopics).catch((err) => setError(String(err)));
@@ -60,6 +62,11 @@ export default function QuizPage() {
       setSession(response);
       setAnswers({});
       setStage("in_progress");
+      // Checked per quiz: the Whisper model may still be downloading when the app starts.
+      api
+        .get<TranscriptionStatus>("/ai/transcription-status")
+        .then((s) => setVoiceReady(s.ready))
+        .catch(() => setVoiceReady(false));
       if (!response.ai_available) {
         setToast({
           kind: "warning",
@@ -146,6 +153,7 @@ export default function QuizPage() {
             question={q}
             value={answers[q.id] ?? ""}
             onChange={(value) => setAnswers((prev) => ({ ...prev, [q.id]: value }))}
+            voiceReady={voiceReady}
           />
         ))}
         <button disabled={loading} onClick={submitQuiz}>
@@ -209,6 +217,14 @@ export default function QuizPage() {
                     </>
                   )}
                   {a.ai_feedback && <div style={{ color: "var(--text-muted)" }}>{a.ai_feedback}</div>}
+                  {a.language_feedback && (
+                    <div style={{ marginTop: 6 }}>
+                      <div style={{ color: "var(--warning)", fontWeight: 600 }}>
+                        <i className="fa-solid fa-spell-check" /> Language notes (don't affect the score)
+                      </div>
+                      <div style={{ whiteSpace: "pre-line", color: "var(--text-muted)" }}>{a.language_feedback}</div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -292,10 +308,12 @@ function QuestionCard({
   question,
   value,
   onChange,
+  voiceReady,
 }: {
   question: Question;
   value: string;
   onChange: (value: string) => void;
+  voiceReady: boolean;
 }) {
   return (
     <div className="card">
@@ -321,13 +339,21 @@ function QuestionCard({
           ))}
         </div>
       ) : question.type === "open_answer" ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="Your answer... (code is welcome, e.g. inside a ```language fence)"
-          rows={6}
-          style={{ fontFamily: "SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" }}
-        />
+        <>
+          <textarea
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Your answer... (code is welcome, e.g. inside a ```language fence)"
+            rows={6}
+            style={{ fontFamily: "SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" }}
+          />
+          {voiceReady && (
+            <VoiceAnswerButton
+              prompt={question.text}
+              onTranscript={(text) => onChange(value.trim() ? `${value.trimEnd()}\n${text}` : text)}
+            />
+          )}
+        </>
       ) : (
         <input value={value} onChange={(e) => onChange(e.target.value)} placeholder="Your answer" />
       )}

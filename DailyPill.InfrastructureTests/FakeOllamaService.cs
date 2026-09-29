@@ -17,18 +17,18 @@ public class FakeOllamaService : IOllamaService
     public PullState GetPullState() => new(false, null, null, null);
     public void Bootstrap() { }
 
-    public Task<List<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, List<string> contextDocuments) =>
+    public Task<IEnumerable<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<List<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, List<string> contextDocuments) =>
+    public Task<IEnumerable<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, List<string> contextDocuments) =>
+    public Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<string> ChatAboutQuizAsync(string topicName, List<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, List<string> contextDocuments) =>
+    public Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<string> GenerateQuizRecapAsync(string topicName, List<QuizResultLine> results, List<string> contextDocuments) =>
+    public Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 }

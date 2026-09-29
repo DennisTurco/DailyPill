@@ -18,6 +18,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 problemDetails.Detail = exception.Message;
                 problemDetails.Title = "Local AI Service Unavailable";
                 break;
+            case TranscriptionUnavailableException:
+                logger.LogWarning(exception, "Warning occurred: {Message}", exception.Message);
+                problemDetails.Status = StatusCodes.Status503ServiceUnavailable;
+                problemDetails.Detail = exception.Message;
+                problemDetails.Title = "Voice Transcription Unavailable";
+                break;
             case NotFoundException:
                 logger.LogWarning(exception, "Warning occurred: {Message}", exception.Message);
                 problemDetails.Status = StatusCodes.Status404NotFound;

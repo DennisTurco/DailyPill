@@ -30,6 +30,8 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite($"Data 
 builder.Services.AddHttpClient("ollama");
 builder.Services.AddSingleton<IGpuService, GpuService>();
 builder.Services.AddSingleton<IOllamaService, OllamaService>();
+builder.Services.AddSingleton<ITranscriptionService>(sp => new WhisperTranscriptionService(
+    appSettings, Path.Combine(dataDir, "models"), sp.GetRequiredService<ILogger<WhisperTranscriptionService>>()));
 
 builder.Services.AddScoped<ISeedLoaderService, SeedLoaderService>();
 builder.Services.AddScoped<ITopicService, TopicService>();
@@ -77,6 +79,8 @@ app.Logger.LogInformation("NVIDIA GPU detected: {GpuAvailable}", gpuService.Dete
 
 var ollamaService = app.Services.GetRequiredService<IOllamaService>();
 ollamaService.Bootstrap();
+
+app.Services.GetRequiredService<ITranscriptionService>().Bootstrap();
 
 app.UseExceptionHandler();
 app.UseCors();

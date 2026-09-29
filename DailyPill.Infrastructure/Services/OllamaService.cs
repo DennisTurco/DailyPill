@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using DailyPill.Common.DTOs;
 using DailyPill.Common.Exceptions;
 using DailyPill.Common.Interfaces;
@@ -11,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DailyPill.Infrastructure.Services;
 
-public class OllamaService : IOllamaService
+public partial class OllamaService : IOllamaService
 {
     private const int OllamaAllGpuLayers = 999;
     private const int OllamaStartRetries = 60;
@@ -48,7 +49,7 @@ public class OllamaService : IOllamaService
         GpuEnabled = gpuService.DetectNvidiaGpu();
     }
 
-    private async Task<string> GenerateAsync(string prompt, string? system, bool jsonMode, List<string> contextDocuments, CancellationToken ct = default)
+    private async Task<string> GenerateAsync(string prompt, string? system, bool jsonMode, List<string> contextDocuments, double? temperature = null, CancellationToken ct = default)
     {
         var payload = new Dictionary<string, object?>
         {
@@ -66,6 +67,7 @@ public class OllamaService : IOllamaService
 
         var options = new Dictionary<string, object?> { ["num_ctx"] = ComputeNumCtx(prompt, system) };
         if (GpuEnabled) options["num_gpu"] = OllamaAllGpuLayers;
+        if (temperature is not null) options["temperature"] = temperature;
         payload["options"] = options;
 
         HttpResponseMessage response;
@@ -347,29 +349,108 @@ public class OllamaService : IOllamaService
         return [];
     }
 
-    public async Task<(bool IsCorrect, string? Feedback)> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments)
+    public async Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments)
     {
+        // Correctness and language quality are graded by two separate calls: asked for both at once, an
+        // 8B model marks correct-but-ungrammatical answers as wrong and mixes content remarks into the
+        // language notes. The language check never sees the expected answer, so it can't judge content.
         const string system =
             "You are grading a quiz answer. Respond ONLY with valid JSON: " +
             "{\"is_correct\": bool, \"feedback\": str}. Feedback should briefly explain why the answer " +
-            "is right or wrong, in a friendly tone.";
+            "is right or wrong, in a friendly tone. Judge ONLY the concepts: the answer is correct if it captures the key idea " +
+            "of the expected answer, even if it omits minor details or examples. Grammar, spelling and style never make an answer wrong. " +
+            "The answer may be a speech-to-text transcript: ignore misheard technical terms when the intended meaning is clear.";
 
         var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nUser's answer: {givenAnswer}";
 
         var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList());
+        var parsed = ParseJson(raw);
+
+        var isCorrect = parsed.TryGetProperty("is_correct", out var ic) && ic.ValueKind is JsonValueKind.True or JsonValueKind.False && ic.GetBoolean();
+        var feedback = parsed.TryGetProperty("feedback", out var fb) ? fb.GetString() : null;
+        return new OpenAnswerReview(isCorrect, feedback, await ReviewLanguageAsync(givenAnswer));
+    }
+
+    /// <summary>
+    /// Grammar/phrasing notes on the prose part of an answer, one "original → corrected (reason)" per line,
+    /// or null when there's nothing worth reporting. Best-effort: a failure here never blocks grading.
+    /// </summary>
+    private async Task<string?> ReviewLanguageAsync(string givenAnswer)
+    {
+        const string system =
+            "You are a strict but fair language tutor reviewing a short text written or spoken by a non-native speaker, " +
+            "in whatever language it is written. Respond ONLY with valid JSON: " +
+            "{\"issues\": [{\"original\": str, \"corrected\": str, \"reason\": str, \"kind\": \"grammar\"|\"word_choice\"|\"style\"}]}. " +
+            "grammar = an actual grammatical error (agreement, tense, articles, prepositions, word order, missing words). " +
+            "word_choice = a word or expression a native speaker would not use with that meaning. style = optional polishing of something already correct. " +
+            "original must be the exact words from the text (the shortest span containing the error), corrected the fixed version, reason a few words. " +
+            "Ignore punctuation and capitalization. Never comment on whether the content is correct or complete. " +
+            "Most texts written by fluent speakers have NO issues: then return {\"issues\": []}.\n" +
+            "Example: \"Sending the same request twice has the same effect as sending it once.\" -> {\"issues\": []}\n" +
+            "Example: \"He have went to the office yesterday.\" -> {\"issues\": [{\"original\": \"have went\", \"corrected\": \"went\", " +
+            "\"reason\": \"past simple with 'yesterday'\", \"kind\": \"grammar\"}]}";
+
+        // Code blocks aren't prose; skip the check when little else is left.
+        var prose = CodeFenceRegex().Replace(givenAnswer, " ").Trim();
+        if (prose.Length < MinProseLengthForLanguageReview) return null;
+
         JsonElement parsed;
         try
         {
-            parsed = JsonSerializer.Deserialize<JsonElement>(raw);
+            parsed = ParseJson(await GenerateAsync($"Text:\n{prose}", system, jsonMode: true, [], temperature: 0));
+        }
+        catch (OllamaUnavailableException exc)
+        {
+            _logger.LogWarning(exc, "Language review skipped");
+            return null;
+        }
+        if (!parsed.TryGetProperty("issues", out var issues) || issues.ValueKind != JsonValueKind.Array) return null;
+
+        // The model still suggests optional polish and occasionally "corrects" words that aren't in the
+        // text or rewrites them to the same thing; keep only real, verifiable mistakes.
+        var normalizedProse = NormalizeForComparison(prose);
+        var lines = new List<string>();
+        foreach (var issue in issues.EnumerateArray())
+        {
+            if (issue.ValueKind != JsonValueKind.Object) continue;
+            var original = GetString(issue, "original");
+            var corrected = GetString(issue, "corrected");
+            var reason = GetString(issue, "reason");
+            if (GetString(issue, "kind") == "style" || original is null || corrected is null) continue;
+
+            var normalizedOriginal = NormalizeForComparison(original);
+            if (normalizedOriginal.Length == 0 || normalizedOriginal == NormalizeForComparison(corrected)) continue;
+            if (!normalizedProse.Contains(normalizedOriginal)) continue;
+
+            lines.Add(string.IsNullOrWhiteSpace(reason) ? $"\"{original}\" → \"{corrected}\"" : $"\"{original}\" → \"{corrected}\" ({reason})");
+        }
+        return lines.Count > 0 ? string.Join("\n", lines) : null;
+    }
+
+    private const int MinProseLengthForLanguageReview = 20;
+
+    [GeneratedRegex("```.*?```", RegexOptions.Singleline)]
+    private static partial Regex CodeFenceRegex();
+
+    [GeneratedRegex(@"[^\p{L}\p{N}]+")]
+    private static partial Regex NonWordRegex();
+
+    private static string NormalizeForComparison(string text)
+        => NonWordRegex().Replace(text.ToLowerInvariant(), " ").Trim();
+
+    private static string? GetString(JsonElement obj, string property)
+        => obj.TryGetProperty(property, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
+
+    private static JsonElement ParseJson(string raw)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<JsonElement>(raw);
         }
         catch (JsonException exc)
         {
             throw new OllamaUnavailableException($"Ollama returned invalid JSON: {exc.Message}");
         }
-
-        var isCorrect = parsed.TryGetProperty("is_correct", out var ic) && ic.ValueKind is JsonValueKind.True or JsonValueKind.False && ic.GetBoolean();
-        var feedback = parsed.TryGetProperty("feedback", out var fb) ? fb.GetString() : null;
-        return (isCorrect, feedback);
     }
 
     private static string BuildResultLines(IEnumerable<QuizResultLine> results)

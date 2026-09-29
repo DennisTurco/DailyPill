@@ -15,6 +15,7 @@ public record UserAnswerResponseDTO(
     bool? IsCorrect,
     double ScoreAwarded,
     string? AiFeedback,
+    string? LanguageFeedback,
     DateTime AnsweredAt);
 
 public record QuizSessionResponseDTO(
