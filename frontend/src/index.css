@@ -978,6 +978,10 @@ a.btn-ghost {
   color: var(--success);
 }
 
+.warning {
+  color: var(--warning);
+}
+
 /* Dashboard stat tiles */
 .stat-grid {
   display: grid;

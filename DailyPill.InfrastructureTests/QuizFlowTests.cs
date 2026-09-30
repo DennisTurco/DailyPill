@@ -109,4 +109,29 @@ public class QuizFlowTests
         Assert.True(answer.HintUsed);
         Assert.Equal(0.5, answer.ScoreAwarded);
     }
+
+    [Theory]
+    [InlineData(0.7, false, 0.7, true)]
+    [InlineData(0.4, false, 0.4, false)]
+    [InlineData(0.7, true, 0.35, true)]
+    public async Task OpenAnswer_EarnsPartialScore_FromAiReview(double aiScore, bool hintUsed, double expectedScore, bool expectedCorrect)
+    {
+        await using var context = TestDbContextFactory.Create();
+        var (topicId, _) = await MakeTopicWithQuestionAsync(context);
+        var questionService = new QuestionService(context);
+        var open = await questionService.CreateAsync(new QuestionRequestDTO(
+            topicId, QuestionType.OpenAnswer, "What is idempotency?", null, "Repeating the call has the same effect as doing it once.", 3, null));
+        var ollama = new FakeOllamaService { OpenAnswerReview = new OpenAnswerReview(aiScore, "Partly right.", null) };
+        var quizService = new QuizService(context, ollama, new TopicContextDocumentService(context));
+
+        var start = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5, [open.Id]));
+        await quizService.SubmitAsync(start.SessionId, new QuizSubmitRequestDTO(
+            [new AnswerSubmitDTO(open.Id, "Same result when repeated", HintUsed: hintUsed)]));
+        var finished = await quizService.FinishAsync(start.SessionId);
+
+        var answer = Assert.Single(finished.Session.Answers);
+        Assert.Equal(expectedScore, answer.ScoreAwarded, 3);
+        Assert.Equal(expectedCorrect, answer.IsCorrect);
+        Assert.Equal(expectedScore, finished.TotalScore, 3);
+    }
 }

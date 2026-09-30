@@ -4,9 +4,11 @@ import { api } from "../lib/api";
 import { Toast, ToastMessage } from "../components/Toast";
 import { MarkdownContent } from "../components/MarkdownContent";
 import { VoiceAnswerButton } from "../components/VoiceAnswerButton";
+import { MicrophoneSelect } from "../components/MicrophoneSelect";
 import { difficultyLabel, formatElapsed } from "../lib/format";
 import { Confidence, Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic, TranscriptionStatus, UserAnswer } from "../lib/types";
 import { getSettingValue } from "../settings";
+import { getTutorStyle } from "../lib/tutorStyles";
 
 type Stage = "select" | "in_progress" | "finished";
 
@@ -114,10 +116,12 @@ export default function QuizPage() {
     }
   }
 
-  function getIconAndColorByAnswer(isCorrect: boolean | null): React.JSX.Element | undefined {
-    if (isCorrect == null)
+  function getIconAndColorByAnswer(a: UserAnswer): React.JSX.Element | undefined {
+    if (a.is_correct == null)
         return undefined;
-    return isCorrect
+    if (isPartial(a))
+        return <i className="fa-solid fa-circle-half-stroke" style={{color: "var(--warning)"}}/>
+    return a.is_correct
         ? <i className="fa-solid fa-circle-check" style={{color: "var(--success)"}}/>
         : <i className="fa-solid fa-circle-xmark" style={{color: "var(--danger)"}}/>
   }
@@ -167,6 +171,12 @@ export default function QuizPage() {
         {isPractice && (
           <p className="page-subtitle">Retrying questions you've already seen. Your new answers replace the previous ones in your accuracy stats.</p>
         )}
+        {voiceReady && (
+          <div className="card">
+            <label htmlFor="quiz-microphone"><i className="fa-solid fa-microphone" /> Microphone for voice answers</label>
+            <MicrophoneSelect id="quiz-microphone" />
+          </div>
+        )}
         {session.questions.map((q, i) => (
           <QuestionCard
             key={q.id}
@@ -192,11 +202,12 @@ export default function QuizPage() {
   }
 
   if (stage === "finished" && result) {
+    const tutorStyle = getTutorStyle(getSettingValue(settings, "TutorStyle"));
     const questionById = new Map((session?.questions ?? []).map((q) => [q.id, q]));
     const allQuestionIds = (session?.questions ?? []).map((q) => q.id);
-    // "Weak" = not solidly known: wrong, ungraded (no feedback was possible), a lucky guess, or needed a hint.
+    // "Weak" = not solidly known: wrong, ungraded (no feedback was possible), only partially right, a lucky guess, or needed a hint.
     const weakQuestionIds = result.session.answers
-      .filter((a) => a.is_correct !== true || a.confidence === "guess" || a.hint_used)
+      .filter((a) => a.is_correct !== true || isPartial(a) || a.confidence === "guess" || a.hint_used)
       .map((a) => a.question_id);
     const retry = (ids: number[]) => startQuiz(result.session.topic_id, ids);
 
@@ -205,7 +216,7 @@ export default function QuizPage() {
         <h1><i className="fa-solid fa-square-poll-vertical"/> {result.session.is_practice ? "Practice results" : "Results"}</h1>
         <div className="card">
           <div style={{ fontSize: 22, fontWeight: 700 }}>
-            {result.total_score} / {result.max_score}
+            {formatScore(result.total_score)} / {result.max_score}
           </div>
           {result.session.is_practice && (
             <div style={{ color: "var(--text-muted)" }}>Practice round — your latest answers now count toward accuracy.</div>
@@ -227,7 +238,12 @@ export default function QuizPage() {
         </div>
         {result.session.ai_review_summary && (
           <div className="card">
-            <h3><i className="fa-solid fa-robot"/> AI recap</h3>
+            <div className="row" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+              <h3><i className="fa-solid fa-robot"/> AI recap</h3>
+              <span className="badge" title={`Tutor style: ${tutorStyle.description} Change it in Settings.`}>
+                <i className={tutorStyle.icon} /> {tutorStyle.label}
+              </span>
+            </div>
             <MarkdownContent text={result.session.ai_review_summary} />
           </div>
         )}
@@ -246,12 +262,16 @@ export default function QuizPage() {
               >
                 {question && (
                   <div style={{ fontWeight: 600 }}>
-                    {getIconAndColorByAnswer(a.is_correct)} <MarkdownContent text={question.text} />
+                    {getIconAndColorByAnswer(a)} <MarkdownContent text={question.text} />
                   </div>
                 )}
                 <div style={{ marginLeft: 16, marginTop: 4 }}>
-                  <div className={a.is_correct === null ? "" : a.is_correct ? "success" : "error"}>
-                    {a.is_correct === null ? "Pending review" : a.is_correct ? "Correct" : "Incorrect"} — you answered:
+                  <div className={a.is_correct === null ? "" : isPartial(a) ? "warning" : a.is_correct ? "success" : "error"}>
+                    {a.is_correct === null
+                      ? "Pending review"
+                      : isPartial(a)
+                        ? `Partially correct (${Math.round(answerCredit(a) * 100)}%)`
+                        : a.is_correct ? "Correct" : "Incorrect"} — you answered:
                   </div>
                   {question?.type === "open_answer" ? (
                     <MarkdownContent text={a.given_answer || "*(no answer given)*"} />
@@ -259,7 +279,7 @@ export default function QuizPage() {
                     <div>{a.given_answer}</div>
                   )}
                   <AnswerInsight answer={a} />
-                  {a.is_correct === false && question && (
+                  {(a.is_correct === false || isPartial(a)) && question && (
                     <>
                       <div className="success" style={{ marginTop: 6 }}>
                         Correct answer:
@@ -373,6 +393,22 @@ const CONFIDENCE_OPTIONS: { value: Confidence; label: string; icon: string }[] =
   { value: "guess", label: "Guessing", icon: "fa-solid fa-dice" },
 ];
 
+/** Correctness credit from 0 to 1, before the hint penalty (score_awarded is halved when a hint was used). */
+function answerCredit(a: UserAnswer): number {
+  return a.hint_used ? Math.min(1, a.score_awarded * 2) : a.score_awarded;
+}
+
+/** Graded open answers can earn partial credit: right in part, but missing or blurring some key idea. */
+function isPartial(a: UserAnswer): boolean {
+  if (a.is_correct === null) return false;
+  const credit = answerCredit(a);
+  return credit > 0 && credit < 1;
+}
+
+function formatScore(score: number): string {
+  return String(Math.round(score * 100) / 100);
+}
+
 const CONFIDENCE_LABELS: Record<Confidence, string> = { sure: "Sure", unsure: "Unsure", guess: "Guessed" };
 
 /** Badges for how the answer was given, plus a nudge when confidence and correctness disagree. */
@@ -387,7 +423,7 @@ function AnswerInsight({ answer }: { answer: UserAnswer }) {
         {answer.confidence && <span className="badge">{CONFIDENCE_LABELS[answer.confidence]}</span>}
         {answer.hint_used && (
           <span className="badge">
-            <i className="fa-solid fa-lightbulb" /> Used a hint{answer.is_correct ? " — half credit" : ""}
+            <i className="fa-solid fa-lightbulb" /> Used a hint{answer.score_awarded > 0 ? " — half credit" : ""}
           </span>
         )}
       </div>

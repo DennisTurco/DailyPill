@@ -7,8 +7,9 @@ export interface VoiceRecording {
   cancel: () => void;
 }
 
-export async function startVoiceRecording(): Promise<VoiceRecording> {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+/** Records from the given input device, falling back to the default one if it's no longer available. */
+export async function startVoiceRecording(deviceId?: string | null): Promise<VoiceRecording> {
+  const stream = await openMicrophone(deviceId);
   const recorder = new MediaRecorder(stream);
   const chunks: Blob[] = [];
   recorder.ondataavailable = (e) => {
@@ -36,6 +37,17 @@ export async function startVoiceRecording(): Promise<VoiceRecording> {
       recorder.stop();
     },
   };
+}
+
+async function openMicrophone(deviceId?: string | null): Promise<MediaStream> {
+  if (deviceId) {
+    try {
+      return await navigator.mediaDevices.getUserMedia({ audio: { deviceId: { exact: deviceId } } });
+    } catch (err) {
+      if (!(err instanceof DOMException && (err.name === "OverconstrainedError" || err.name === "NotFoundError"))) throw err;
+    }
+  }
+  return navigator.mediaDevices.getUserMedia({ audio: true });
 }
 
 async function toWhisperWav(recorded: Blob): Promise<Blob> {

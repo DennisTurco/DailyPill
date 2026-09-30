@@ -357,9 +357,12 @@ public partial class OllamaService : IOllamaService
         // language notes. The language check never sees the expected answer, so it can't judge content.
         var system =
             "You are grading a quiz answer. Respond ONLY with valid JSON: " +
-            "{\"is_correct\": bool, \"feedback\": str}. Feedback should briefly explain why the answer " +
-            "is right or wrong. Judge ONLY the concepts: the answer is correct if it captures the key idea " +
-            "of the expected answer, even if it omits minor details or examples. Grammar, spelling and style never make an answer wrong. " +
+            "{\"score\": number, \"feedback\": str}. score is how correct the answer is, from 0.0 to 1.0: " +
+            "1.0 = captures all the key ideas of the expected answer (missing minor details or examples is fine); " +
+            "0.7-0.9 = mostly right but misses or blurs one important point; 0.4-0.6 = only half of the key ideas, or right ideas mixed with an error; " +
+            "0.1-0.3 = mostly wrong or very vague, with a small correct element; 0.0 = wrong, off-topic or empty. " +
+            "Feedback should briefly explain what is right and what is missing or wrong. Judge ONLY the concepts: " +
+            "grammar, spelling and style never lower the score. " +
             "The answer may be a speech-to-text transcript: ignore misheard technical terms when the intended meaning is clear. " +
             "The tone below only changes how the feedback is worded, never whether the answer is correct.\n" +
             TutorStyles.ToneInstruction(style);
@@ -369,9 +372,29 @@ public partial class OllamaService : IOllamaService
         var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList());
         var parsed = ParseJson(raw);
 
-        var isCorrect = parsed.TryGetProperty("is_correct", out var ic) && ic.ValueKind is JsonValueKind.True or JsonValueKind.False && ic.GetBoolean();
         var feedback = parsed.TryGetProperty("feedback", out var fb) ? fb.GetString() : null;
-        return new OpenAnswerReview(isCorrect, feedback, await ReviewLanguageAsync(givenAnswer));
+        return new OpenAnswerReview(ParseScore(parsed), feedback, await ReviewLanguageAsync(givenAnswer));
+    }
+
+    /// <summary>
+    /// Reads the 0-1 "score", tolerating a 0-100 percentage or a numeric string, and falls back to the
+    /// old boolean "is_correct" if the model answers in that shape. Rounded to 0.05 so scores stay readable.
+    /// </summary>
+    private static double ParseScore(JsonElement parsed)
+    {
+        double? score = null;
+        if (parsed.TryGetProperty("score", out var sc))
+        {
+            if (sc.ValueKind == JsonValueKind.Number) score = sc.GetDouble();
+            else if (sc.ValueKind == JsonValueKind.String && double.TryParse(sc.GetString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s)) score = s;
+        }
+        if (score is null)
+        {
+            return parsed.TryGetProperty("is_correct", out var ic) && ic.ValueKind == JsonValueKind.True ? 1.0 : 0.0;
+        }
+
+        var value = score.Value > 1 ? score.Value / 100 : score.Value;
+        return Math.Round(Math.Clamp(value, 0, 1) * 20) / 20;
     }
 
     /// <summary>
@@ -460,7 +483,7 @@ public partial class OllamaService : IOllamaService
         => string.Join(
             "\n",
             results.Select(r => $"- Q: {r.Text} | given: {r.GivenAnswer} | correct: {r.CorrectAnswer} | was_correct: {(r.IsCorrect is { } b ? (b ? "True" : "False") : "None")}" +
-                $" | confidence: {r.Confidence ?? "not given"} | used_hint: {(r.HintUsed ? "True" : "False")}"));
+                $" | score: {r.Score.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}/1 | confidence: {r.Confidence ?? "not given"} | used_hint: {(r.HintUsed ? "True" : "False")}"));
 
     private static string BuildContextDocuments(List<string> contexts)
     {

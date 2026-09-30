@@ -5,17 +5,8 @@ import { getSettingValue } from "../settings";
 import { triggerOnboarding } from "../lib/onboarding";
 import { Toast, ToastMessage } from "../components/Toast";
 import { Modal } from "../components/Modal";
-
-type TutorStyle = "friendly" | "professional" | "strict" | "socratic" | "interviewer";
-
-// Mirrors DailyPill.Common.Enums.TutorStyle on the backend.
-const TUTOR_STYLES: { value: TutorStyle; label: string; icon: string; description: string }[] = [
-  { value: "friendly", label: "Friendly", icon: "fa-solid fa-face-smile", description: "Warm and encouraging, celebrates what you got right." },
-  { value: "professional", label: "Professional", icon: "fa-solid fa-briefcase", description: "Neutral and precise, like a senior colleague." },
-  { value: "strict", label: "Strict", icon: "fa-solid fa-ruler", description: "Direct and demanding, points out every weakness." },
-  { value: "socratic", label: "Socratic", icon: "fa-solid fa-lightbulb", description: "Guides you with hints and questions instead of giving the answer away." },
-  { value: "interviewer", label: "Interviewer", icon: "fa-solid fa-user-tie", description: "Talks like a technical interviewer and asks follow-up questions." },
-];
+import { MicrophoneSelect } from "../components/MicrophoneSelect";
+import { TUTOR_STYLES, TutorStyle } from "../lib/tutorStyles";
 
 interface AIStatus {
   available: boolean;
@@ -204,6 +195,15 @@ export default function SettingsPage() {
             </span>
           )}
         </div>
+      </div>
+
+      <div className="card">
+        <h3><i className="fa-solid fa-microphone" /> Voice answers</h3>
+        <label htmlFor="sett-microphone">Microphone</label>
+        <p className="text-muted text-sm" style={{ margin: "0 0 8px" }}>
+          Used when you answer or ask by voice. Saved right away, in this browser only.
+        </p>
+        <MicrophoneSelect id="sett-microphone" />
       </div>
 
       <div className="card">

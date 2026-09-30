@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import { startVoiceRecording, VoiceRecording } from "../lib/voiceRecorder";
+import { getPreferredMicrophone } from "../lib/microphone";
 
 type RecordingState = "idle" | "recording" | "transcribing";
 
@@ -26,7 +27,7 @@ export function VoiceAnswerButton({
   async function start() {
     setError(null);
     try {
-      recordingRef.current = await startVoiceRecording();
+      recordingRef.current = await startVoiceRecording(getPreferredMicrophone());
       setState("recording");
     } catch (err) {
       setError(`Microphone unavailable: ${String(err)}`);

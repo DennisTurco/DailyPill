@@ -26,14 +26,15 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     private static bool GradeObjective(Question question, string givenAnswer) =>
         Normalize(givenAnswer) == Normalize(question.CorrectAnswer);
 
-    /// <summary>Score for a graded answer: getting it right with a hint earns half credit.</summary>
-    private static double Score(bool isCorrect, bool hintUsed) => !isCorrect ? 0.0 : hintUsed ? 0.5 : 1.0;
+    /// <summary>Score for a graded answer: the correctness credit (0-1, partial for open answers), halved when a hint was used.</summary>
+    private static double Score(double credit, bool hintUsed) => hintUsed ? credit * 0.5 : credit;
 
     private static List<QuizResultLine> BuildResults(List<UserAnswer> answers) => answers.Select(a => new QuizResultLine(
         a.Question?.Text ?? "",
         a.GivenAnswer,
         a.Question?.CorrectAnswer ?? "",
         a.IsCorrect,
+        a.ScoreAwarded,
         a.Confidence,
         a.HintUsed)).ToList();
 
@@ -95,7 +96,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
                 QuestionId = question.Id,
                 GivenAnswer = answer.GivenAnswer,
                 IsCorrect = isCorrect,
-                ScoreAwarded = Score(isCorrect == true, answer.HintUsed),
+                ScoreAwarded = Score(isCorrect == true ? 1.0 : 0.0, answer.HintUsed),
                 Confidence = AnswerConfidences.Normalize(answer.Confidence),
                 HintUsed = answer.HintUsed,
             });
@@ -139,7 +140,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
             {
                 var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, contextDocuments, tutorStyle);
                 answer.IsCorrect = review.IsCorrect;
-                answer.ScoreAwarded = Score(review.IsCorrect, answer.HintUsed);
+                answer.ScoreAwarded = Score(review.Score, answer.HintUsed);
                 answer.AiFeedback = review.Feedback;
                 answer.LanguageFeedback = review.LanguageFeedback;
             }

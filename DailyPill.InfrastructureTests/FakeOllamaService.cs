@@ -13,7 +13,10 @@ public class FakeOllamaService : IOllamaService
     public string BaseUrl => "http://localhost:11434";
     public bool GpuEnabled => false;
 
-    public bool IsAvailable() => false;
+    /// <summary>When set, the fake acts as reachable and grades open answers with this review.</summary>
+    public OpenAnswerReview? OpenAnswerReview { get; init; }
+
+    public bool IsAvailable() => OpenAnswerReview is not null;
     public bool? HasModel() => null;
     public PullState GetPullState() => new(false, null, null, null);
     public void Bootstrap() { }
@@ -25,7 +28,7 @@ public class FakeOllamaService : IOllamaService
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
     public Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments, TutorStyle style) =>
-        throw new OllamaUnavailableException("Ollama unreachable (fake)");
+        OpenAnswerReview is { } review ? Task.FromResult(review) : throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
     public Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
