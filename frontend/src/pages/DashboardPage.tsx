@@ -1,9 +1,11 @@
 import { ReactNode, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../lib/api";
 import { difficultyLabel } from "../lib/format";
 import { Accuracy } from "../components/Accuracy";
 import { AccuracyTrendChart } from "../components/AccuracyTrendChart";
-import { ProgressSummary, ProgressTrend } from "../lib/types";
+import { MarkdownContent } from "../components/MarkdownContent";
+import { Calibration, Confidence, Misconception, ProgressSummary, ProgressTrend } from "../lib/types";
 
 export default function DashboardPage() {
   const [progress, setProgress] = useState<ProgressSummary | null>(null);
@@ -41,6 +43,13 @@ export default function DashboardPage() {
       </div>
 
       {trend && <AccuracyTrendChart trend={trend} />}
+
+      {(progress.misconceptions.length > 0 || progress.calibration.some((c) => c.total_answers > 0)) && (
+        <div className="dashboard-grid">
+          <MisconceptionsCard misconceptions={progress.misconceptions} />
+          <CalibrationCard calibration={progress.calibration} />
+        </div>
+      )}
 
       <div className="dashboard-grid">
         <div className="card">
@@ -123,6 +132,106 @@ function Stat({ icon, label, value }: { icon: string; label: ReactNode; value: s
         <div className="stat-tile-value">{value}</div>
         <div className="stat-tile-label">{label}</div>
       </div>
+    </div>
+  );
+}
+
+const CONFIDENCE_ROWS: Record<Confidence, { label: string; icon: string }> = {
+  sure: { label: "Sure", icon: "fa-solid fa-circle-check" },
+  unsure: { label: "Unsure", icon: "fa-solid fa-circle-question" },
+  guess: { label: "Guessing", icon: "fa-solid fa-dice" },
+};
+
+// Below this many answers a confidence level says too little to comment on.
+const MIN_CALIBRATION_ANSWERS = 5;
+
+function calibrationVerdict(calibration: Calibration[]): string | null {
+  const sure = calibration.find((c) => c.confidence === "sure");
+  const guess = calibration.find((c) => c.confidence === "guess");
+  if (sure && sure.total_answers >= MIN_CALIBRATION_ANSWERS && sure.accuracy < 0.75) {
+    return "When you feel sure you're wrong fairly often: slow down on the questions that seem obvious.";
+  }
+  if (guess && guess.total_answers >= MIN_CALIBRATION_ANSWERS && guess.accuracy > 0.6) {
+    return "Your guesses are mostly right: you know more than you think.";
+  }
+  if (sure && sure.total_answers >= MIN_CALIBRATION_ANSWERS && sure.accuracy >= 0.9) {
+    return "Well calibrated: when you're sure, you're almost always right.";
+  }
+  return null;
+}
+
+/** How well self-reported confidence predicts being right, over every attempt. */
+function CalibrationCard({ calibration }: { calibration: Calibration[] }) {
+  const verdict = calibrationVerdict(calibration);
+  return (
+    <div className="card">
+      <h3><i className="fa-solid fa-scale-balanced" /> Confidence calibration</h3>
+      <p className="text-muted" style={{ marginTop: 0 }}>How often you were right, by how sure you said you were.</p>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>You said</th>
+            <th>Answers</th>
+            <th>Right</th>
+          </tr>
+        </thead>
+        <tbody>
+          {calibration.map((c) => (
+            <tr key={c.confidence}>
+              <td><i className={CONFIDENCE_ROWS[c.confidence].icon} /> {CONFIDENCE_ROWS[c.confidence].label}</td>
+              <td>{c.total_answers}</td>
+              <td><Accuracy accuracy={c.accuracy} answers={c.total_answers} /></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {verdict && <p style={{ marginBottom: 0 }}>{verdict}</p>}
+    </div>
+  );
+}
+
+/** Wrong answers given with confidence: beliefs that need correcting, grouped so each topic can be practiced. */
+function MisconceptionsCard({ misconceptions }: { misconceptions: Misconception[] }) {
+  const navigate = useNavigate();
+  const byTopic = new Map<number, { name: string; items: Misconception[] }>();
+  for (const m of misconceptions) {
+    const group = byTopic.get(m.topic_id) ?? { name: m.topic_name, items: [] };
+    group.items.push(m);
+    byTopic.set(m.topic_id, group);
+  }
+
+  return (
+    <div className="card">
+      <h3><i className="fa-solid fa-masks-theater" /> Misconceptions</h3>
+      {misconceptions.length === 0 ? (
+        <p className="text-muted" style={{ margin: 0 }}>
+          No wrong answers you were sure about. Keep marking how sure you are: it's how these get spotted.
+        </p>
+      ) : (
+        <>
+          <p className="text-muted" style={{ marginTop: 0 }}>
+            You were sure, but wrong. These come back first in your next quizzes until you get them right.
+          </p>
+          {[...byTopic.entries()].map(([topicId, group]) => (
+            <div key={topicId} className="misconception-group">
+              <div className="row" style={{ justifyContent: "space-between" }}>
+                <strong>{group.name}</strong>
+                <button
+                  className="btn-sm"
+                  onClick={() => navigate(`/quiz?topicId=${topicId}&questionIds=${group.items.map((m) => m.question_id).join(",")}`)}
+                >
+                  <i className="fa-solid fa-rotate-right" /> Practice ({group.items.length})
+                </button>
+              </div>
+              <ul className="misconception-list">
+                {group.items.map((m) => (
+                  <li key={m.question_id}><MarkdownContent text={m.question_text} /></li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

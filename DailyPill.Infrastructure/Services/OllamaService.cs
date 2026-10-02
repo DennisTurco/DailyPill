@@ -350,7 +350,7 @@ public partial class OllamaService : IOllamaService
         return [];
     }
 
-    public async Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments, TutorStyle style)
+    public async Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, string? confidence, IEnumerable<string> contextDocuments, TutorStyle style)
     {
         // Correctness and language quality are graded by two separate calls: asked for both at once, an
         // 8B model marks correct-but-ungrammatical answers as wrong and mixes content remarks into the
@@ -364,16 +364,59 @@ public partial class OllamaService : IOllamaService
             "Feedback should briefly explain what is right and what is missing or wrong. Judge ONLY the concepts: " +
             "grammar, spelling and style never lower the score. " +
             "The answer may be a speech-to-text transcript: ignore misheard technical terms when the intended meaning is clear. " +
+            "The student's self-reported confidence never changes the score, but when they were sure and the answer is wrong " +
+            "or only partly right, the feedback must name the specific wrong belief and explain why it is wrong. " +
             "The tone below only changes how the feedback is worded, never whether the answer is correct.\n" +
             TutorStyles.ToneInstruction(style);
 
-        var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nUser's answer: {givenAnswer}";
+        var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nUser's answer: {givenAnswer}\n" +
+            $"Student's confidence: {confidence ?? "not given"}";
 
         var raw = await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList());
         var parsed = ParseJson(raw);
 
         var feedback = parsed.TryGetProperty("feedback", out var fb) ? fb.GetString() : null;
         return new OpenAnswerReview(ParseScore(parsed), feedback, await ReviewLanguageAsync(givenAnswer));
+    }
+
+    public async Task<string> GenerateFollowUpQuestionAsync(string questionText, string correctAnswer, string givenAnswer, string? reviewFeedback, IEnumerable<string> contextDocuments, TutorStyle style)
+    {
+        var system =
+            "You are a tutor. The student's answer to a quiz question was partially correct: it left out some key ideas " +
+            "of the expected answer. Ask ONE short follow-up question that checks whether they actually know the missing " +
+            "ideas, steering them toward the part they left out (e.g. \"And what happens to X when Y?\"). " +
+            "If several ideas are missing, ask about the most important one, or ask one question that covers them. " +
+            "Do NOT state, quote or paraphrase the missing ideas themselves, do not repeat what they already said, " +
+            "and do not grade the answer. Reply with the question only.\n" +
+            TutorStyles.ToneInstruction(style);
+
+        var userPrompt = $"Question: {questionText}\nExpected answer (secret, do NOT reveal it): {correctAnswer}\n" +
+            $"Student's answer: {givenAnswer}" +
+            (string.IsNullOrWhiteSpace(reviewFeedback) ? "" : $"\nGrader's notes on what is missing (secret): {reviewFeedback}");
+        return (await GenerateAsync(userPrompt, system, jsonMode: false, contextDocuments.ToList())).Trim();
+    }
+
+    public async Task<FollowUpReview> ReviewFollowUpAnswerAsync(string questionText, string correctAnswer, string givenAnswer, string followUpQuestion, string followUpAnswer, IEnumerable<string> contextDocuments, TutorStyle style)
+    {
+        var system =
+            "You are grading a quiz answer that came in two parts: the student's first answer, and their answer to a " +
+            "follow-up question the tutor asked about the ideas the first answer left out. Respond ONLY with valid JSON: " +
+            "{\"score\": number, \"feedback\": str}. score is how much of the expected answer the student has shown " +
+            "they know across BOTH parts together, from 0.0 to 1.0, with the usual scale: 1.0 = all key ideas; " +
+            "0.7-0.9 = mostly right but one important point still missing or blurred; 0.4-0.6 = only half of the key ideas; " +
+            "0.1-0.3 = mostly wrong or very vague; 0.0 = wrong or empty. " +
+            "Give credit for a missing idea only if the follow-up answer states it correctly in the student's own words; " +
+            "merely repeating the follow-up question, or vague and generic statements, earn nothing. " +
+            "Feedback should briefly say what the follow-up answer added and what, if anything, is still missing. " +
+            "Judge ONLY the concepts: grammar, spelling and style never lower the score. " +
+            "The tone below only changes how the feedback is worded, never the score.\n" +
+            TutorStyles.ToneInstruction(style);
+
+        var userPrompt = $"Question: {questionText}\nExpected answer: {correctAnswer}\nStudent's first answer: {givenAnswer}\n" +
+            $"Tutor's follow-up question: {followUpQuestion}\nStudent's follow-up answer: {followUpAnswer}";
+
+        var parsed = ParseJson(await GenerateAsync(userPrompt, system, jsonMode: true, contextDocuments.ToList()));
+        return new FollowUpReview(ParseScore(parsed), GetString(parsed, "feedback"));
     }
 
     /// <summary>

@@ -27,8 +27,17 @@ public class FakeOllamaService : IOllamaService
     public Task<IEnumerable<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, IEnumerable<string> contextDocuments) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
-    public Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments, TutorStyle style) =>
+    /// <summary>When set, follow-up answers are graded with this review.</summary>
+    public FollowUpReview? FollowUpReview { get; init; }
+
+    public Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, string? confidence, IEnumerable<string> contextDocuments, TutorStyle style) =>
         OpenAnswerReview is { } review ? Task.FromResult(review) : throw new OllamaUnavailableException("Ollama unreachable (fake)");
+
+    public Task<string> GenerateFollowUpQuestionAsync(string questionText, string correctAnswer, string givenAnswer, string? reviewFeedback, IEnumerable<string> contextDocuments, TutorStyle style) =>
+        OpenAnswerReview is not null ? Task.FromResult("And what about the part you left out?") : throw new OllamaUnavailableException("Ollama unreachable (fake)");
+
+    public Task<FollowUpReview> ReviewFollowUpAnswerAsync(string questionText, string correctAnswer, string givenAnswer, string followUpQuestion, string followUpAnswer, IEnumerable<string> contextDocuments, TutorStyle style) =>
+        FollowUpReview is { } review ? Task.FromResult(review) : throw new OllamaUnavailableException("Ollama unreachable (fake)");
 
     public Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments, TutorStyle style) =>
         throw new OllamaUnavailableException("Ollama unreachable (fake)");

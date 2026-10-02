@@ -134,4 +134,89 @@ public class QuizFlowTests
         Assert.Equal(expectedCorrect, answer.IsCorrect);
         Assert.Equal(expectedScore, finished.TotalScore, 3);
     }
+
+    private static async Task<(QuizService Quiz, int TopicId, int SessionId, int AnswerId)> FinishOpenAnswerAsync(
+        AppDbContext context, double aiScore, FollowUpReview? followUpReview, bool hintUsed = false)
+    {
+        var (topicId, _) = await MakeTopicWithQuestionAsync(context);
+        var open = await new QuestionService(context).CreateAsync(new QuestionRequestDTO(
+            topicId, QuestionType.OpenAnswer, "What is idempotency?", null, "Repeating the call has the same effect as doing it once.", 3, null));
+        var ollama = new FakeOllamaService { OpenAnswerReview = new OpenAnswerReview(aiScore, "Incomplete.", null), FollowUpReview = followUpReview };
+        var quizService = new QuizService(context, ollama, new TopicContextDocumentService(context));
+
+        var start = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5, [open.Id]));
+        await quizService.SubmitAsync(start.SessionId, new QuizSubmitRequestDTO(
+            [new AnswerSubmitDTO(open.Id, "Same result", HintUsed: hintUsed)]));
+        var finished = await quizService.FinishAsync(start.SessionId);
+        return (quizService, topicId, start.SessionId, Assert.Single(finished.Session.Answers).Id);
+    }
+
+    [Theory]
+    [InlineData(0.4, 0.9, false, 0.9, true)]   // the follow-up shows the missing ideas are known
+    [InlineData(0.4, 0.2, false, 0.4, false)]  // it adds nothing: the original score is confirmed, never lowered
+    [InlineData(0.4, 0.8, true, 0.4, true)]    // the hint penalty still applies to the recovered credit
+    public async Task FollowUp_CanOnlyRaiseTheScore(double firstScore, double followUpScore, bool hintUsed, double expectedScore, bool expectedCorrect)
+    {
+        await using var context = TestDbContextFactory.Create();
+        var (quiz, _, sessionId, answerId) = await FinishOpenAnswerAsync(context, firstScore, new FollowUpReview(followUpScore, "Better."), hintUsed);
+
+        var asked = await quiz.GetFollowUpQuestionAsync(sessionId, answerId);
+        var pending = Assert.Single(asked.Session.Answers);
+        Assert.NotNull(pending.FollowUpQuestion);
+        Assert.True(pending.FollowUpAvailable);
+
+        var graded = await quiz.AnswerFollowUpAsync(sessionId, answerId, new FollowUpAnswerRequestDTO("Calling it twice changes nothing more."));
+        var answer = Assert.Single(graded.Session.Answers);
+        Assert.Equal(expectedScore, answer.ScoreAwarded, 3);
+        Assert.Equal(expectedCorrect, answer.IsCorrect);
+        Assert.Equal(expectedScore, graded.TotalScore, 3);
+        Assert.Equal(hintUsed ? 0.2 : firstScore, answer.ScoreBeforeFollowUp!.Value, 3);
+        Assert.False(answer.FollowUpAvailable);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => quiz.AnswerFollowUpAsync(sessionId, answerId, new FollowUpAnswerRequestDTO("again")));
+    }
+
+    [Theory]
+    [InlineData(1.0)]
+    [InlineData(0.1)]
+    public async Task FollowUp_IsOnlyOfferedForIncompleteAnswers(double aiScore)
+    {
+        await using var context = TestDbContextFactory.Create();
+        var (quiz, _, sessionId, answerId) = await FinishOpenAnswerAsync(context, aiScore, null);
+
+        var session = await quiz.GetByIdAsync(sessionId);
+        Assert.False(Assert.Single(session!.Answers).FollowUpAvailable);
+        await Assert.ThrowsAsync<ArgumentException>(() => quiz.GetFollowUpQuestionAsync(sessionId, answerId));
+    }
+
+    [Fact]
+    public async Task SureButWrong_IsReportedAsMisconception_AndComesBackFirst()
+    {
+        await using var context = TestDbContextFactory.Create();
+        var (topicId, questionId) = await MakeTopicWithQuestionAsync(context);
+        var questionService = new QuestionService(context);
+        for (var i = 0; i < 6; i++)
+        {
+            await questionService.CreateAsync(new QuestionRequestDTO(
+                topicId, QuestionType.SingleWord, $"Filler {i}?", null, "x", 1 + i % 5, null));
+        }
+        var quizService = new QuizService(context, new FakeOllamaService(), new TopicContextDocumentService(context));
+
+        var first = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 5, [questionId]));
+        await quizService.SubmitAsync(first.SessionId, new QuizSubmitRequestDTO([new AnswerSubmitDTO(questionId, "5", "sure")]));
+
+        var summary = await new ProgressService(context).GetSummaryAsync();
+        var misconception = Assert.Single(summary.Misconceptions);
+        Assert.Equal(questionId, misconception.QuestionId);
+        var sure = summary.Calibration.Single(c => c.Confidence == AnswerConfidences.Sure);
+        Assert.Equal(1, sure.TotalAnswers);
+        Assert.Equal(0, sure.CorrectAnswers);
+
+        // With 7 questions and a quiz of 3, the misconception is always picked.
+        for (var i = 0; i < 5; i++)
+        {
+            var next = await quizService.StartAsync(new QuizStartRequestDTO(topicId, 3));
+            Assert.Contains(next.Questions, q => q.Id == questionId);
+        }
+    }
 }

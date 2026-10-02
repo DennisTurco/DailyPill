@@ -1,4 +1,5 @@
 using DailyPill.Common.DTOs;
+using DailyPill.Common.Enums;
 using DailyPill.Common.Interfaces;
 using DailyPill.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -9,11 +10,15 @@ public class ProgressService(AppDbContext context) : IProgressService
 {
     // A question's accuracy reflects only its most recent graded answer, so getting it right on a
     // later attempt (e.g. a practice retry) replaces the earlier wrong one.
-    private record GradedAnswer(int Id, int QuestionId, DateTime AnsweredAt, int TopicId, int Difficulty, bool IsCorrect, double ScoreAwarded);
+    private record GradedAnswer(int Id, int QuestionId, DateTime AnsweredAt, int TopicId, int Difficulty, bool IsCorrect, double ScoreAwarded,
+        string? Confidence, bool InitiallyCorrect);
+
+    private const int MaxMisconceptions = 20;
 
     public async Task<ProgressSummaryDTO> GetSummaryAsync()
     {
-        var latest = LatestPerQuestion(await GradedAnswersAsync());
+        var graded = await GradedAnswersAsync();
+        var latest = LatestPerQuestion(graded);
         var byTopic = await TopicProgressAsync(latest);
         var byDifficulty = DifficultyProgress(latest);
         var totalAnswers = byTopic.Sum(t => t.TotalAnswers);
@@ -27,7 +32,40 @@ public class ProgressService(AppDbContext context) : IProgressService
             CurrentStreakDays: await CurrentStreakDaysAsync(),
             ByTopic: byTopic,
             ByDifficulty: byDifficulty,
-            WeakestTopics: weakest);
+            WeakestTopics: weakest,
+            Calibration: Calibration(graded),
+            Misconceptions: await MisconceptionsAsync(latest, byTopic));
+    }
+
+    // Calibration uses every attempt, not just the latest: it measures how well "I'm sure" predicts being right.
+    private static List<CalibrationDTO> Calibration(List<GradedAnswer> graded) =>
+        new[] { AnswerConfidences.Sure, AnswerConfidences.Unsure, AnswerConfidences.Guess }
+            .Select(level =>
+            {
+                var answers = graded.Where(a => a.Confidence == level).ToList();
+                var correct = answers.Count(a => a.InitiallyCorrect);
+                return new CalibrationDTO(level, answers.Count, correct, answers.Count > 0 ? (double)correct / answers.Count : 0.0);
+            })
+            .ToList();
+
+    private async Task<List<MisconceptionDTO>> MisconceptionsAsync(List<GradedAnswer> latest, List<TopicProgressDTO> topics)
+    {
+        var topicNames = topics.ToDictionary(t => t.TopicId, t => t.TopicName);
+        var wrongButSure = latest
+            .Where(a => !a.IsCorrect && a.Confidence == AnswerConfidences.Sure && topicNames.ContainsKey(a.TopicId))
+            .OrderByDescending(a => a.AnsweredAt)
+            .Take(MaxMisconceptions)
+            .ToList();
+        var ids = wrongButSure.Select(a => a.QuestionId).ToList();
+        var texts = await context.Questions
+            .AsNoTracking()
+            .Where(q => ids.Contains(q.Id) && !q.IsDeleted)
+            .ToDictionaryAsync(q => q.Id, q => q.Text);
+
+        return wrongButSure
+            .Where(a => texts.ContainsKey(a.QuestionId))
+            .Select(a => new MisconceptionDTO(a.QuestionId, a.TopicId, topicNames[a.TopicId], texts[a.QuestionId], a.AnsweredAt))
+            .ToList();
     }
 
     public async Task<ProgressTrendDTO> GetTrendAsync(int weeks)
@@ -75,11 +113,24 @@ public class ProgressService(AppDbContext context) : IProgressService
         var graded = await context.UserAnswers
             .AsNoTracking()
             .Where(a => a.IsCorrect != null)
-            .Select(a => new { a.Id, a.QuestionId, a.AnsweredAt, a.IsCorrect, a.ScoreAwarded, a.Question!.TopicId, a.Question.Difficulty })
+            .Select(a => new
+            {
+                a.Id, a.QuestionId, a.AnsweredAt, a.IsCorrect, a.ScoreAwarded, a.Question!.TopicId, a.Question.Difficulty,
+                a.Confidence, a.HintUsed, a.ScoreBeforeFollowUp,
+            })
             .ToListAsync();
         return graded
-            .Select(a => new GradedAnswer(a.Id, a.QuestionId, a.AnsweredAt, a.TopicId, a.Difficulty, a.IsCorrect == true, a.ScoreAwarded))
+            .Select(a => new GradedAnswer(a.Id, a.QuestionId, a.AnsweredAt, a.TopicId, a.Difficulty, a.IsCorrect == true, a.ScoreAwarded,
+                a.Confidence, InitiallyCorrect(a.IsCorrect == true, a.ScoreBeforeFollowUp, a.HintUsed)))
             .ToList();
+    }
+
+    /// <summary>Whether the answer was right before a follow-up question recovered points.</summary>
+    private static bool InitiallyCorrect(bool isCorrect, double? scoreBeforeFollowUp, bool hintUsed)
+    {
+        if (scoreBeforeFollowUp is not { } before) return isCorrect;
+        var credit = hintUsed ? Math.Min(1, before * 2) : before;
+        return credit >= OpenAnswerReview.PassThreshold;
     }
 
     private static List<GradedAnswer> LatestPerQuestion(IEnumerable<GradedAnswer> answers) => answers

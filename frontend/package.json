@@ -17,8 +17,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.3",
+    "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-markdown": "^6.5.2",
+    "@codemirror/language": "^6.12.4",
+    "@codemirror/language-data": "^6.5.2",
+    "@codemirror/state": "^6.7.6",
+    "@codemirror/view": "^6.43.13",
     "@fortawesome/fontawesome-free": "^7.3.1",
+    "@lezer/highlight": "^1.2.5",
     "auto-launch": "^5.0.6",
+    "codemirror": "^6.0.2",
     "highlight.js": "^11.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -49,9 +58,18 @@
       "dist-electron/**/*"
     ],
     "extraResources": [
-      { "from": "../backend-dist/win-x64", "to": "backend" },
-      { "from": "../topics", "to": "topics" },
-      { "from": "../.env", "to": ".env" }
+      {
+        "from": "../backend-dist/win-x64",
+        "to": "backend"
+      },
+      {
+        "from": "../topics",
+        "to": "topics"
+      },
+      {
+        "from": "../.env",
+        "to": ".env"
+      }
     ],
     "directories": {
       "output": "release",

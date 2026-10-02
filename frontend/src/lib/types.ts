@@ -59,6 +59,13 @@ export interface UserAnswer {
   confidence: Confidence | null;
   hint_used: boolean;
   answered_at: string;
+  follow_up_question: string | null;
+  follow_up_answer: string | null;
+  follow_up_feedback: string | null;
+  /** Score before the follow-up re-grade; null until a follow-up answer was graded. */
+  score_before_follow_up: number | null;
+  /** Partially correct open answer whose follow-up hasn't been answered yet. */
+  follow_up_available: boolean;
 }
 
 export type Confidence = "sure" | "unsure" | "guess";
@@ -134,6 +141,23 @@ export interface ProgressSummary {
   by_topic: TopicProgress[];
   by_difficulty: DifficultyProgress[];
   weakest_topics: TopicProgress[];
+  calibration: Calibration[];
+  misconceptions: Misconception[];
+}
+
+export interface Calibration {
+  confidence: Confidence;
+  total_answers: number;
+  correct_answers: number;
+  accuracy: number;
+}
+
+export interface Misconception {
+  question_id: number;
+  topic_id: number;
+  topic_name: string;
+  question_text: string;
+  answered_at: string;
 }
 
 export interface InfoFact {

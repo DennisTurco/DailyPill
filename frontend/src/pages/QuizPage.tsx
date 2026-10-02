@@ -4,6 +4,8 @@ import { api } from "../lib/api";
 import { Toast, ToastMessage } from "../components/Toast";
 import { MarkdownContent } from "../components/MarkdownContent";
 import { VoiceAnswerButton } from "../components/VoiceAnswerButton";
+import { CodeAnswerEditor } from "../components/CodeAnswerEditor";
+import { parseFences } from "../lib/codeRunner";
 import { MicrophoneSelect } from "../components/MicrophoneSelect";
 import { difficultyLabel, formatElapsed } from "../lib/format";
 import { Confidence, Question, QuizChatMessage, QuizFinishResponse, QuizStartResponse, Setting, Topic, TranscriptionStatus, UserAnswer } from "../lib/types";
@@ -49,8 +51,9 @@ export default function QuizPage() {
     const preselect = searchParams.get("topicId");
     if (preselect) {
       const id = Number(preselect);
+      const questionIds = (searchParams.get("questionIds") ?? "").split(",").map(Number).filter((n) => n > 0);
       setTopicId(id);
-      startQuiz(id);
+      startQuiz(id, questionIds.length ? questionIds : undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -271,7 +274,10 @@ export default function QuizPage() {
                       ? "Pending review"
                       : isPartial(a)
                         ? `Partially correct (${Math.round(answerCredit(a) * 100)}%)`
-                        : a.is_correct ? "Correct" : "Incorrect"} — you answered:
+                        : a.is_correct ? "Correct" : "Incorrect"}
+                    {a.score_before_follow_up !== null && (
+                      <span className="text-muted"> — {Math.round(creditOf(a.score_before_follow_up, a.hint_used) * 100)}% before the follow-up</span>
+                    )} — you answered:
                   </div>
                   {question?.type === "open_answer" ? (
                     <MarkdownContent text={a.given_answer || "*(no answer given)*"} />
@@ -289,6 +295,9 @@ export default function QuizPage() {
                     </>
                   )}
                   {a.ai_feedback && <div style={{ color: "var(--text-muted)" }}>{a.ai_feedback}</div>}
+                  {(a.follow_up_available || a.follow_up_question) && (
+                    <FollowUp sessionId={result.session.id} answer={a} voiceReady={voiceReady} onResult={setResult} />
+                  )}
                   {a.language_feedback && (
                     <div style={{ marginTop: 6 }}>
                       <div style={{ color: "var(--warning)", fontWeight: 600 }}>
@@ -394,8 +403,97 @@ const CONFIDENCE_OPTIONS: { value: Confidence; label: string; icon: string }[] =
 ];
 
 /** Correctness credit from 0 to 1, before the hint penalty (score_awarded is halved when a hint was used). */
+function creditOf(scoreAwarded: number, hintUsed: boolean): number {
+  return hintUsed ? Math.min(1, scoreAwarded * 2) : scoreAwarded;
+}
+
 function answerCredit(a: UserAnswer): number {
-  return a.hint_used ? Math.min(1, a.score_awarded * 2) : a.score_awarded;
+  return creditOf(a.score_awarded, a.hint_used);
+}
+
+/**
+ * A partially correct open answer gets one follow-up question about what it left out. Answering it can
+ * only raise the score: if it shows the missing ideas are known the credit goes up, otherwise it's confirmed.
+ */
+function FollowUp({
+  sessionId,
+  answer,
+  voiceReady,
+  onResult,
+}: {
+  sessionId: number;
+  answer: UserAnswer;
+  voiceReady: boolean;
+  onResult: (result: QuizFinishResponse) => void;
+}) {
+  const [reply, setReply] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const base = `/quiz/${sessionId}/answers/${answer.id}/follow-up`;
+
+  async function call(path: string, body?: unknown) {
+    setLoading(true);
+    setError(null);
+    try {
+      onResult(await api.post<QuizFinishResponse>(path, body));
+    } catch (err) {
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="follow-up">
+      <div className="follow-up-title">
+        <i className="fa-solid fa-person-chalkboard" /> Follow-up question
+      </div>
+      {!answer.follow_up_question ? (
+        <>
+          <p className="text-muted" style={{ margin: "4px 0 8px" }}>
+            Your answer is incomplete rather than wrong. Answer one more question about what you left out: if you
+            show you know it, your score goes up; if not, it stays at {Math.round(answerCredit(answer) * 100)}%.
+          </p>
+          <button className="btn-sm" disabled={loading} onClick={() => call(base)}>
+            <i className={loading ? "fa-solid fa-spinner fa-spin" : "fa-solid fa-comment-dots"} />{" "}
+            {loading ? "Thinking of a question..." : "Ask me a follow-up"}
+          </button>
+        </>
+      ) : (
+        <>
+          <MarkdownContent text={answer.follow_up_question} />
+          {answer.follow_up_answer === null ? (
+            <>
+              <CodeAnswerEditor value={reply} onChange={setReply} placeholder="Your answer to the follow-up..." />
+              <div className="row" style={{ marginTop: 8 }}>
+                <button disabled={loading || !reply.trim()} onClick={() => call(`${base}/answer`, { answer: reply })}>
+                  {loading ? "Grading..." : "Submit follow-up"}
+                </button>
+                {voiceReady && (
+                  <VoiceAnswerButton
+                    prompt={answer.follow_up_question}
+                    onTranscript={(text) => setReply((prev) => (prev.trim() ? `${prev.trimEnd()}\n${text}` : text))}
+                  />
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-muted" style={{ marginTop: 6 }}>You answered:</div>
+              <MarkdownContent text={answer.follow_up_answer} />
+              <div className={answer.score_awarded > (answer.score_before_follow_up ?? 0) ? "success" : "warning"} style={{ marginTop: 6 }}>
+                {answer.score_awarded > (answer.score_before_follow_up ?? 0)
+                  ? `Recovered: ${Math.round(creditOf(answer.score_before_follow_up ?? 0, answer.hint_used) * 100)}% → ${Math.round(answerCredit(answer) * 100)}%`
+                  : `Score confirmed at ${Math.round(answerCredit(answer) * 100)}%`}
+              </div>
+              {answer.follow_up_feedback && <div style={{ color: "var(--text-muted)" }}>{answer.follow_up_feedback}</div>}
+            </>
+          )}
+        </>
+      )}
+      {error && <div className="error" style={{ marginTop: 6 }}>{error}</div>}
+    </div>
+  );
 }
 
 /** Graded open answers can earn partial credit: right in part, but missing or blurring some key idea. */
@@ -542,12 +640,11 @@ function QuestionCard({
         </div>
       ) : question.type === "open_answer" ? (
         <>
-          <textarea
+          <CodeAnswerEditor
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={onChange}
             placeholder="Your answer... (code is welcome, e.g. inside a ```language fence)"
-            rows={6}
-            style={{ fontFamily: "SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace" }}
+            defaultLanguage={parseFences(question.text).find((f) => f.language)?.language}
           />
           {voiceReady && (
             <VoiceAnswerButton

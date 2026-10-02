@@ -2,6 +2,7 @@ import { app, BrowserWindow, Tray, Menu, nativeImage, ipcMain, Notification, she
 import * as path from "path";
 import { ChildProcess, spawn } from "child_process";
 import AutoLaunch from "auto-launch";
+import { runCode } from "./codeRunner";
 
 const isDev = process.env.NODE_ENV === "development";
 const API_PORT = 8420;
@@ -285,6 +286,8 @@ app.whenReady().then(async () => {
 });
 
 ipcMain.handle("get-api-base-url", () => `http://localhost:${API_PORT}`);
+
+ipcMain.handle("code:run", (_event, language: string, code: string) => runCode(String(language), String(code)));
 
 ipcMain.on("close-current-window", (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();

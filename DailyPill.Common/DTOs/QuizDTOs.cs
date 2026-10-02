@@ -19,7 +19,12 @@ public record UserAnswerResponseDTO(
     string? LanguageFeedback,
     string? Confidence,
     bool HintUsed,
-    DateTime AnsweredAt);
+    DateTime AnsweredAt,
+    string? FollowUpQuestion,
+    string? FollowUpAnswer,
+    string? FollowUpFeedback,
+    double? ScoreBeforeFollowUp,
+    bool FollowUpAvailable);
 
 public record QuizSessionResponseDTO(
     int Id,
@@ -41,3 +46,5 @@ public record QuizChatResponseDTO(string Reply);
 public record QuizHintRequestDTO(int QuestionId);
 
 public record QuizHintResponseDTO(string Hint);
+
+public record FollowUpAnswerRequestDTO(string Answer);

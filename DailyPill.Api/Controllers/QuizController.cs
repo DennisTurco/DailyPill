@@ -28,6 +28,16 @@ public class QuizController(IQuizService quizService) : ControllerBase
     public async Task<IActionResult> Hint(int sessionId, [FromBody] QuizHintRequestDTO dto)
         => Ok(await quizService.HintAsync(sessionId, dto));
 
+    /// <summary>Asks (or returns the already asked) follow-up question for a partially correct open answer.</summary>
+    [HttpPost("{sessionId:int}/answers/{answerId:int}/follow-up")]
+    public async Task<IActionResult> FollowUp(int sessionId, int answerId)
+        => Ok(await quizService.GetFollowUpQuestionAsync(sessionId, answerId));
+
+    /// <summary>Grades the follow-up answer; the answer's score can only go up.</summary>
+    [HttpPost("{sessionId:int}/answers/{answerId:int}/follow-up/answer")]
+    public async Task<IActionResult> AnswerFollowUp(int sessionId, int answerId, [FromBody] FollowUpAnswerRequestDTO dto)
+        => Ok(await quizService.AnswerFollowUpAsync(sessionId, answerId, dto));
+
     [HttpGet("history")]
     public async Task<IActionResult> History([FromQuery(Name = "topic_id")] int? topicId)
         => Ok(await quizService.GetHistoryAsync(topicId));

@@ -34,6 +34,17 @@ public class UserAnswer
     /// <summary>The user asked for an AI hint before answering; a correct answer then earns reduced score.</summary>
     public bool HintUsed { get; set; }
 
+    /// <summary>AI question probing the key ideas a partially correct open answer left out; null when none was asked.</summary>
+    public string? FollowUpQuestion { get; set; }
+
+    public string? FollowUpAnswer { get; set; }
+
+    /// <summary>The AI's verdict on the follow-up answer (what was recovered, what is still missing).</summary>
+    public string? FollowUpFeedback { get; set; }
+
+    /// <summary>ScoreAwarded before the follow-up re-grade; null until a follow-up answer was graded.</summary>
+    public double? ScoreBeforeFollowUp { get; set; }
+
     public DateTime AnsweredAt { get; set; } = DateTime.UtcNow;
 
     public QuizSession? QuizSession { get; set; }

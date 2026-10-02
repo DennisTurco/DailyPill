@@ -20,6 +20,12 @@ public record TopicTrendDTO(int TopicId, string TopicName, List<TrendPointDTO> P
 
 public record ProgressTrendDTO(List<TrendPointDTO> Overall, List<TopicTrendDTO> ByTopic);
 
+/// <summary>How often answers given with this confidence turned out right (judged before any follow-up).</summary>
+public record CalibrationDTO(string Confidence, int TotalAnswers, int CorrectAnswers, double Accuracy);
+
+/// <summary>A question whose latest answer was wrong although the user said they were sure.</summary>
+public record MisconceptionDTO(int QuestionId, int TopicId, string TopicName, string QuestionText, DateTime AnsweredAt);
+
 public record ProgressSummaryDTO(
     int TotalQuizSessions,
     int TotalAnswers,
@@ -27,4 +33,6 @@ public record ProgressSummaryDTO(
     int CurrentStreakDays,
     List<TopicProgressDTO> ByTopic,
     List<DifficultyProgressDTO> ByDifficulty,
-    List<TopicProgressDTO> WeakestTopics);
+    List<TopicProgressDTO> WeakestTopics,
+    List<CalibrationDTO> Calibration,
+    List<MisconceptionDTO> Misconceptions);

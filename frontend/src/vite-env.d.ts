@@ -5,6 +5,7 @@ interface DailyPillBridge {
   onNavigate: (callback: (route: string) => void) => void;
   closeWindow: () => void;
   startScheduledQuiz: (topicId: number) => void;
+  runCode: (language: string, code: string) => Promise<import("./lib/codeRunner").CodeRunResult>;
 }
 
 interface Window {

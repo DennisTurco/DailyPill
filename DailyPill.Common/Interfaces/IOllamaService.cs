@@ -22,7 +22,9 @@ public interface IOllamaService
 
     Task<IEnumerable<JsonElement>> GenerateQuestionsAsync(string topicName, string prompt, int count, int? difficulty, IEnumerable<string> contextDocuments);
     Task<IEnumerable<JsonElement>> GenerateInfoFactsAsync(string topicName, string prompt, int count, IEnumerable<string> contextDocuments);
-    Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, IEnumerable<string> contextDocuments, TutorStyle style);
+    Task<OpenAnswerReview> ReviewOpenAnswerAsync(string questionText, string correctAnswer, string givenAnswer, string? confidence, IEnumerable<string> contextDocuments, TutorStyle style);
+    Task<string> GenerateFollowUpQuestionAsync(string questionText, string correctAnswer, string givenAnswer, string? reviewFeedback, IEnumerable<string> contextDocuments, TutorStyle style);
+    Task<FollowUpReview> ReviewFollowUpAnswerAsync(string questionText, string correctAnswer, string givenAnswer, string followUpQuestion, string followUpAnswer, IEnumerable<string> contextDocuments, TutorStyle style);
     Task<string> ChatAboutQuizAsync(string topicName, IEnumerable<QuizResultLine> results, List<QuizChatMessageDTO> history, string userMessage, IEnumerable<string> contextDocuments, TutorStyle style);
     Task<string> GenerateHintAsync(string questionText, string correctAnswer, IEnumerable<string> contextDocuments, TutorStyle style);
     Task<string> GenerateQuizRecapAsync(string topicName, IEnumerable<QuizResultLine> results, IEnumerable<string> contextDocuments, TutorStyle style);

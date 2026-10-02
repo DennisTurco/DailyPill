@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import QuizPage from "./pages/QuizPage";
+import FlashcardsPage from "./pages/FlashcardsPage";
 import TopicsPage from "./pages/TopicsPage";
 import QuestionsPage from "./pages/QuestionsPage";
 import InfoFactsPage from "./pages/InfoFactsPage";
@@ -118,6 +119,7 @@ export default function App() {
         </div>
         <NavLink to="/" end title="Dashboard"><i className="fa-solid fa-gauge-simple-high"/> <span className="sidebar-label">Dashboard</span></NavLink>
         <NavLink to="/quiz" title="Quiz"><i className="fa-solid fa-circle-play"/> <span className="sidebar-label">Quiz</span></NavLink>
+        <NavLink to="/flashcards" title="Flashcards"><i className="fa-solid fa-clone"/> <span className="sidebar-label">Flashcards</span></NavLink>
         <NavLink to="/topics" title="Topics"><i className="fa-solid fa-layer-group"/> <span className="sidebar-label">Topics</span></NavLink>
         <NavLink to="/questions" title="Questions"><i className="fa-solid fa-circle-question"/> <span className="sidebar-label">Questions</span></NavLink>
         <NavLink to="/info-facts" title="Info facts"><i className="fa-solid fa-tablets"/> <span className="sidebar-label">Info facts</span></NavLink>
@@ -156,6 +158,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/quiz" element={<QuizPage />} />
+          <Route path="/flashcards" element={<FlashcardsPage />} />
           <Route path="/topics" element={<TopicsPage />} />
           <Route path="/questions" element={<QuestionsPage />} />
           <Route path="/info-facts" element={<InfoFactsPage />} />

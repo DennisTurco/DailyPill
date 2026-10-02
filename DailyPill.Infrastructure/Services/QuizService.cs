@@ -29,6 +29,31 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     /// <summary>Score for a graded answer: the correctness credit (0-1, partial for open answers), halved when a hint was used.</summary>
     private static double Score(double credit, bool hintUsed) => hintUsed ? credit * 0.5 : credit;
 
+    /// <summary>Inverse of <see cref="Score"/>: the correctness credit behind an awarded score.</summary>
+    private static double Credit(double scoreAwarded, bool hintUsed) => hintUsed ? Math.Min(1, scoreAwarded * 2) : scoreAwarded;
+
+    /// <summary>
+    /// A graded answer that is incomplete rather than wrong, and hasn't had its follow-up yet. Only open answers
+    /// earn partial credit (objective ones are 0 or 1 before the hint penalty), so no question lookup is needed.
+    /// </summary>
+    private static bool FollowUpAvailable(UserAnswer a)
+    {
+        if (a.IsCorrect is null || a.FollowUpAnswer is not null) return false;
+        var credit = Credit(a.ScoreAwarded, a.HintUsed);
+        return credit >= OpenAnswerReview.FollowUpMinScore && credit < 1;
+    }
+
+    /// <summary>The latest graded answer was wrong although the user said they were sure: a misconception.</summary>
+    private static bool IsMisconception(Question q)
+    {
+        var latest = q.Answers
+            .Where(a => a.IsCorrect != null)
+            .OrderByDescending(a => a.AnsweredAt)
+            .ThenByDescending(a => a.Id)
+            .FirstOrDefault();
+        return latest is { IsCorrect: false, Confidence: AnswerConfidences.Sure };
+    }
+
     private static List<QuizResultLine> BuildResults(List<UserAnswer> answers) => answers.Select(a => new QuizResultLine(
         a.Question?.Text ?? "",
         a.GivenAnswer,
@@ -61,11 +86,22 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
         var shuffled = candidates.OrderBy(_ => Random.Shared.Next()).ToList();
 
-        var selected = isPractice
-            ? shuffled
-            : shuffled.Count >= questionCount
-                ? GetRandomQuestionsWithMixedDifficulty(shuffled, questionCount)
-                : shuffled.Take(questionCount).ToList();
+        List<Question> selected;
+        if (isPractice)
+        {
+            selected = shuffled;
+        }
+        else
+        {
+            // Misconceptions come back first (up to a third of the quiz) so wrong beliefs get corrected
+            // before they settle; the rest is the usual mixed-difficulty pick.
+            selected = shuffled.Where(IsMisconception).Take(Math.Max(1, questionCount / 3)).ToList();
+            var rest = shuffled.Except(selected).ToList();
+            var remaining = questionCount - selected.Count;
+            selected.AddRange(rest.Count >= remaining
+                ? GetRandomQuestionsWithMixedDifficulty(rest, remaining)
+                : rest.Take(remaining));
+        }
         selected = selected.OrderBy(q => q.Difficulty).ToList();
 
         var session = new QuizSession { TopicId = dto.TopicId, IsPractice = isPractice };
@@ -138,7 +174,7 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
 
             try
             {
-                var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, contextDocuments, tutorStyle);
+                var review = await ollamaService.ReviewOpenAnswerAsync(question.Text, question.CorrectAnswer, answer.GivenAnswer, answer.Confidence, contextDocuments, tutorStyle);
                 answer.IsCorrect = review.IsCorrect;
                 answer.ScoreAwarded = Score(review.Score, answer.HintUsed);
                 answer.AiFeedback = review.Feedback;
@@ -166,12 +202,64 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
         session.AiReviewSummary = recap;
         await context.SaveChangesAsync();
 
-        var graded = answers.Where(a => a.IsCorrect is not null).ToList();
-        var totalScore = graded.Sum(a => a.ScoreAwarded);
-        var maxScore = (double)graded.Count;
+        return await GetFinishResponseAsync(sessionId);
+    }
 
+    private async Task<QuizFinishResponseDTO> GetFinishResponseAsync(int sessionId)
+    {
         var sessionDto = await GetSessionDtoAsync(sessionId) ?? throw new NotFoundException("Quiz session not found");
-        return new QuizFinishResponseDTO(sessionDto, totalScore, maxScore);
+        var graded = sessionDto.Answers.Where(a => a.IsCorrect is not null).ToList();
+        return new QuizFinishResponseDTO(sessionDto, graded.Sum(a => a.ScoreAwarded), graded.Count);
+    }
+
+    private async Task<UserAnswer> GetAnswerAsync(int sessionId, int answerId)
+        => await context.UserAnswers
+            .Include(a => a.Question)
+            .Include(a => a.QuizSession)
+            .FirstOrDefaultAsync(a => a.Id == answerId && a.QuizSessionId == sessionId)
+            ?? throw new NotFoundException("Answer not found");
+
+    public async Task<QuizFinishResponseDTO> GetFollowUpQuestionAsync(int sessionId, int answerId)
+    {
+        var answer = await GetAnswerAsync(sessionId, answerId);
+        if (answer.FollowUpQuestion is null)
+        {
+            if (!FollowUpAvailable(answer) || answer.Question is null)
+                throw new ArgumentException("A follow-up is only available for partially correct open answers.");
+
+            var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(answer.QuizSession!.TopicId);
+            answer.FollowUpQuestion = await ollamaService.GenerateFollowUpQuestionAsync(
+                answer.Question.Text, answer.Question.CorrectAnswer, answer.GivenAnswer, answer.AiFeedback, contextDocuments, await GetTutorStyleAsync());
+            await context.SaveChangesAsync();
+        }
+        return await GetFinishResponseAsync(sessionId);
+    }
+
+    public async Task<QuizFinishResponseDTO> AnswerFollowUpAsync(int sessionId, int answerId, FollowUpAnswerRequestDTO dto)
+    {
+        var answer = await GetAnswerAsync(sessionId, answerId);
+        if (answer.FollowUpQuestion is null || answer.Question is null)
+            throw new ArgumentException("No follow-up question was asked for this answer.");
+        if (answer.FollowUpAnswer is not null)
+            throw new ArgumentException("This follow-up was already answered.");
+        if (string.IsNullOrWhiteSpace(dto.Answer))
+            throw new ArgumentException("The follow-up answer is empty.");
+
+        var contextDocuments = await topicContextDocumentService.GetAllContextByTopicIdAsync(answer.QuizSession!.TopicId);
+        var review = await ollamaService.ReviewFollowUpAnswerAsync(
+            answer.Question.Text, answer.Question.CorrectAnswer, answer.GivenAnswer, answer.FollowUpQuestion, dto.Answer,
+            contextDocuments, await GetTutorStyleAsync());
+
+        // The follow-up can only recover points: if it adds nothing, the original score is confirmed.
+        var credit = Math.Max(Credit(answer.ScoreAwarded, answer.HintUsed), review.Score);
+        answer.ScoreBeforeFollowUp = answer.ScoreAwarded;
+        answer.ScoreAwarded = Score(credit, answer.HintUsed);
+        answer.IsCorrect = credit >= OpenAnswerReview.PassThreshold;
+        answer.FollowUpAnswer = dto.Answer;
+        answer.FollowUpFeedback = review.Feedback;
+        await context.SaveChangesAsync();
+
+        return await GetFinishResponseAsync(sessionId);
     }
 
     public async Task<QuizChatResponseDTO> ChatAsync(int sessionId, QuizChatRequestDTO dto)
@@ -276,5 +364,6 @@ public class QuizService(AppDbContext context, IOllamaService ollamaService, ITo
     private static QuizSessionResponseDTO MapToDto(QuizSession s) => new(
         s.Id, s.TopicId, s.StartedAt, s.CompletedAt, s.AiReviewSummary, s.IsPractice,
         s.Answers.Select(a => new UserAnswerResponseDTO(
-            a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.LanguageFeedback, a.Confidence, a.HintUsed, a.AnsweredAt)).ToList());
+            a.Id, a.QuestionId, a.GivenAnswer, a.IsCorrect, a.ScoreAwarded, a.AiFeedback, a.LanguageFeedback, a.Confidence, a.HintUsed, a.AnsweredAt,
+            a.FollowUpQuestion, a.FollowUpAnswer, a.FollowUpFeedback, a.ScoreBeforeFollowUp, FollowUpAvailable(a))).ToList());
 }
