@@ -6,6 +6,7 @@ interface DailyPillBridge {
   closeWindow: () => void;
   startScheduledQuiz: (topicId: number) => void;
   runCode: (language: string, code: string) => Promise<import("./lib/codeRunner").CodeRunResult>;
+  getPathForFile: (file: File) => string;
 }
 
 interface Window {

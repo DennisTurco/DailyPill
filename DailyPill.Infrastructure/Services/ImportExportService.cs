@@ -103,23 +103,23 @@ public class ImportExportService(
 
     private static List<ManualFacts> ToManualFacts(IEnumerable<InfoFactResponseDTO> facts)
         => facts.Select(f => new ManualFacts()
-            { 
-                Title = f.Title,
-                Description = f.Description,
-                Link = f.Link
-            }
+        {
+            Title = f.Title,
+            Description = f.Description,
+            Link = f.Link
+        }
         ).ToList();
 
     private static List<ManualQuestion> ToManualQuestions(IEnumerable<QuestionResponseDTO> questions)
         => questions.Select(q => new ManualQuestion()
-            {
-                Type = new QuestionDictionary().GetCode(q.Type),
-                Difficulty = q.Difficulty,
-                Text = q.Text,
-                Options = q.Options,
-                Answer = q.CorrectAnswer,
-                Explanation = q.Explanation ?? ""
-            }
+        {
+            Type = new QuestionDictionary().GetCode(q.Type),
+            Difficulty = q.Difficulty,
+            Text = q.Text,
+            Options = q.Options,
+            Answer = q.CorrectAnswer,
+            Explanation = q.Explanation ?? ""
+        }
         ).ToList();
 
     private static string ResolveCorrectAnswer(List<string>? options, string answer)

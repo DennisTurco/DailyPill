@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
-import { Setting, Topic } from "../lib/types";
+import { DatabasePath, Setting, Topic } from "../lib/types";
 import { getSettingValue } from "../settings";
 import { triggerOnboarding } from "../lib/onboarding";
 import { Toast, ToastMessage } from "../components/Toast";
@@ -26,9 +26,10 @@ export default function SettingsPage() {
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [importing, setImporting] = useState(false);
-  const importFileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [databasePath, setdatabasePath] = useState<DatabasePath>();
   const [showExportPicker, setShowExportPicker] = useState(false);
   const [exportTopicId, setExportTopicId] = useState<number | "">("");
   const [exporting, setExporting] = useState(false);
@@ -56,15 +57,58 @@ export default function SettingsPage() {
     api.get<Topic[]>("/topics").then(setTopics).catch((err) => setToast({ kind: "error", text: String(err) }));
   }
 
+  function loadDatabasePath() {
+    api.get<DatabasePath>("/database-path").then(setdatabasePath).catch((err) => setToast({ kind: "error", text: String(err) }));
+  }
+
   useEffect(() => {
     loadStatus();
     loadSettings();
+    loadDatabasePath();
     const interval = setInterval(loadStatus, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  function pickImportFile() {
-    importFileInputRef.current?.click();
+  function pickFile() {
+    fileInputRef.current?.click();
+  }
+
+  async function updateDatabasePath(file: File) {
+    setImporting(true);
+    try {
+      const path = window.dailyPill?.getPathForFile(file);
+      if (!path) throw new Error("The database path is only available in the desktop app.");
+      await api.put("/database-path/update", { path });
+      setToast({
+        kind: "info",
+        text: `Database ${file.name} setted successfully, database will change after pc restart.`,
+      });
+      loadDatabasePath();
+    } catch (err) {
+      setToast({
+        kind: "error",
+        text: String(err),
+      });
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function resetDatabasePathToDefault() {
+    try {
+      await api.put("/database-path/reset");
+      setToast({
+        kind: "info",
+        text: `Database path resetted to default, database will change after pc restart.`,
+      });
+      loadDatabasePath();
+    } catch (err) {
+      setToast({
+        kind: "error",
+        text: String(err),
+      });
+    }
   }
 
   async function importFromYaml(file: File) {
@@ -84,7 +128,7 @@ export default function SettingsPage() {
       });
     } finally {
       setImporting(false);
-      if (importFileInputRef.current) importFileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
@@ -214,7 +258,7 @@ export default function SettingsPage() {
         </p>
         <div className="row">
           <input
-            ref={importFileInputRef}
+            ref={fileInputRef}
             type="file"
             accept=".yaml,.yml"
             style={{ display: "none" }}
@@ -223,7 +267,7 @@ export default function SettingsPage() {
               if (file) importFromYaml(file);
             }}
           />
-          <button className="secondary" onClick={pickImportFile} disabled={importing}>
+          <button className="secondary" onClick={pickFile} disabled={importing}>
             <i className="fa-solid fa-file-import"/> {importing ? "Importing..." : "Import from YAML"}
           </button>
           <button className="secondary" onClick={openExportPicker}>
@@ -250,6 +294,34 @@ export default function SettingsPage() {
           >
             <i className="fa-solid fa-download"/> Facts template
           </a>
+        </div>
+        <p style={{ color: "var(--text-muted)" }}>
+          ADVANCED: You can also specify a custom db path.
+        </p>
+        <div className="row">
+            <input
+          id="sett-databasePath"
+          type="text"
+          value={databasePath?.database_path}
+          disabled={true}
+        />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".db"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) updateDatabasePath(file);
+            }}
+          />
+          <></>
+          <button className="secondary" onClick={pickFile} disabled={importing}>
+            <i className="fa-solid fa-database"/> {importing ? "Selecting..." : "Select"}
+          </button>
+          <button className="secondary" onClick={resetDatabasePathToDefault}>
+            <i className="fa-solid fa-rotate-left"/> Reset
+          </button>
         </div>
       </div>
 

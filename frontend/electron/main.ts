@@ -264,6 +264,17 @@ app.on("second-instance", () => {
   showAndNavigate("/");
 });
 
+// The application menu is removed, so its Ctrl+Shift+I shortcut is gone: in development F12 opens DevTools instead.
+app.on("browser-window-created", (_event, window) => {
+  if (!isDev) return;
+  window.webContents.on("before-input-event", (event, input) => {
+    if (input.type === "keyDown" && input.key === "F12") {
+      window.webContents.toggleDevTools();
+      event.preventDefault();
+    }
+  });
+});
+
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
   spawnBackend();

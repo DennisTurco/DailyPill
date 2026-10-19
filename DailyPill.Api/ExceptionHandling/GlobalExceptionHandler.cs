@@ -9,7 +9,7 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        ProblemDetails problemDetails = new ProblemDetails();
+        ProblemDetails problemDetails = new();
         switch (exception)
         {
             case OllamaUnavailableException:
@@ -29,6 +29,12 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 problemDetails.Status = StatusCodes.Status404NotFound;
                 problemDetails.Detail = exception.Message;
                 problemDetails.Title = "Not found error";
+                break;
+            case DatabasePathException:
+                logger.LogWarning(exception, "Warning occurred: {Message}", exception.Message);
+                problemDetails.Status = StatusCodes.Status404NotFound;
+                problemDetails.Detail = exception.Message;
+                problemDetails.Title = "Database not found";
                 break;
             case ArgumentOutOfRangeException or ArgumentException:
                 logger.LogWarning(exception, "Warning occurred: {Message}", exception.Message);
