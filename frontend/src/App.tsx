@@ -22,7 +22,7 @@ import { getStoredSidebarCollapsed, storeSidebarCollapsed } from "./lib/sidebarC
 import { hasSeenOnboarding, markOnboardingSeen, onOnboardingTrigger } from "./lib/onboarding";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.1.0";
 const SIDEBAR_COLLAPSED_WIDTH = 68;
 
 export default function App() {

@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.1.0",
   "description": "DailyPill desktop app",
+  "homepage": "https://github.com/DennisTurco/DailyPill",
+  "author": "Dennis Turco",
   "main": "dist-electron/main.js",
   "type": "module",
   "scripts": {

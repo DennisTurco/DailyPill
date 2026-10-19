@@ -278,7 +278,7 @@ automatically the next time the packaged app starts.
 
 Edit `installer/DailyPill.iss`, near the top:
 ```
-#define AppVersion   "1.0.0"
+#define AppVersion   "1.1.0"
 ```
 This single value drives the installer's `AppVersion`, window title, output filename
 (`DailyPill_Setup_<version>.exe`), and uninstall entry — nothing else in the repo needs to change
