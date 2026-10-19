@@ -1,16 +1,9 @@
-# Builds the Windows installer (Inno Setup .exe) on every push/merge to
-# master, or manually: Actions tab > "Build Windows installer" > Run workflow.
+# Builds the Windows installer (Inno Setup .exe) manually only (not on push):
+# Actions tab > "Build Windows installer" > Run workflow.
 # Also called by release.yml when a "v*" tag is pushed.
 name: Build Windows installer
 
 on:
-  push:
-    branches: [master]
-    # Docs-only changes don't need new installers
-    paths-ignore:
-      - "**.md"
-      - "docs/**"
-      - ".github/ISSUE_TEMPLATE/**"
   workflow_dispatch:
   workflow_call:
     inputs:
