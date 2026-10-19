@@ -21,6 +21,10 @@ export interface TopicContextDocument {
     filename: string;
 }
 
+export interface DatabasePath {
+    database_path: string
+}
+
 export interface Topic {
   id: number;
   name: string;

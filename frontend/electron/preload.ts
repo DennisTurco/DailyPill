@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
 import type { CodeRunResult } from "./codeRunner";
 
 export interface DailyPillBridge {
@@ -7,6 +7,7 @@ export interface DailyPillBridge {
   closeWindow: () => void;
   startScheduledQuiz: (topicId: number) => void;
   runCode: (language: string, code: string) => Promise<CodeRunResult>;
+  getPathForFile: (file: File) => string;
 }
 
 const bridge: DailyPillBridge = {
@@ -17,6 +18,7 @@ const bridge: DailyPillBridge = {
   closeWindow: () => ipcRenderer.send("close-current-window"),
   startScheduledQuiz: (topicId) => ipcRenderer.send("quiz-popup:start", topicId),
   runCode: (language, code) => ipcRenderer.invoke("code:run", language, code),
+  getPathForFile: (file) => webUtils.getPathForFile(file),
 };
 
 contextBridge.exposeInMainWorld("dailyPill", bridge);

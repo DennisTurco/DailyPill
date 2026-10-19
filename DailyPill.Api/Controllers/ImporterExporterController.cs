@@ -10,7 +10,7 @@ public class ImporterExporterController(IImportExportService importExportService
 {
     [HttpPost("import")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> ImportTopicAndQuestions([FromForm] IFormFile file)
+    public async Task<IActionResult> ImportTopicAndQuestions(IFormFile file)
     {
         var stream = file.OpenReadStream();
         var filename = file.FileName;

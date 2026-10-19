@@ -10,8 +10,10 @@ public class AppSettings
     public string AppName { get; init; } = "DailyPill";
     public int ApiPort { get; init; } = 8420;
 
-    /// <summary>Path to the SQLite file, relative to the API content root.</summary>
+    /// <summary>Default path to the SQLite file</summary>
     public string DatabasePath { get; init; } = "data/dailypill.db";
+
+    public string UserSettings { get; init; } = "DailyPill/user-settings.json";
 
     public string OllamaBaseUrl { get; init; } = "http://localhost:11434";
     public string OllamaModel { get; init; } = "llama3.1";
@@ -32,7 +34,8 @@ public class AppSettings
         {
             AppName = Environment.GetEnvironmentVariable("APP_NAME") ?? "DailyPill",
             ApiPort = int.TryParse(Environment.GetEnvironmentVariable("API_PORT"), out var port) ? port : 8420,
-            DatabasePath = "data/dailypill.db",
+            DatabasePath = Environment.GetEnvironmentVariable("DATABASE_PATH") ?? "data/dailypill.db",
+            UserSettings = Environment.GetEnvironmentVariable("USER_SETTINGS") ?? "DailyPill/user-settings.json",
             OllamaBaseUrl = Environment.GetEnvironmentVariable("OLLAMA_BASE_URL") ?? "http://localhost:11434",
             OllamaModel = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.1",
             OllamaTimeoutSeconds = int.TryParse(Environment.GetEnvironmentVariable("OLLAMA_TIMEOUT_SECONDS"), out var t) ? t : 60,

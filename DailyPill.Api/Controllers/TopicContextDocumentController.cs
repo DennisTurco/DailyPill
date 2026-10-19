@@ -18,7 +18,7 @@ public class TopicContextDocumentController(ITopicContextDocumentService topicCo
 
     [HttpPost("upload/{id}")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadContext(int id, [FromForm] IFormFile file)
+    public async Task<IActionResult> UploadContext(int id, IFormFile file)
     {
         var stream = file.OpenReadStream();
         var filename = file.FileName;

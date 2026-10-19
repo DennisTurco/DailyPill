@@ -29,3 +29,7 @@ installer/Output/
 *.log
 .DS_Store
 Thumbs.db
+
+
+# Coverage and analyze
+coverage/

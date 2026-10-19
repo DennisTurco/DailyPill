@@ -533,7 +533,7 @@ public partial class OllamaService : IOllamaService
         StringBuilder contextText = new();
         for (int i = 0; i < contexts.Count; i++)
         {
-            contextText.Append($"# ------ DOCUMENT {i+1} ------\n");
+            contextText.Append($"# ------ DOCUMENT {i + 1} ------\n");
             contextText.Append(contexts[i]);
             contextText.Append("\n\n");
         }

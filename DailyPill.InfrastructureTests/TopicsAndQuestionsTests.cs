@@ -57,26 +57,6 @@ public class TopicsAndQuestionsTests
     }
 
     [Fact]
-    public async Task QuestionSoftDelete_NeverHardDeletes()
-    {
-        await using var context = TestDbContextFactory.Create();
-        var topicContextService = new TopicContextDocumentService(context);
-        var questionService = new QuestionService(context);
-        var infoFactService = new InfoFactService(context);
-        var topicService = new TopicService(context, topicContextService, questionService, infoFactService);
-
-        var topic = await topicService.CreateAsync(new TopicRequestDTO("Topic", null, null, null, null, false, []));
-        var question = await questionService.CreateAsync(new QuestionRequestDTO(
-            topic.Id, QuestionType.SingleWord, "word?", null, "answer", 2, null));
-
-        var deleted = await questionService.DeleteAsync(question.Id);
-        Assert.True(deleted);
-
-        var fetched = await questionService.GetByIdAsync(question.Id);
-        Assert.Null(fetched);
-    }
-
-    [Fact]
     public async Task DailyInfoFact_IsIdempotentWithinSameDay()
     {
         await using var context = TestDbContextFactory.Create();

@@ -19,11 +19,19 @@ if (File.Exists(envPath))
 }
 
 var appSettings = AppSettings.FromEnvironment();
+var databaseService = new DatabasePathService(appSettings);
+
+if (!File.Exists(appSettings.UserSettings))
+    databaseService.ResetToDefault();
+
+var databasePath = databaseService.GetCurrentWithFallback().DatabasePath;
+
 builder.Services.AddSingleton(appSettings);
 
-var dataDir = Path.Combine(builder.Environment.ContentRootPath, "data");
+var dataDir = Path.Combine(builder.Environment.ContentRootPath, Path.GetDirectoryName(databasePath) ?? "data");
 Directory.CreateDirectory(dataDir);
-var dbPath = Path.Combine(dataDir, "dailypill.db");
+
+var dbPath = Path.Combine(dataDir, Path.GetFileName(databasePath ?? "dailypill.db"));
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite($"Data Source={dbPath}"));
 
@@ -44,14 +52,23 @@ builder.Services.AddScoped<IAiService, AiService>();
 builder.Services.AddScoped<ITopicContextDocumentService, TopicContextDocumentService>();
 builder.Services.AddScoped<ISettingsService, SettingsService>();
 builder.Services.AddScoped<IImportExportService, ImportExportService>();
+builder.Services.AddScoped<IDatabasePathService, DatabasePathService>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
     options.JsonSerializerOptions.Converters.Add(new QuestionTypeJsonConverter());
+});
+
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFile = $"{typeof(Program).Assembly.GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath);
 });
 
 // Mirrors FastAPI's allow_origins=["*"] + allow_credentials=True (not directly expressible
@@ -84,6 +101,13 @@ app.Services.GetRequiredService<ITranscriptionService>().Bootstrap();
 
 app.UseExceptionHandler();
 app.UseCors();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", app = appSettings.AppName }));
 

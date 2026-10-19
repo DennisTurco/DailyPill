@@ -115,8 +115,16 @@ public class ProgressService(AppDbContext context) : IProgressService
             .Where(a => a.IsCorrect != null)
             .Select(a => new
             {
-                a.Id, a.QuestionId, a.AnsweredAt, a.IsCorrect, a.ScoreAwarded, a.Question!.TopicId, a.Question.Difficulty,
-                a.Confidence, a.HintUsed, a.ScoreBeforeFollowUp,
+                a.Id,
+                a.QuestionId,
+                a.AnsweredAt,
+                a.IsCorrect,
+                a.ScoreAwarded,
+                a.Question!.TopicId,
+                a.Question.Difficulty,
+                a.Confidence,
+                a.HintUsed,
+                a.ScoreBeforeFollowUp,
             })
             .ToListAsync();
         return graded
