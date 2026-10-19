@@ -28,7 +28,12 @@ var databasePath = databaseService.GetCurrentWithFallback().DatabasePath;
 
 builder.Services.AddSingleton(appSettings);
 
-var dataDir = Path.Combine(builder.Environment.ContentRootPath, Path.GetDirectoryName(databasePath) ?? "data");
+// A relative database path is resolved against the backend folder, unless the packaged
+// Linux/macOS app passes a writable per-user folder (its install dir is read-only there)
+var dataBaseDir = Environment.GetEnvironmentVariable("DAILYPILL_DATA_DIR") is { Length: > 0 } customDataDir
+    ? customDataDir
+    : builder.Environment.ContentRootPath;
+var dataDir = Path.Combine(dataBaseDir, Path.GetDirectoryName(databasePath) ?? "data");
 Directory.CreateDirectory(dataDir);
 
 var dbPath = Path.Combine(dataDir, Path.GetFileName(databasePath ?? "dailypill.db"));

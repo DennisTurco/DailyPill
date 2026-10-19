@@ -15,7 +15,10 @@
 ; otherwise a dead entry pointing at a removed exe is left behind.
 
 #define AppName      "DailyPill"
-#define AppVersion   "1.0.0"
+; CI passes the release version with /DAppVersion=x.y.z
+#ifndef AppVersion
+  #define AppVersion "1.0.0"
+#endif
 #define AppPublisher "DennisTurco"
 #define AppURL       "https://github.com/DennisTurco/DailyPill"
 #define AppExeName   "DailyPill.exe"

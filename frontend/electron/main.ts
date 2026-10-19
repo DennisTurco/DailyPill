@@ -213,8 +213,14 @@ function spawnBackend(): void {
   }
   const backendDir = path.join(process.resourcesPath, "backend");
   const apiExe = path.join(backendDir, process.platform === "win32" ? "DailyPill.Api.exe" : "DailyPill.Api");
+  // On Linux (AppImage/.deb) and macOS (.app) the resources folder is read-only:
+  // the backend keeps its default database and Whisper models in the per-user app data folder instead.
+  const env = process.platform === "win32"
+    ? process.env
+    : { ...process.env, DAILYPILL_DATA_DIR: app.getPath("userData") };
   backendProcess = spawn(apiExe, [], {
     cwd: backendDir,
+    env,
     windowsHide: true,
   });
   backendProcess.stdout?.on("data", (chunk) => console.log(`[backend] ${chunk}`));

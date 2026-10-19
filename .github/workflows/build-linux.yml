@@ -1,0 +1,93 @@
+# Builds the Linux installers (AppImage + .deb) on every push/merge to
+# master, or manually: Actions tab > "Build Linux installers" > Run workflow.
+# Also called by release.yml when a "v*" tag is pushed.
+name: Build Linux installers
+
+on:
+  push:
+    branches: [master]
+    # Docs-only changes don't need new installers
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: Release version (tag without the leading "v")
+        type: string
+        required: true
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    # A newer push supersedes a build still running for an older one. Set on
+    # the job, not the workflow: when called by release.yml, github.workflow
+    # is the caller's name and the three platform builds would cancel each other.
+    concurrency:
+      group: build-linux-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Release builds take the tag's version, the others the one in installer/DailyPill.iss
+      - name: Resolve version
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION=$(sed -n 's/.*#define AppVersion *"\(.*\)".*/\1/p' installer/DailyPill.iss)
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "Version: $VERSION"
+
+      # .env is gitignored and bundled into the app (package.json > build.extraResources):
+      # it comes from the DAILYPILL_ENV repo secret (whole file content), falling back
+      # to .env.example
+      - name: Write .env
+        env:
+          DAILYPILL_ENV: ${{ secrets.DAILYPILL_ENV }}
+        run: |
+          if [ -n "$DAILYPILL_ENV" ]; then
+            printf '%s\n' "$DAILYPILL_ENV" > .env
+          else
+            echo "::warning::DAILYPILL_ENV secret not set: the app bundles .env.example"
+            cp .env.example .env
+          fi
+
+      # Self-contained single file: end users don't need the .NET runtime installed.
+      # Output folder picked up by package.json > build.<platform>.extraResources.
+      - name: Publish backend
+        run: dotnet publish DailyPill.Api -c Release --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -r linux-x64 -o backend-dist/linux-x64
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # Renderer (vite) + Electron main process (dist-electron/)
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Package Linux installers
+        working-directory: frontend
+        run: npx electron-builder --linux --publish never --config.extraMetadata.version="$VERSION"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DailyPill-linux
+          path: |
+            frontend/release/*.AppImage
+            frontend/release/*.deb
+          if-no-files-found: error

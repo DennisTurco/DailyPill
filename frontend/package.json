@@ -59,16 +59,15 @@
     ],
     "extraResources": [
       {
-        "from": "../backend-dist/win-x64",
-        "to": "backend"
-      },
-      {
         "from": "../topics",
         "to": "topics"
       },
       {
-        "from": "../.env",
-        "to": ".env"
+        "from": "..",
+        "to": ".",
+        "filter": [
+          ".env"
+        ]
       }
     ],
     "directories": {
@@ -77,10 +76,67 @@
     },
     "win": {
       "target": "dir",
-      "icon": "build/icon.ico"
+      "icon": "build/icon.ico",
+      "extraResources": [
+        {
+          "from": "../backend-dist/win-x64",
+          "to": "backend"
+        }
+      ]
     },
     "linux": {
-      "icon": "build/icon.png"
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Education",
+      "maintainer": "Dennis Turco",
+      "synopsis": "Daily study pills and quizzes",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "../backend-dist/linux-x64",
+          "to": "backend"
+        }
+      ]
+    },
+    "afterPack": "build/after-pack.cjs",
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.education",
+      "artifactName": "${productName}-${version}-mac-${arch}.${ext}",
+      "identity": "-",
+      "hardenedRuntime": false,
+      "extraResources": [
+        {
+          "from": "../backend-dist/osx-${arch}",
+          "to": "backend"
+        }
+      ]
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1",
+        "libsecret-1-0",
+        "libayatana-appindicator3-1 | libappindicator3-1"
+      ]
     }
   }
 }
